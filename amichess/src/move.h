@@ -23,4 +23,12 @@ Special can be:
 
 enum {SP_NONE=0,SP_CASTLE, SP_ENPASSANT};
 
+#define COLORLESSPIECE(x)	((x>>16)&0x07)
+#define PIECE(x)			((x>>16)&0x0f)
+#define ISCAPTURE(x)		((x>>20)&0x0f)
+#define FROM(x)				((x&0xff))
+#define TO(x)				(((x>>8)&0xff))
+#define SPECIAL(x)			((x>>28) & 0x0f)
+#define PROMOTED(x)			((x>>24) & 0x0f)
+
 #endif /* MOVE_H_ */

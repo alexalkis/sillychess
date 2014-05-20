@@ -21,6 +21,13 @@
 
 #define IS_SQ(x)	(!((x)&0x88))
 
+int findOtherKing(void) {
+	int i;
+	int piece=(board.sideToMove^BLACK)|KING;
+	for(i=0; i<128; ++i)
+		if (board.bs[i]==piece) return i;
+	ASSERT(1==2);
+}
 /* lifted from CPW engine http://chessprogramming.wikispaces.com */
 int diagAttack(int byColor, int sq, int vect) {
 	int nextSq = sq + vect;
@@ -138,6 +145,9 @@ void initBoard(void) {
 	board.castleRights = 0xf;
 	board.fiftyCounter = 0;
 	board.ply = 0;
+	kingLoc[0]=E1;
+	kingLoc[1]=E8;
+
 }
 
 char *board2fen(void) {
@@ -276,6 +286,7 @@ void fen2board(char *str) {
 			break;
 		case 'k':
 			board.bs[(rank << 4) + file] = BLACK_KING;
+			kingLoc[1]=(rank << 4) + file;
 			++file;
 			break;
 		case 'p':
@@ -301,6 +312,7 @@ void fen2board(char *str) {
 			break;
 		case 'K':
 			board.bs[(rank << 4) + file] = WHITE_KING;
+			kingLoc[0]=(rank << 4) + file;
 			++file;
 			break;
 		case 'P':

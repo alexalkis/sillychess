@@ -64,6 +64,11 @@ enum esqare {
     A8=112, B8, C8, D8, E8, F8, G8, H8
 };
 
+#define CASTLE_WK	(1<<3)
+#define CASTLE_WQ	(1<<2)
+#define CASTLE_BK	(1<<1)
+#define CASTLE_BQ	(1<<0)
+
 typedef unsigned char u8;
 typedef unsigned long long u64;
 
@@ -78,7 +83,10 @@ struct aboard {
 };
 
 struct _smove {
-    int move;
+    unsigned int move;
+    u8	enPassantsq;
+    u8	fiftycounter;
+    u8  castleRights;
     int score;
 };
 typedef struct _smove smove;
@@ -86,13 +94,20 @@ typedef struct _smove smove;
 
 extern struct aboard board;
 
+extern int kingLoc[2];
 
 void printMoveList(void);
 int generateMoves(smove *moves);
 void initBoard(void);
 void printBoard(void);
+int findOtherKing(void);
 void fen2board(char *str);
+char *sq2algebraic(u8 sq);
 int isAttacked(int byColor, int sq);
-u64 perft(u8 depth);
-int getms(void);
+u64 dummyPerft(u8 depth);
+u64 Perft(u8 depth);
+u64 Divide(u8 depth);
+int move_make(smove move);
+int move_unmake(smove move);
+int get_ms(void);
 #endif /* AMICHESS_H_ */
