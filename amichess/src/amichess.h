@@ -107,7 +107,7 @@ int isAttacked(int byColor, int sq);
 u64 dummyPerft(u8 depth);
 u64 Perft(u8 depth);
 u64 Divide(u8 depth);
-int move_make(smove move);
-int move_unmake(smove move);
+int move_make(smove *move);
+int move_unmake(smove *move);
 int get_ms(void);
 #endif /* AMICHESS_H_ */

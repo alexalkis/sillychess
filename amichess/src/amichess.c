@@ -29,17 +29,14 @@ struct aboard board;
  */
 int main(int argc, char **argv) {
 	int i;
+	board.castleRights=0;
 	initBoard();
-	//fen2board("rnbqkbnr/pppppppp/8/8/8/1P6/P1PPPPPP/RNBQKBNR b KQkq - 0 1");
-	//fen2board("rnbqkbnr/1ppppppp/p7/8/8/N7/PPPPPPPP/1RBQKBNR b Kkq - 1 2");
+	//fen2board("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+	//fen2board("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/2KR3R b kq - 1 1");
 
-	//fen2board("n1n5/PPPk4/8/8/8/8/4Kppp/5N1N b - - 0 1");
-	//fen2board("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -"); //48 moves
-	//fen2board("8/3K4/2p5/p2b2r1/5k2/8/8/1q6 b - 1 67");  //50 moves
-	//board.sideToMove=BLACK;
-	//fen2board("8/7p/p5pb/4k3/P1pPn3/8/P5PP/1rB2RK1 b - d3 0 28");
+	fen2board("n1n5/1Pk5/8/8/8/8/5Kp1/5N1N w - - 0 1");
 	if (argc!=2)
-		i=6;
+		i=4;
 	else
 		i=atol(argv[1]);
 	printBoard();
