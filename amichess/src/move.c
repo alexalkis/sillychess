@@ -79,6 +79,8 @@ void printMoveList(/* smove *moves, int len*/) {
 	}
 }
 
+int alkis=0;
+
 int generateMoves(smove *moves) {
 
 	int i;
@@ -126,36 +128,36 @@ int generateMoves(smove *moves) {
 	if (board.sideToMove == WHITE) {
 		if (board.castleRights & CASTLE_WK) {
 			if ((board.bs[F1] == EMPTY) && (board.bs[G1] == EMPTY)
-					&& (!isAttacked(!board.sideToMove, E1))
-					&& (!isAttacked(!board.sideToMove, F1))
-					&& (!isAttacked(!board.sideToMove, G1)))
+					&& (!isAttacked(board.sideToMove^BLACK, E1))
+					&& (!isAttacked(board.sideToMove^BLACK, F1))
+					&& (!isAttacked(board.sideToMove^BLACK, G1)))
 
 				pushSpecialMove(E1, G1, WHITE_KING, EMPTY, EMPTY, SP_CASTLE);
 		}
 		if (board.castleRights & CASTLE_WQ) {
 			if ((board.bs[B1] == EMPTY) && (board.bs[C1] == EMPTY)
 					&& (board.bs[D1] == EMPTY)
-					&& (!isAttacked(!board.sideToMove, E1))
-					&& (!isAttacked(!board.sideToMove, D1))
-					&& (!isAttacked(!board.sideToMove, C1)))
+					&& (!isAttacked(board.sideToMove^BLACK, E1))
+					&& (!isAttacked(board.sideToMove^BLACK, D1))
+					&& (!isAttacked(board.sideToMove^BLACK, C1)))
 
 				pushSpecialMove(E1, C1, WHITE_KING, EMPTY, EMPTY, SP_CASTLE);
 		}
 	} else {
 		if (board.castleRights & CASTLE_BK) {
 			if ((board.bs[F8] == EMPTY) && (board.bs[G8] == EMPTY)
-					&& (!isAttacked(!board.sideToMove, E8))
-					&& (!isAttacked(!board.sideToMove, F8))
-					&& (!isAttacked(!board.sideToMove, G8)))
+					&& (!isAttacked(board.sideToMove^BLACK, E8))
+					&& (!isAttacked(board.sideToMove^BLACK, F8))
+					&& (!isAttacked(board.sideToMove^BLACK, G8)))
 
 				pushSpecialMove(E8, G8, BLACK_KING, EMPTY, EMPTY, SP_CASTLE);
 		}
 		if (board.castleRights & CASTLE_BQ) {
 			if ((board.bs[B8] == EMPTY) && (board.bs[C8] == EMPTY)
 					&& (board.bs[D8] == EMPTY)
-					&& (!isAttacked(!board.sideToMove, E8))
-					&& (!isAttacked(!board.sideToMove, D8))
-					&& (!isAttacked(!board.sideToMove, C8)))
+					&& (!isAttacked(board.sideToMove^BLACK, E8))
+					&& (!isAttacked(board.sideToMove^BLACK, D8))
+					&& (!isAttacked(board.sideToMove^BLACK, C8)))
 
 				pushSpecialMove(E8, C8, BLACK_KING, EMPTY, EMPTY, SP_CASTLE);
 		}
@@ -408,6 +410,7 @@ u64 Perft(u8 depth) {
 		return 1;
 	smove m[256];
 	int mcount = generateMoves(m);
+	if (alkis) printMoveList();
 	for (i = 0; i < mcount; i++) {
 		move_make(&m[i]);
 		if (!isAttacked(board.sideToMove, kingLoc[1 - (board.sideToMove >> 3)]))
@@ -430,6 +433,10 @@ u64 Divide(u8 depth) {
 
 	for (i = 0; i < mcount; i++) {
 		move_make(&m[i]);
+		if (FROM(m[i].move)==E8 && TO(m[i].move)==F8)
+			alkis=1;
+		else
+			alkis=0;
 		if (!isAttacked(board.sideToMove,
 				kingLoc[1 - (board.sideToMove >> 3)])) {
 			printMove(m[i]);
@@ -554,9 +561,6 @@ int move_unmake(smove *move) {
 	ASSERT(from < 128 && from >= 0);
 	ASSERT(to < 128 && to >= 0);
 
-	if (move->castleRights)
-		++move->castleRights;
-
 	if ((piece & 7) == KING) {
 		kingLoc[piece >> 3] = from;
 	}
@@ -567,9 +571,9 @@ int move_unmake(smove *move) {
 
 	if (SPECIAL(move->move) == SP_ENPASSANT) {
 		if (board.sideToMove == BLACK)
-			board.bs[to - 16] = WHITE_PAWN; //3279374
+			board.bs[to + 16] = WHITE_PAWN; //3279374
 		else
-			board.bs[to + 16] = BLACK_PAWN;
+			board.bs[to - 16] = BLACK_PAWN;
 	} else if (capturedpiece)
 		board.bs[to] = capturedpiece;
 
