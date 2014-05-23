@@ -358,6 +358,7 @@ void generatePawnMoves(int color, int pos) {
 			pushMove(pos, to + 1, color | PAWN, board.bs[to + 1]);
 	}
 
+	/* TODO: Move en passant check out of loop and have it checked _once_ after loop (as we do with castling)*/
 	if (board.enPassant == (to - 1)) {
 		ASSERT(board.bs[to - 1] == EMPTY);
 		pushSpecialMove(pos, to - 1, color | PAWN, (color ^ BLACK) | PAWN,
@@ -538,7 +539,7 @@ int move_make(smove *move) {
 	if ( COLORLESSPIECE(move->move) == PAWN && abs(to - from) == 32)
 		board.enPassant = (from + to) / 2;
 	else
-		board.enPassant = EMPTY;
+		board.enPassant = ENPASSANTNULL;
 	if (SPECIAL(move->move) == SP_ENPASSANT) {
 		if (board.sideToMove == BLACK)
 			board.bs[to - 16] = 0;

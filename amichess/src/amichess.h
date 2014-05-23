@@ -27,6 +27,7 @@ enum {
 };
 enum {
 	EMPTY = 0x00,
+	ENPASSANTNULL = 127,
 	PAWN = 0x01,
 	KING = 0x02,
 	KNIGHT = 0x03,
@@ -91,10 +92,32 @@ struct _smove {
 };
 typedef struct _smove smove;
 
+#define moveMAX	128
+typedef struct LINE {
+	int cmove;              // Number of moves in the line.
+	int argmove[moveMAX];  // The line.
+} LINE;
 
 extern struct aboard board;
 
 extern int kingLoc[2];
+
+extern int psq_pawns[2][64];
+extern int raw_psq_pawns[64];
+extern int psq_knights[2][64];
+extern int raw_psq_knights[64];
+extern int psq_bishops[2][64];
+extern int raw_psq_bishops[64];
+extern int psq_rooks[2][64];
+extern int raw_psq_rooks[64];
+extern int psq_queens[2][64];
+extern int raw_psq_queens[64];
+
+enum {
+	CHECKMATE_SCORE=31000,
+	STALEMATE_SCORE=0,
+	DDEPTH=8
+};
 
 void printMoveList(void);
 int generateMoves(smove *moves);
@@ -107,7 +130,10 @@ int isAttacked(int byColor, int sq);
 u64 dummyPerft(u8 depth);
 u64 Perft(u8 depth);
 u64 Divide(u8 depth);
+void printMove(smove m);
 int move_make(smove *move);
 int move_unmake(smove *move);
 int get_ms(void);
+void thinkFen(char *fen,int depth);
+int AlphaBeta(int ply,int depth, int alpha, int beta, LINE * pline);
 #endif /* AMICHESS_H_ */

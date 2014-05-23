@@ -21,13 +21,6 @@
 
 #define IS_SQ(x)	(!((x)&0x88))
 
-int findOtherKing(void) {
-	int i;
-	int piece=(board.sideToMove^BLACK)|KING;
-	for(i=0; i<128; ++i)
-		if (board.bs[i]==piece) return i;
-	ASSERT(1==2);
-}
 /* lifted from CPW engine http://chessprogramming.wikispaces.com */
 int diagAttack(int byColor, int sq, int vect) {
 	int nextSq = sq + vect;
@@ -115,13 +108,23 @@ int isAttacked(int byColor, int sq) {
 	return 0;
 }
 
-
 char *sq2algebraic(u8 sq) {
 	static char buf[3];
 	buf[0] = COL(sq) + 'a';
 	buf[1] = ROW(sq) + '1';
 	buf[2] = '\0';
 	return buf;
+}
+
+void printpsq(int psq[2][64], int n) {
+	int i;
+	for (i = 0; i < 64; ++i) {
+		if ((i % 8) == 0)
+			printf("\n");
+		printf("%4d", psq[n][i]);
+
+	}
+	printf("\n");
 }
 void initBoard(void) {
 	u8 temp[128] = { WHITE_ROOK, WHITE_KNIGHT, WHITE_BISHOP, WHITE_QUEEN,
@@ -141,12 +144,36 @@ void initBoard(void) {
 			BLACK_BISHOP, BLACK_KNIGHT, BLACK_ROOK, 0, 0, 0, 0, 0, 0, 0, 0 };
 	memcpy(board.bs, temp, 128 * sizeof(u8));
 	board.sideToMove = WHITE;
-	board.enPassant = EMPTY;
+	board.enPassant = ENPASSANTNULL;
 	board.castleRights = 0xf;
 	board.fiftyCounter = 0;
 	board.ply = 0;
-	kingLoc[0]=E1;
-	kingLoc[1]=E8;
+	kingLoc[0] = E1;
+	kingLoc[1] = E8;
+
+	int i;
+
+	for (i = 0; i < 64; ++i) {
+		psq_pawns[0][i] = raw_psq_pawns[(7 - i / 8) * 8 + (i & 7)];
+		//printf("%d=%d,",(7-i/8)*8+(i&7),t);
+		psq_pawns[1][i] = -raw_psq_pawns[i];
+
+		psq_knights[0][i] = raw_psq_knights[(7 - i / 8) * 8 + (i & 7)];
+		psq_knights[1][i] = -raw_psq_knights[(7 - i / 8) * 8 + (i & 7)];
+
+		psq_bishops[0][i] = raw_psq_bishops[(7 - i / 8) * 8 + (i & 7)];
+		psq_bishops[1][i] = -raw_psq_bishops[i];
+
+		psq_rooks[0][i] = raw_psq_rooks[(7 - i / 8) * 8 + (i & 7)];
+		psq_rooks[1][i] = -raw_psq_rooks[i];
+
+		psq_queens[0][i] = raw_psq_queens[(7 - i / 8) * 8 + (i & 7)];
+		psq_queens[1][i] = -raw_psq_queens[i];
+
+	}
+	//printpsq(psq_rooks,1);
+	//printpsq(psq_pawns,1);
+	//exit(1);
 
 }
 
@@ -182,19 +209,23 @@ char *board2fen(void) {
 	if (board.castleRights == 0)
 		buf[pos++] = '-';
 	else {
-		if (board.castleRights & (1<<3)) buf[pos++]='K';
-		if (board.castleRights & (1<<2)) buf[pos++]='Q';
-		if (board.castleRights & (1<<1)) buf[pos++]='k';
-		if (board.castleRights & (1<<0)) buf[pos++]='q';
+		if (board.castleRights & (1 << 3))
+			buf[pos++] = 'K';
+		if (board.castleRights & (1 << 2))
+			buf[pos++] = 'Q';
+		if (board.castleRights & (1 << 1))
+			buf[pos++] = 'k';
+		if (board.castleRights & (1 << 0))
+			buf[pos++] = 'q';
 	}
 	buf[pos++] = ' ';
-	if (board.enPassant == EMPTY)
+	if (board.enPassant == ENPASSANTNULL)
 		buf[pos++] = '-';
 	else {
 		strcpy(&buf[pos++], sq2algebraic(board.enPassant));
 		pos++;
 	}
-
+	buf[pos]='\0';
 	return buf;
 }
 
@@ -251,9 +282,10 @@ void printBoard(void) {
 	}
 
 	printf("\n   a b c d e f g h\n");
-	printf("\nSide to move: %s En passant Square: %s\n",
+	printf("\nSide to move: %s e.p.: %s\n",
 			board.sideToMove == WHITE ? "white" : "black",
-			board.enPassant == EMPTY ? "none" : sq2algebraic(board.enPassant));
+			board.enPassant == ENPASSANTNULL ?
+					" -" : sq2algebraic(board.enPassant));
 	printf("Fen: %s\n", board2fen());
 }
 
@@ -286,7 +318,7 @@ void fen2board(char *str) {
 			break;
 		case 'k':
 			board.bs[(rank << 4) + file] = BLACK_KING;
-			kingLoc[1]=(rank << 4) + file;
+			kingLoc[1] = (rank << 4) + file;
 			++file;
 			break;
 		case 'p':
@@ -312,7 +344,7 @@ void fen2board(char *str) {
 			break;
 		case 'K':
 			board.bs[(rank << 4) + file] = WHITE_KING;
-			kingLoc[0]=(rank << 4) + file;
+			kingLoc[0] = (rank << 4) + file;
 			++file;
 			break;
 		case 'P':
@@ -349,7 +381,11 @@ void fen2board(char *str) {
 
 	if (str[i])
 		++i;
-
+	if (!str[i]) {
+		board.castleRights=0;
+		board.enPassant=ENPASSANTNULL;
+		return;
+	}
 	while (str[i] == ' ' || str[i] == ';')
 		++i;
 
@@ -377,11 +413,12 @@ void fen2board(char *str) {
 	//printf("------------> %s\n",&str[i]);
 	while (str[i] == ' ' || str[i] == ';')
 		++i;
-	board.enPassant = EMPTY;
+	board.enPassant = ENPASSANTNULL;
 	if (str[i] == '-') {
 		epsq = EMPTY;
 	} else {
 		// translate a square coordinate (as string) to int (eg 'e3' to 20):
+		ASSERT(str[i]>='a' && str[i]<='h');
 		epsq = (str[i] - 'a') + 16 * (str[i + 1] - '1');
 		board.enPassant = epsq;
 		++i;
