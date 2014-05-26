@@ -116,7 +116,7 @@ extern int raw_psq_queens[64];
 enum {
 	CHECKMATE_SCORE=31000,
 	STALEMATE_SCORE=0,
-	DDEPTH=8
+	DDEPTH=3
 };
 
 void printMoveList(void);

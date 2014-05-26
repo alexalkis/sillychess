@@ -96,6 +96,8 @@ int Evaluate(void) {
 		sq88=i + (i & ~7);
 		if ((board.bs[sq88] != EMPTY)) {
 			mat += matValues[board.bs[sq88]];
+			//res=330 number of moves in pv: 7
+			//e7xd8=n+ c6b5 d8xf7 b5b4 g1f1 b4a3 f7xh8
 			int piece=board.bs[sq88]&0x07;
 			switch(piece) {
 			case PAWN:
@@ -143,7 +145,11 @@ void thinkFen(char *fen,int depth)
 	int i;
 	fen2board(fen);
 	inodes=0;
+	int starttime = get_ms();
 	int sc=AlphaBeta(0,depth, -CHECKMATE_SCORE-1000, +CHECKMATE_SCORE+1000, &line);
+	int endtime = get_ms();
+	if (endtime == starttime)
+	++endtime;
 	smove m;
 	printf("res=%d number of moves in pv: %d\n", sc, line.cmove);
 
@@ -166,7 +172,8 @@ void thinkFen(char *fen,int depth)
 	m.move = line.argmove[0];
 	move_make(&m);
 	printBoard();
-	printf("Nodes: %d\n",inodes);
+	printf("Nodes:%lld Nps: %lld (%d ms)\n", inodes,
+		 (1000 * inodes) / (endtime - starttime), (endtime - starttime));
 }
 
 

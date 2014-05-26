@@ -43,35 +43,38 @@ int main(int argc, char **argv) {
 	//thinkFen("8/R7/4kPP1/3ppp2/3B1P2/1K1P1P2/8/8 w",DDEPTH);
 	//thinkFen("3r1r1k/1p3p1p/p2p4/4n1NN/6bQ/1BPq4/P3p1PP/1R5K w",DDEPTH);
 	//thinkFen("r1bq2r1/b4pk1/p1pp1p2/1p2pP2/1P2P1PB/3P4/1PPQ2P1/R3K2R w",DDEPTH);
-	thinkFen("3n2nr/4Pqpp/2k5/8/8/8/2B3PP/6K1 w",DDEPTH);
-	return 0;
-	LINE line;
-	int j;
+//	thinkFen("3n2nr/4Pqpp/2k5/8/8/8/2B3PP/6K1 w",DDEPTH);
+//	return 0;
 
-	for (j = 0; j < 200; ++j) {
 
-		line.cmove = 0;
+//	LINE line;
+//	int j;
+//
+//	for (j = 0; j < 200; ++j) {
+//
+//		line.cmove = 0;
+//
+//		int res = AlphaBeta(0,DDEPTH, -CHECKMATE_SCORE-1000, +CHECKMATE_SCORE+1000, &line);
+//
+//		smove m;
+//		printf("res=%d number of moves in pv: %d\n", res, line.cmove);
+//
+//		for (i = 0; i < line.cmove; ++i) {
+//			m.move = line.argmove[i];
+//			printMove(m);
+//			printf(" ");
+//
+//		}
+//		m.move = line.argmove[0];
+//		move_make(&m);
+//		printBoard();
+//	}
 
-		int res = AlphaBeta(0,DDEPTH, -CHECKMATE_SCORE-1000, +CHECKMATE_SCORE+1000, &line);
-
-		smove m;
-		printf("res=%d number of moves in pv: %d\n", res, line.cmove);
-
-		for (i = 0; i < line.cmove; ++i) {
-			m.move = line.argmove[i];
-			printMove(m);
-			printf(" ");
-
-		}
-		m.move = line.argmove[0];
-		move_make(&m);
-		printBoard();
-	}
-	/*
 	 if (argc != 2)
-	 i = 3;
+	 i = 4;
 	 else
 	 i = atol(argv[1]);
+	 fen2board("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
 	 printBoard();
 	 int starttime = get_ms();
 	 u64 nodes = Divide(i);
@@ -80,7 +83,7 @@ int main(int argc, char **argv) {
 	 ++endtime;
 	 printf("Divide - Nodes:%lld Nps: %lld (%d ms)\n", nodes,
 	 (1000 * nodes) / (endtime - starttime), (endtime - starttime));
-	 */
+
 //	smove moves[200];
 //	int numOfMoves = generateMoves(moves);
 //	printMoveList();
