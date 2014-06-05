@@ -1,0 +1,201 @@
+/*
+ * uci.c
+ *
+ *  Created on: Jun 1, 2014
+ *      Author: alex
+ */
+#include "sillychess.h"
+#include "move.h"
+#include <string.h>
+#include <stdlib.h>
+
+#define INPUTBUFFER		(4096)
+#define NOMOVE			0
+#define FR2SQ(f,r) ( (f)  + (r) * 16 )
+
+void ParseGo(char* line, S_SEARCHINFO *info) {
+
+	int depth = -1, movestogo = 30,movetime = -1;
+	int time = -1, inc = 0;
+    char *ptr = NULL;
+	info->timeset = FALSE;
+
+	if ((ptr = strstr(line,"infinite"))) {
+		;
+	}
+
+	if ((ptr = strstr(line,"binc")) && board.sideToMove == BLACK) {
+		inc = atoi(ptr + 5);
+	}
+
+	if ((ptr = strstr(line,"winc")) && board.sideToMove == WHITE) {
+		inc = atoi(ptr + 5);
+	}
+
+	if ((ptr = strstr(line,"wtime")) && board.sideToMove == WHITE) {
+		time = atoi(ptr + 6);
+	}
+
+	if ((ptr = strstr(line,"btime")) && board.sideToMove == BLACK) {
+		time = atoi(ptr + 6);
+	}
+
+	if ((ptr = strstr(line,"movestogo"))) {
+		movestogo = atoi(ptr + 10);
+	}
+
+	if ((ptr = strstr(line,"movetime"))) {
+		movetime = atoi(ptr + 9);
+	}
+
+	if ((ptr = strstr(line,"depth"))) {
+		depth = atoi(ptr + 6);
+	}
+
+	if(movetime != -1) {
+		time = movetime;
+		movestogo = 1;
+	}
+
+	info->starttime = get_ms();
+	info->depth = depth;
+
+	if(time != -1) {
+		info->timeset = TRUE;
+		time /= movestogo;
+		//time -= 50;
+		info->stoptime = info->starttime + time + inc;
+	}
+
+	if(depth == -1) {
+		info->depth = MAXDEPTH;
+	} else
+		info->timeset=FALSE;
+
+	printf("time:%d start:%d stop:%d depth:%d timeset:%d\n",time,info->starttime,info->stoptime,info->depth,info->timeset);
+	think(info);
+	printf("Time taken: %d\n",get_ms()-info->starttime);
+}
+
+
+int ParseMove(char *ptrChar)
+{
+	if (ptrChar[1] > '8' || ptrChar[1] < '1')
+		return NOMOVE;
+	if (ptrChar[3] > '8' || ptrChar[3] < '1')
+		return NOMOVE;
+	if (ptrChar[0] > 'h' || ptrChar[0] < 'a')
+		return NOMOVE;
+	if (ptrChar[2] > 'h' || ptrChar[2] < 'a')
+		return NOMOVE;
+
+	int from = FR2SQ(ptrChar[0] - 'a', ptrChar[1] - '1');
+	int to = FR2SQ(ptrChar[2] - 'a', ptrChar[3] - '1');
+
+	smove list[256];
+	int mcount = generateMoves(list);
+
+	int MoveNum = 0;
+	int Move = 0;
+	int PromPce = EMPTY;
+
+	for (MoveNum = 0; MoveNum < mcount; ++MoveNum) {
+		Move = list[MoveNum].move;
+		if (FROM(Move) == from && TO(Move) == to) {
+			PromPce = COLORLESSPROMOTED(Move);
+			if (PromPce != EMPTY) {
+				if (PromPce == ROOK && ptrChar[4] == 'r') {
+					return Move;
+				} else if (PromPce == BISHOP && ptrChar[4] == 'b') {
+					return Move;
+				} else if (PromPce == QUEEN && ptrChar[4] == 'q') {
+					return Move;
+				} else if (PromPce == KNIGHT && ptrChar[4] == 'n') {
+					return Move;
+				}
+				continue;
+			}
+			return Move;
+		}
+	}
+
+	return NOMOVE;
+}
+
+void ParsePosition(char* lineIn)
+{
+
+	lineIn += 9;
+	char *ptrChar = lineIn;
+
+	if (strncmp(lineIn, "startpos", 8) == 0) {
+		fen2board(START_FEN);
+	} else {
+		ptrChar = strstr(lineIn, "fen");
+		if (ptrChar == NULL) {
+			fen2board(START_FEN);
+		} else {
+			ptrChar += 4;
+			fen2board(ptrChar);
+		}
+	}
+
+	ptrChar = strstr(lineIn, "moves");
+	int move;
+
+	if (ptrChar != NULL) {
+		ptrChar += 6;
+		while (*ptrChar) {
+			move = ParseMove(ptrChar);
+			if (move == NOMOVE)
+				break;
+			smove m;
+			m.move = move;
+			move_make(&m);
+			//pos->ply=0;
+			while (*ptrChar && *ptrChar != ' ')
+				ptrChar++;
+			ptrChar++;
+		}
+	}
+	printBoard();
+}
+
+void input_loop(S_SEARCHINFO *info)
+{
+	int exit = FALSE;
+	char line[INPUTBUFFER];
+
+//	printf("id name %s\n", NAME);
+//	printf("id author Alex Argiropoulos\n");
+
+	while (!exit) {
+		memset(line, 0, sizeof(line));
+		fflush(stdout);
+		if (!fgets(line, INPUTBUFFER, stdin))
+			continue;
+
+		if (line[0] == '\n')
+			continue;
+		if (!strncmp(line, "isready", 7)) {
+			printf("readyok\n");
+			continue;
+		} else if (!strncmp(line, "uci", 3)) {
+			printf("id name %s\n", NAME);
+			printf("id author Alex Argiropoulos, Greece\n");
+			printf("uciok\n");
+			info->GAME_MODE=GAMEMODE_UCI;
+		} else if (!strncmp(line, "position", 8)) {
+			ParsePosition(line);
+		} else if (!strncmp(line, "go", 2)) {
+			ParseGo(line, info);
+			//think(2);
+
+		} else if (!strncmp(line, "ucinewgame", 10)) {
+			ParsePosition("position startpos\n");
+		} else if (!strncmp(line, "quit", 4)) {
+			exit = TRUE;
+			break;
+		}
+	}
+}

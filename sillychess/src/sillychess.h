@@ -1,0 +1,210 @@
+/*
+ * sillychess.h
+ *
+ *  Created on: May 27, 2014
+ *      Author: alex
+ */
+
+#ifndef SILLYCHESS_H_
+#define SILLYCHESS_H_
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define NULLMOVE
+
+#ifdef NULLMOVE
+#define VERNULL		" (Null)"
+#else
+#define VERNULL
+#endif
+
+#define NAME		"sillychess v0.1" VERNULL
+#define START_FEN	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+
+#ifdef NDEBUG
+#define ASSERT(x)
+#else
+#define ASSERT(x) \
+	if(!(x)) {fprintf(stderr,"%s assertion failed. File %s, at line %d.\n",#x,__FILE__,__LINE__);\
+	exit(1);}
+#endif
+
+#define COL(x) (x&7)
+#define ROW(x) (x>>4)
+
+enum {
+	FALSE=0,
+	NOMOVE=0,
+	TRUE=1,
+	MAXDEPTH=100,
+	FIRST_KILLER_SCORE=900000,
+	SECOND_KILLER_SCORE=800000,
+	CAPTURE_SCORE=1000000
+};
+enum {
+	WHITE = 0, BLACK = 0x8
+};
+enum {
+	EMPTY = 0x00,
+	ENPASSANTNULL = 127,
+	PAWN = 0x01,
+	KING = 0x02,
+	KNIGHT = 0x03,
+	BISHOP = 0x05,
+	ROOK = 0x06,
+	QUEEN = 0x07
+};
+// White pieces have their 4th bit = 0
+enum {
+	WHITE_PAWN = 0x01,
+	WHITE_KING = 0x02,
+	WHITE_KNIGHT = 0x03,
+	WHITE_BISHOP = 0x05,
+	WHITE_ROOK = 0x06,
+	WHITE_QUEEN = 0x07
+};
+// Black pieces have their 4th bit = 1
+enum {
+	BLACK_PAWN = 0x09,
+	BLACK_KING = 0x0A,
+	BLACK_KNIGHT = 0x0B,
+	BLACK_BISHOP = 0x0D,
+	BLACK_ROOK = 0x0E,
+	BLACK_QUEEN = 0x0F
+};
+
+enum esqare {
+    A1=0  , B1, C1, D1, E1, F1, G1, H1,
+    A2=16 , B2, C2, D2, E2, F2, G2, H2,
+    A3=32 , B3, C3, D3, E3, F3, G3, H3,
+    A4=48 , B4, C4, D4, E4, F4, G4, H4,
+    A5=64 , B5, C5, D5, E5, F5, G5, H5,
+    A6=80 , B6, C6, D6, E6, F6, G6, H6,
+    A7=96 , B7, C7, D7, E7, F7, G7, H7,
+    A8=112, B8, C8, D8, E8, F8, G8, H8
+};
+
+#define CASTLE_WK	(1<<3)
+#define CASTLE_WQ	(1<<2)
+#define CASTLE_BK	(1<<1)
+#define CASTLE_BQ	(1<<0)
+
+typedef unsigned char u8;
+typedef unsigned long long u64;
+
+struct aboard {
+	u8 bs[128];
+	u8 sideToMove;
+	u8 castleRights;
+	u8 enPassant;
+	u8 fiftyCounter;
+	short int ply;
+	u64 posKey;
+
+	int searchKillers[2][MAXDEPTH];
+};
+
+struct _smove {
+    unsigned int move;
+    u8	enPassantsq;
+    u8	fiftycounter;
+    u8  castleRights;
+    int score;
+};
+typedef struct _smove smove;
+
+#define moveMAX	128
+typedef struct LINE {
+	int cmove;              // Number of moves in the line.
+	int argmove[MAXDEPTH];  // The line.
+} LINE;
+
+enum {
+	GAMEMODE_CONSOLE,
+	GAMEMODE_UCI
+};
+
+typedef struct {
+
+	int starttime;
+	int stoptime;
+	int depth;
+	int timeset;
+	int movestogo;
+
+	u64 nodes;
+
+	int quit;
+	int stopped;
+
+	float fh;
+	float fhf;
+	int nullCut;
+
+	int GAME_MODE;
+	int POST_THINKING;
+
+} S_SEARCHINFO;
+
+
+extern struct aboard board;
+
+extern int kingLoc[2];
+
+extern int psq_pawns[2][64];
+extern int raw_psq_pawns[64];
+extern int psq_knights[2][64];
+extern int raw_psq_knights[64];
+extern int psq_bishops[2][64];
+extern int raw_psq_bishops[64];
+extern int psq_rooks[2][64];
+extern int raw_psq_rooks[64];
+extern int psq_queens[2][64];
+extern int raw_psq_queens[64];
+
+extern LINE pv;
+
+enum {
+	CHECKMATE_SCORE=31000,
+	STALEMATE_SCORE=0,
+	DDEPTH=8
+};
+
+void InitMvvLva(void) ;
+void printMoveList(void);
+void printLine(LINE *line);
+int generateMoves(smove *moves);
+int generateCaptureMoves(smove *moves);
+void initBoard(void);
+void printBoard(void);
+int findOtherKing(void);
+void fen2board(char *str);
+char *sq2algebraic(u8 sq);
+int isAttacked(int byColor, int sq);
+u64 dummyPerft(u8 depth);
+u64 Perft(u8 depth);
+u64 Divide(u8 depth);
+void printMove(smove m);
+int move_make(smove *move);
+int move_unmake(smove *move);
+void move_makeNull(smove *move);
+void move_unmakeNull(smove *move);
+int get_ms(void);
+void thinkFen(char *fen,int depth);
+int AlphaBeta(int ply,int depth, int alpha, int beta, LINE * pline, int doNull, S_SEARCHINFO *info) ;
+int Quiesce(int qply, int alpha, int beta,S_SEARCHINFO *info );
+int numOfLegalMoves(void);
+void CheckUp(S_SEARCHINFO *info);
+
+int InputWaiting(void);
+void ReadInput(S_SEARCHINFO *info);
+
+void input_loop(S_SEARCHINFO *info);
+u64 rand64(void);
+void rkissSeed(int seed);
+u64 generatePosKey(void);
+
+void initHash(void);
+#endif /* SILLYCHESS_H_ */
