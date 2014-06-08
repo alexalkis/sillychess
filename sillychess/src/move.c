@@ -74,6 +74,36 @@ void printMove(smove m) {
 		break;
 	}
 }
+
+char *moveToUCI(int move) {
+	static char *filestr = "abcdefgh";
+	static char *rankstr = "12345678";
+	static char buffer[10];
+
+	int from = move & 0xff;
+	int to = (move >> 8) & 0xff;
+	int prom = (move >> 24) & 0x7;
+
+
+	//printf("%c%c%s%c%c", filestr[from & 7], rankstr[from >> 4], cap ? "x" : "",	filestr[to & 7], rankstr[to >> 4]);
+	sprintf(buffer,"%c%c%c%c", filestr[from & 7], rankstr[from >> 4],filestr[to & 7], rankstr[to >> 4]);
+	switch (prom) {
+	case KNIGHT:
+		buffer[4]='n';
+		break;
+	case BISHOP:
+		buffer[4]='b';
+		break;
+	case ROOK:
+		buffer[4]='r';
+		break;
+	case QUEEN:
+		buffer[4]='q';
+		break;
+	}
+	buffer[5]='\0';
+	return buffer;
+}
 void printMoveList(/* smove *moves, int len*/) {
 	int i;
 	static char *filestr = "abcdefgh";
@@ -493,10 +523,6 @@ u64 Divide(u8 depth) {
 
 	for (i = 0; i < mcount; i++) {
 		move_make(&m[i]);
-		if (FROM(m[i].move)==E8 && TO(m[i].move)==F8)
-			alkis=1;
-		else
-			alkis=0;
 		if (!isAttacked(board.sideToMove,
 				kingLoc[1 - (board.sideToMove >> 3)])) {
 			printMove(m[i]);
@@ -518,7 +544,7 @@ void move_makeNull(smove *move) {
 	move->enPassantsq = board.enPassant;
 	move->castleRights = board.castleRights;
 	board.sideToMove ^= BLACK;
-	++board.ply;
+	board.historyPosKey[board.ply++]=board.posKey;
 }
 
 void move_unmakeNull(smove *move) {
@@ -526,111 +552,148 @@ void move_unmakeNull(smove *move) {
 	board.enPassant = move->enPassantsq;
 	board.fiftyCounter = move->fiftycounter;
 	board.castleRights = move->castleRights;
-	--board.ply;
+	board.posKey=board.historyPosKey[--board.ply];
 }
 
-int move_make(smove *move) {
+int move_make(smove *move)
+{
 	move->fiftycounter = board.fiftyCounter;
 	move->enPassantsq = board.enPassant;
 	move->castleRights = board.castleRights;
+	board.historyPosKey[board.ply++] = board.posKey;
 	board.sideToMove ^= BLACK;
 	++board.fiftyCounter;
-	if ( COLORLESSPIECE(move->move) == PAWN || ISCAPTURE(move->move))
-		board.fiftyCounter = 0;
+
 	int from = FROM(move->move);
 	int to = TO(move->move);
 	int promoted = PROMOTED(move->move);
 	int piece = PIECE(move->move);
+	int capture = ISCAPTURE(move->move);
+
 	ASSERT(from < 128 && from >= 0);
 	ASSERT(to < 128 && to >= 0);
+
+	board.posKey ^= pieceKeys[piece][from] ^ pieceKeys[piece][to];
+	//if (board.sideToMove)
+		board.posKey ^= side;
+
+	if ( COLORLESSPIECE(move->move) == PAWN || capture)
+		board.fiftyCounter = 0;
 
 	if ((piece & 7) == KING) {
 		kingLoc[piece >> 3] = to;
 	}
 
 	board.bs[from] = EMPTY;
-	if (promoted)
+	if (promoted) {
+		board.posKey ^= pieceKeys[piece][to] ^ pieceKeys[promoted][to];
 		board.bs[to] = promoted;
-	else
+	} else
 		board.bs[to] = piece;
 
-	switch (from) {
-	case H1:
-		board.castleRights &= (~CASTLE_WK) & 0xf;
-		break;
-	case E1:
-		board.castleRights &= (~(CASTLE_WK | CASTLE_WQ)) & 0xf;
-		break;
-	case A1:
-		board.castleRights &= (~CASTLE_WQ) & 0xf;
-		break;
-	case H8:
-		board.castleRights &= (~CASTLE_BK) & 0xf;
-		break;
-	case E8:
-		board.castleRights &= (~(CASTLE_BK | CASTLE_BQ)) & 0xf;
-		break;
-	case A8:
-		board.castleRights &= (~CASTLE_BQ) & 0xf;
-		break;
-	}
-	switch (to) {
-	case H1:
-		board.castleRights &= (~CASTLE_WK) & 0xf;
-		break;
-	case E1:
-		board.castleRights &= (~(CASTLE_WK | CASTLE_WQ));
-		break;
-	case A1:
-		board.castleRights &= (~CASTLE_WQ) & 0xf;
-		break;
-	case H8:
-		board.castleRights &= (~CASTLE_BK) & 0xf;
-		break;
-	case E8:
-		board.castleRights &= (~(CASTLE_BK | CASTLE_BQ)) & 0xf;
-		break;
-	case A8:
-		board.castleRights &= (~CASTLE_BQ) & 0xf;
-		break;
-	}
-
-	/* if the move is castling, move the rook */
+	board.posKey ^= castleKeys[board.castleRights];	//xor the old value
+			switch (from) {
+			case H1:
+				board.castleRights &= (~CASTLE_WK) & 0xf;
+				break;
+			case E1:
+				board.castleRights &= (~(CASTLE_WK | CASTLE_WQ)) & 0xf;
+				break;
+			case A1:
+				board.castleRights &= (~CASTLE_WQ) & 0xf;
+				break;
+			case H8:
+				board.castleRights &= (~CASTLE_BK) & 0xf;
+				break;
+			case E8:
+				board.castleRights &= (~(CASTLE_BK | CASTLE_BQ)) & 0xf;
+				break;
+			case A8:
+				board.castleRights &= (~CASTLE_BQ) & 0xf;
+				break;
+			}
+			switch (to) {
+			case H1:
+				board.castleRights &= (~CASTLE_WK) & 0xf;
+				break;
+			case E1:
+				board.castleRights &= (~(CASTLE_WK | CASTLE_WQ));
+				break;
+			case A1:
+				board.castleRights &= (~CASTLE_WQ) & 0xf;
+				break;
+			case H8:
+				board.castleRights &= (~CASTLE_BK) & 0xf;
+				break;
+			case E8:
+				board.castleRights &= (~(CASTLE_BK | CASTLE_BQ)) & 0xf;
+				break;
+			case A8:
+				board.castleRights &= (~CASTLE_BQ) & 0xf;
+				break;
+			}
+			board.posKey ^= castleKeys[board.castleRights]; //xor the new value
+	/* if the move is castling move the rook */
 	if (SPECIAL(move->move) == SP_CASTLE) {
+
+
 		if (to == G1) {
 			board.bs[H1] = EMPTY;
 			board.bs[F1] = WHITE_ROOK;
+			board.posKey ^= pieceKeys[WHITE_ROOK][H1]
+					^ pieceKeys[WHITE_ROOK][F1];
 		} else if (to == C1) {
 			board.bs[A1] = EMPTY;
 			board.bs[D1] = WHITE_ROOK;
+			board.posKey ^= pieceKeys[WHITE_ROOK][A1]
+					^ pieceKeys[WHITE_ROOK][D1];
 		} else if (to == G8) {
 			board.bs[H8] = EMPTY;
 			board.bs[F8] = BLACK_ROOK;
+			board.posKey ^= pieceKeys[BLACK_ROOK][H8]
+					^ pieceKeys[BLACK_ROOK][F8];
 		} else if (to == C8) {
 			board.bs[A8] = EMPTY;
 			board.bs[D8] = BLACK_ROOK;
+			board.posKey ^= pieceKeys[BLACK_ROOK][A8]
+					^ pieceKeys[BLACK_ROOK][D8];
 		}
 	}
 
-	if ( COLORLESSPIECE(move->move) == PAWN && abs(to - from) == 32)
-		board.enPassant = (from + to) / 2;
-	else
-		board.enPassant = ENPASSANTNULL;
-	if (SPECIAL(move->move) == SP_ENPASSANT) {
-		if (board.sideToMove == BLACK)
-			board.bs[to - 16] = 0;
-		else
-			board.bs[to + 16] = 0;
-	}
+	/* if previously the board had an enpassant square, hash it out */
+	if (move->enPassantsq!=ENPASSANTNULL)
+		board.posKey ^= pieceKeys[EMPTY][move->enPassantsq];
 
+	if ( COLORLESSPIECE(move->move) == PAWN && abs(to - from) == 32) {
+		board.enPassant = (from + to) / 2;
+		board.posKey ^= pieceKeys[EMPTY][board.enPassant];
+	} else
+		board.enPassant = ENPASSANTNULL;
+
+	if (SPECIAL(move->move) == SP_ENPASSANT) {
+		if (board.sideToMove == BLACK) {
+			board.bs[to - 16] = 0;
+			board.posKey ^= pieceKeys[BLACK_PAWN][to - 16];
+		} else {
+			board.bs[to + 16] = 0;
+			board.posKey ^= pieceKeys[WHITE_PAWN][to + 16];
+		}
+		/* artificially mark the move as non-capture so we don't hash-out anything at the destination square of the move */
+		capture=0;
+	}
+	if (capture) {
+		board.posKey ^= pieceKeys[capture][to];
+	}
 	return 0;
 }
 
 int move_unmake(smove *move) {
-
 	board.sideToMove ^= BLACK;
 	board.enPassant = move->enPassantsq;
 	board.fiftyCounter = move->fiftycounter;
+	board.castleRights = move->castleRights;
+	board.posKey=board.historyPosKey[--board.ply];
+
 	int from = FROM(move->move);
 	int to = TO(move->move);
 	int piece = PIECE(move->move);
@@ -668,8 +731,6 @@ int move_unmake(smove *move) {
 			board.bs[D8] = EMPTY;
 		}
 	}
-
-	board.castleRights = move->castleRights;
 	return 0;
 }
 

@@ -162,12 +162,32 @@ void pickMove(smove *m,int j,int n)
 		}
 	}
 
+	if (bestNum==j) return;
+
 	temp = m[j];
 	m[j] = m[bestNum];
 	m[bestNum] = temp;
 }
 
-int OldAlphaBeta(int ply,int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHINFO *info) {
+
+// TODO: make it go with increments step of two
+int isRepetition(void) {
+	int i;
+	if (board.fiftyCounter>=100) return TRUE;
+
+	if (board.ply<6) return FALSE;
+	for(i=board.ply-board.fiftyCounter; i<board.ply-1; ++i)
+		if (board.posKey==board.historyPosKey[i])  {
+			//printf("************************************ Repetition seen\n");
+			return TRUE;
+		}
+	return FALSE;
+}
+
+
+
+
+int oldAlphaBeta(int ply,int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHINFO *info) {
 	int i;
 	int val=alpha;
 	LINE line;
@@ -179,6 +199,10 @@ int OldAlphaBeta(int ply,int depth, int alpha, int beta, LINE * pline, int doNul
 	}
 	++info->nodes;
 
+	if (ply && isRepetition() ) {
+			pline->cmove=0;
+			return 0;
+		}
 	if ((info->nodes & 0xFFF) == 0) {
 		CheckUp(info);
 	}
@@ -276,6 +300,10 @@ int AlphaBeta(int ply,int depth, int alpha, int beta, LINE * pline, int doNull,S
 	}
 	++info->nodes;
 
+	if (ply && isRepetition() ) {
+		pline->cmove=0;
+		return 0;
+	}
 	if ((info->nodes & 0xFFF) == 0) {
 		CheckUp(info);
 	}
@@ -315,11 +343,21 @@ int AlphaBeta(int ply,int depth, int alpha, int beta, LINE * pline, int doNull,S
 		pickMove(m,i,mcount);
 		move_make(&m[i]);
 		if (!isAttacked(board.sideToMove, kingLoc[1 - (board.sideToMove >> 3)])) {
-			if (!moves_searched)
+			if (!ply && (get_ms()-info->starttime)>3000)
+				#ifndef NDEBUG
+				printf("info depth %d currmove %s (score: %7d) currmovenumber %2d ",depth,moveToUCI(m[i].move),m[i].score,i+1);
+				#else
+				printf("info depth %d currmove %s currmovenumber %d\n",depth,moveToUCI(m[i].move),i+1);
+				#endif
+			if (!moves_searched) {
 				val = -AlphaBeta(ply+1,depth - 1, -beta, -alpha, &line,TRUE,info);
+				#ifndef NDEBUG
+				if (!ply && (get_ms()-info->starttime)>3000) printf(" F Val: %d",val);
+				#endif
+			}
 			else {
 				if(moves_searched >= FullDepthMoves && depth >= ReductionLimit &&
-				         !inCheck &&
+				         !inCheck && //this is wrong, but the real thing is expensive :P
 				         !ISCAPTURE(m[i].move)&&
 				         !ISPROMOTION(m[i].move) &&
 				         m[i].move!=board.searchKillers[0][ply] &&
@@ -327,16 +365,24 @@ int AlphaBeta(int ply,int depth, int alpha, int beta, LINE * pline, int doNull,S
 				{
 					// Search this move with reduced depth:
 					val = -AlphaBeta(ply+1,depth-2,-(alpha+1), -alpha, &line,TRUE,info);
+					++info->lmr;
+					#ifndef NDEBUG
+					if (!ply && (get_ms()-info->starttime)>3000) printf(" R Val: %d %s",val,val>alpha?":-(":":-)");
+					#endif
 
 				} else
 					val = alpha+1;
-				if(val > alpha) {
-				        val = -AlphaBeta(ply+1,depth-1,-(alpha+1), -alpha, &line,TRUE,info);
-				        if(val > alpha && val < beta)
-				          val = -AlphaBeta(ply+1,depth - 1, -beta, -alpha, &line,TRUE,info);
-				      }
+				if (val > alpha) {
+					val = -AlphaBeta(ply + 1, depth - 1, -(alpha + 1), -alpha,	&line, TRUE, info);
+					if (val > alpha && val < beta)
+						val = -AlphaBeta(ply + 1, depth - 1, -beta, -alpha,&line, TRUE, info);
+				}
 			}
 			++legalMoves;
+			#ifndef NDEBUG
+			if (!ply && (get_ms()-info->starttime)>3000) printf("\n");
+			#endif
+
 		}
 		move_unmake(&m[i]);
 		++moves_searched;
@@ -350,7 +396,7 @@ int AlphaBeta(int ply,int depth, int alpha, int beta, LINE * pline, int doNull,S
 					++info->fhf;
 				else
 					++info->fh;
-				if(!(ISCAPTURE(m[i].move))) {
+				if(!(ISCAPTUREORPROMOTION(m[i].move))) {
 					if (board.searchKillers[0][board.ply] != m[i].move) {
 						board.searchKillers[1][board.ply] = board.searchKillers[0][board.ply];
 						board.searchKillers[0][board.ply] = m[i].move;
@@ -386,6 +432,8 @@ int Quiesce(int qply, int alpha, int beta, S_SEARCHINFO *info)
 	int score = stand_pat;
 
 	++info->nodes;
+	if (isRepetition())
+		return 0;
 	if ((info->nodes & 0xFFF) == 0) {
 		CheckUp(info);
 
@@ -399,6 +447,7 @@ int Quiesce(int qply, int alpha, int beta, S_SEARCHINFO *info)
 	for (i = 0; i < mcount; ++i) {
 		pickMove(m, i, mcount);
 		move_make(&m[i]);
+		ASSERT(m[i].score>=CAPTURE_SCORE);
 		if (!isAttacked(board.sideToMove, kingLoc[1 - (board.sideToMove >> 3)]))
 			score = -Quiesce(qply + 1, -beta, -alpha, info);
 		move_unmake(&m[i]);

@@ -36,6 +36,7 @@ u64 generatePosKey(void)
 	}
 	if (board.enPassant!=ENPASSANTNULL)
 		posKey ^= pieceKeys[EMPTY][board.enPassant];
+
 	posKey^= castleKeys[board.castleRights];
 	if (board.sideToMove)
 		posKey^= side;

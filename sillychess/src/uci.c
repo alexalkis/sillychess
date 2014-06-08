@@ -13,46 +13,90 @@
 #define NOMOVE			0
 #define FR2SQ(f,r) ( (f)  + (r) * 16 )
 
-void ParseGo(char* line, S_SEARCHINFO *info) {
+void showMoveList(void)
+{
+	int i;
+	smove m[256];
+	int mcount = generateMoves(m);
 
-	int depth = -1, movestogo = 30,movetime = -1;
+	for (i = 0; i < mcount; i++) {
+		move_make(&m[i]);
+		if (!isAttacked(board.sideToMove,
+				kingLoc[1 - (board.sideToMove >> 3)])) {
+			printMove(m[i]);printf(" ");
+		}
+		move_unmake(&m[i]);
+	}
+	printf("\n");
+}
+
+void ParsePerft(char* line, S_SEARCHINFO *info)
+{
+	int pdepth = atoi(&line[6]);
+
+	int starttime = get_ms();
+	u64 nodes = Perft(pdepth);
+	int endtime = get_ms();
+	if (endtime == starttime)
+		++endtime;
+	printf("Perft(%d)=%lld Nps: %lld (%d ms)\n", pdepth, nodes,
+			(1000 * nodes) / (endtime - starttime), (endtime - starttime));
+}
+
+void ParseDivide(char* line, S_SEARCHINFO *info)
+{
+	int pdepth = atoi(&line[7]);
+
+	int starttime = get_ms();
+	u64 nodes = Divide(pdepth);
+	int endtime = get_ms();
+	if (endtime == starttime)
+		++endtime;
+	printf("Perft(%d)=%lld Nps: %lld (%d ms)\n", pdepth, nodes,
+			(1000 * nodes) / (endtime - starttime), (endtime - starttime));
+}
+
+void ParseGo(char* line, S_SEARCHINFO *info)
+{
+
+	int depth = -1, movestogo = 30, movetime = -1;
 	int time = -1, inc = 0;
-    char *ptr = NULL;
+	char *ptr = NULL;
 	info->timeset = FALSE;
 
-	if ((ptr = strstr(line,"infinite"))) {
+	if ((ptr = strstr(line, "infinite"))) {
 		;
 	}
 
-	if ((ptr = strstr(line,"binc")) && board.sideToMove == BLACK) {
+	if ((ptr = strstr(line, "binc")) && board.sideToMove == BLACK) {
 		inc = atoi(ptr + 5);
 	}
 
-	if ((ptr = strstr(line,"winc")) && board.sideToMove == WHITE) {
+	if ((ptr = strstr(line, "winc")) && board.sideToMove == WHITE) {
 		inc = atoi(ptr + 5);
 	}
 
-	if ((ptr = strstr(line,"wtime")) && board.sideToMove == WHITE) {
+	if ((ptr = strstr(line, "wtime")) && board.sideToMove == WHITE) {
 		time = atoi(ptr + 6);
 	}
 
-	if ((ptr = strstr(line,"btime")) && board.sideToMove == BLACK) {
+	if ((ptr = strstr(line, "btime")) && board.sideToMove == BLACK) {
 		time = atoi(ptr + 6);
 	}
 
-	if ((ptr = strstr(line,"movestogo"))) {
+	if ((ptr = strstr(line, "movestogo"))) {
 		movestogo = atoi(ptr + 10);
 	}
 
-	if ((ptr = strstr(line,"movetime"))) {
+	if ((ptr = strstr(line, "movetime"))) {
 		movetime = atoi(ptr + 9);
 	}
 
-	if ((ptr = strstr(line,"depth"))) {
+	if ((ptr = strstr(line, "depth"))) {
 		depth = atoi(ptr + 6);
 	}
 
-	if(movetime != -1) {
+	if (movetime != -1) {
 		time = movetime;
 		movestogo = 1;
 	}
@@ -60,23 +104,23 @@ void ParseGo(char* line, S_SEARCHINFO *info) {
 	info->starttime = get_ms();
 	info->depth = depth;
 
-	if(time != -1) {
+	if (time != -1) {
 		info->timeset = TRUE;
 		time /= movestogo;
 		//time -= 50;
 		info->stoptime = info->starttime + time + inc;
 	}
 
-	if(depth == -1) {
+	if (depth == -1) {
 		info->depth = MAXDEPTH;
 	} else
-		info->timeset=FALSE;
+		info->timeset = FALSE;
 
-	printf("time:%d start:%d stop:%d depth:%d timeset:%d\n",time,info->starttime,info->stoptime,info->depth,info->timeset);
+	printf("time:%d start:%d stop:%d depth:%d timeset:%d\n", time,
+			info->starttime, info->stoptime, info->depth, info->timeset);
 	think(info);
-	printf("Time taken: %d\n",get_ms()-info->starttime);
+	printf("Time taken: %d\n", get_ms() - info->starttime);
 }
-
 
 int ParseMove(char *ptrChar)
 {
@@ -118,7 +162,6 @@ int ParseMove(char *ptrChar)
 			return Move;
 		}
 	}
-
 	return NOMOVE;
 }
 
@@ -143,13 +186,15 @@ void ParsePosition(char* lineIn)
 	ptrChar = strstr(lineIn, "moves");
 	int move;
 
+
 	if (ptrChar != NULL) {
 		ptrChar += 6;
 		while (*ptrChar) {
 			move = ParseMove(ptrChar);
-			if (move == NOMOVE)
+			if (move == NOMOVE) {
 				break;
-			smove m;
+			}
+ 			smove m;
 			m.move = move;
 			move_make(&m);
 			//pos->ply=0;
@@ -159,6 +204,7 @@ void ParsePosition(char* lineIn)
 		}
 	}
 	printBoard();
+	printf("Ply: %d FiftyCounter: %d\n", board.ply, board.fiftyCounter);
 }
 
 void input_loop(S_SEARCHINFO *info)
@@ -184,15 +230,20 @@ void input_loop(S_SEARCHINFO *info)
 			printf("id name %s\n", NAME);
 			printf("id author Alex Argiropoulos, Greece\n");
 			printf("uciok\n");
-			info->GAME_MODE=GAMEMODE_UCI;
+			info->GAME_MODE = GAMEMODE_UCI;
 		} else if (!strncmp(line, "position", 8)) {
 			ParsePosition(line);
 		} else if (!strncmp(line, "go", 2)) {
 			ParseGo(line, info);
 			//think(2);
-
+		} else if (!strncmp(line, "perft", 5)) {
+			ParsePerft(line, info);
+		} else if (!strncmp(line, "divide", 6)) {
+			ParseDivide(line, info);
 		} else if (!strncmp(line, "ucinewgame", 10)) {
 			ParsePosition("position startpos\n");
+		} else if (!strncmp(line, "movelist", 8)) {
+			showMoveList();
 		} else if (!strncmp(line, "quit", 4)) {
 			exit = TRUE;
 			break;

@@ -378,6 +378,7 @@ void fen2board(char *str) {
 		++i;
 	if (str[i] == 'b')
 		board.sideToMove = BLACK;
+
 	if (str[i] == 'w')
 		board.sideToMove = WHITE;
 
@@ -428,4 +429,5 @@ void fen2board(char *str) {
 	}
 	board.posKey=generatePosKey();
 	/// TODO: fiftycounter and plycounter
+	board.fiftyCounter=board.ply=0;
 }

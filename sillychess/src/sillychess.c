@@ -73,7 +73,7 @@ void think(S_SEARCHINFO *info)
 		pv.argmove[depth] = NOMOVE;
 	}
 	for (depth = 1; depth <= finalDepth; ++depth) {
-		info->fh=info->fhf=info->nullCut=0;
+		info->lmr=info->fh=info->fhf=info->nullCut=0;
 
 		int starttime = get_ms();
 		int score = AlphaBeta(0, depth, -CHECKMATE_SCORE - 1000,
@@ -98,8 +98,8 @@ void think(S_SEARCHINFO *info)
 
 		if (info->GAME_MODE == GAMEMODE_CONSOLE) {
 			printf(
-					"info depth %d (%.2f%%, nullcuts: %d) nodes %lld time %d nps %lld score cp %d pv ",
-					depth, (info->fhf * 100.0f / (info->fh + info->fhf)), info->nullCut, info->nodes,
+					"info depth %d (%.2f%%, NULLMOVES: %d LMR: %d) nodes %lld time %d nps %lld score cp %d pv ",
+					depth, (info->fhf * 100.0f / (info->fh + info->fhf)), info->nullCut,info->lmr, info->nodes,
 					(endtime - info->starttime),
 					(1000 * info->nodes) / (endtime - starttime), score);
 		} else {
@@ -125,11 +125,11 @@ void think(S_SEARCHINFO *info)
 				&& (info->starttime + (endtime - starttime)) > info->stoptime)
 			break;
 	}
-	printf("bestmove ");
-	smove t;
-	t.move = pv.argmove[0];
-	printMove(t);
-	printf("\n");
+	printf("bestmove %s\n",moveToUCI(pv.argmove[0]));
+//	smove t;
+//	t.move = pv.argmove[0];
+//	printMove(t);
+//	printf("\n");
 }
 
 //depth 1 (-nan%, nullcuts: 0) nodes 21 time 1 nps 21000 score cp 50 b1c3

@@ -20,7 +20,7 @@
 #define VERNULL
 #endif
 
-#define NAME		"sillychess v0.1" VERNULL
+#define NAME		"sillychess v0.1 " __DATE__ " " __TIME__ VERNULL
 #define START_FEN	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 #ifdef NDEBUG
@@ -39,6 +39,7 @@ enum {
 	NOMOVE=0,
 	TRUE=1,
 	MAXDEPTH=100,
+	MAX_PLY_IN_A_GAME=1000,
 	FIRST_KILLER_SCORE=900000,
 	SECOND_KILLER_SCORE=800000,
 	CAPTURE_SCORE=1000000
@@ -103,7 +104,8 @@ struct aboard {
 	short int ply;
 	u64 posKey;
 
-	int searchKillers[2][MAXDEPTH];
+	u64 historyPosKey[MAX_PLY_IN_A_GAME];
+	int searchKillers[2][MAX_PLY_IN_A_GAME];
 };
 
 struct _smove {
@@ -142,6 +144,7 @@ typedef struct {
 	float fh;
 	float fhf;
 	int nullCut;
+	int lmr;
 
 	int GAME_MODE;
 	int POST_THINKING;
@@ -163,6 +166,10 @@ extern int psq_rooks[2][64];
 extern int raw_psq_rooks[64];
 extern int psq_queens[2][64];
 extern int raw_psq_queens[64];
+
+extern u64 pieceKeys[16][128];
+extern u64 castleKeys[16];
+extern u64 side;
 
 extern LINE pv;
 
@@ -197,6 +204,7 @@ int AlphaBeta(int ply,int depth, int alpha, int beta, LINE * pline, int doNull, 
 int Quiesce(int qply, int alpha, int beta,S_SEARCHINFO *info );
 int numOfLegalMoves(void);
 void CheckUp(S_SEARCHINFO *info);
+char *moveToUCI(int move);
 
 int InputWaiting(void);
 void ReadInput(S_SEARCHINFO *info);
