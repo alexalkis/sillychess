@@ -47,7 +47,12 @@ int InputWaiting(void)
   FD_ZERO (&readfds);
   FD_SET (fileno(stdin), &readfds);
   tv.tv_sec=0; tv.tv_usec=0;
+//  int a=get_ms();
   select(16, &readfds, 0, 0, &tv);
+//  int b=get_ms();
+//  b-=a;
+//  if (b)
+//	  printf("select needed %d milliseconds.\n",b);
 
   return (FD_ISSET(fileno(stdin), &readfds));
 #else
@@ -84,6 +89,7 @@ void ReadInput(S_SEARCHINFO *info) {
 		do {
 		  bytes=read(fileno(stdin),input,256);
 		} while (bytes<0);
+		//printf("****************************** \"%s\"",input);
 		endc = strchr(input,'\n');
 		if (endc) *endc=0;
 

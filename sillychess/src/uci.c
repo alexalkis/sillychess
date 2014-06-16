@@ -120,6 +120,7 @@ void ParseGo(char* line, S_SEARCHINFO *info)
 			info->starttime, info->stoptime, info->depth, info->timeset);
 	think(info);
 	printf("Time taken: %d\n", get_ms() - info->starttime);
+	fflush(stdout);
 }
 
 int ParseMove(char *ptrChar)
@@ -165,6 +166,22 @@ int ParseMove(char *ptrChar)
 	return NOMOVE;
 }
 
+void listMoves(void) {
+	smove m[256];
+	int mcount = generateMoves(m);
+	int i;
+
+	for(i=0; i<mcount; ++i) {
+		pickMove(m,i,mcount);
+		move_make(&m[i]);
+		if (isAttacked(board.sideToMove, kingLoc[1 - (board.sideToMove >> 3)])) {
+			move_unmake(&m[i]);
+			continue;
+		}
+		printf("%s %d\n",moveToUCI(m[i].move),m[i].score);
+		move_unmake(&m[i]);
+	}
+}
 void ParsePosition(char* lineIn)
 {
 
@@ -172,6 +189,7 @@ void ParsePosition(char* lineIn)
 	char *ptrChar = lineIn;
 
 	if (strncmp(lineIn, "startpos", 8) == 0) {
+		board.gameply=0;
 		fen2board(START_FEN);
 	} else {
 		ptrChar = strstr(lineIn, "fen");
@@ -241,9 +259,26 @@ void input_loop(S_SEARCHINFO *info)
 		} else if (!strncmp(line, "divide", 6)) {
 			ParseDivide(line, info);
 		} else if (!strncmp(line, "ucinewgame", 10)) {
+			TT_clear();
 			ParsePosition("position startpos\n");
 		} else if (!strncmp(line, "movelist", 8)) {
 			showMoveList();
+		} else if (!strncmp(line, "d", 1)) {
+			printBoard();
+		} else if (!strncmp(line, "ls", 2)) {
+			listMoves();
+		} else if (!strncmp(line, "eval", 4)) {
+			printf("Eval=%d\n",Evaluate());
+		} else if (!strncmp(line, "version", 4)) {
+			puts(FULLNAME);
+			printf(	"- Iterative deepening\n"
+					"- Null move reduction (TODO: Implement material trigger to switch it off)\n"
+					"- MVV/LVA\n"
+					"- Killer heuristics\n"
+					"- History heuristics\n"
+					"- Transposition tables\n"
+					"- Late Move Reductions\n"
+					);
 		} else if (!strncmp(line, "quit", 4)) {
 			exit = TRUE;
 			break;

@@ -79,6 +79,7 @@
 								<option id="gnu.c.compiler.option.preprocessor.def.symbols.1776907589" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="NDEBUG"/>
 								</option>
+								<option id="gnu.c.compiler.option.misc.other.419409885" superClass="gnu.c.compiler.option.misc.other" value="-c -fmessage-length=0 -fomit-frame-pointer" valueType="string"/>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.944104176" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.linker.exe.release.1133615215" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.release">

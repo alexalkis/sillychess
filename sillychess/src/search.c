@@ -139,7 +139,6 @@ int numOfLegalMoves(void){
 }
 
 void CheckUp(S_SEARCHINFO *info) {
-	// .. check if time up, or interrupt from GUI
 	//printf("Checked: %d\n",info->stoptime-get_ms());
 	if(info->timeset == TRUE && get_ms() > info->stoptime) {
 
@@ -170,262 +169,23 @@ void pickMove(smove *m,int j,int n)
 }
 
 
-// TODO: make it go with increments step of two
-int isRepetition(void) {
-	int i;
-	if (board.fiftyCounter>=100) return TRUE;
 
-	if (board.ply<6) return FALSE;
-	for(i=board.ply-board.fiftyCounter; i<board.ply-1; ++i)
-		if (board.posKey==board.historyPosKey[i])  {
-			//printf("************************************ Repetition seen\n");
+int isRepetition(void) {
+	ASSERT(board.ply-board.fiftyCounter>=0);
+
+	int i;
+	if (board.fiftyCounter>=100)
+		return TRUE;
+	//for(i=board.gameply-board.fiftyCounter; i<board.gameply-1; ++i)
+	for(i=board.gameply-1; i>=board.gameply-board.fiftyCounter; i-=2)
+		if (board.posKey==board.historyPosKey[i]) {
+			printf("Rep seen.\n");
 			return TRUE;
 		}
 	return FALSE;
 }
 
-
-
-
-int oldAlphaBeta(int ply,int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHINFO *info) {
-	int i;
-	int val=alpha;
-	LINE line;
-
-	if (depth == 0) {
-		pline->cmove = 0;
-		return Quiesce(0,alpha,beta,info);
-		//return Evaluate();
-	}
-	++info->nodes;
-
-	if (ply && isRepetition() ) {
-			pline->cmove=0;
-			return 0;
-		}
-	if ((info->nodes & 0xFFF) == 0) {
-		CheckUp(info);
-	}
-
-	//is the square of _our_ king attacked by the other side?  i.e. are _we_ in check?
-	int inCheck = isAttacked(board.sideToMove ^ BLACK,	kingLoc[board.sideToMove >> 3]);
-	if (inCheck) ++depth;
-#ifdef NULLMOVE
-	if (doNull && !inCheck && ply /*&& (pos->bigPce[pos->side] > 0)*/ && depth >= 4) {
-		smove nm;
-		move_makeNull(&nm);
-		int Score = -AlphaBeta(ply + 1, depth - 4, -beta, -beta + 1, &line, FALSE,info);
-		move_unmakeNull(&nm);
-		if (Score >= beta && abs(Score) < 28000) {
-			++info->nullCut;
-			return beta;
-		}
-	}
-#endif
-
-	smove m[256];
-	int mcount = generateMoves(m);  //    GenerateLegalMoves();
-	if( ply < pv.cmove) {
-			for(i = 0; i < mcount; ++i) {
-				if( m[i].move == pv.argmove[ply]) {
-					m[i].score = 2000000;
-					//if (ply==0) printf("Pv move found (ply %d)\n",ply);
-					break;
-				}
-			}
-		}
-
-
-	int legalMoves = 0;
-	for (i = 0; i < mcount; ++i) {
-		pickMove(m,i,mcount);
-		move_make(&m[i]);
-		if (!isAttacked(board.sideToMove, kingLoc[1 - (board.sideToMove >> 3)])) {
-			val = -AlphaBeta(ply+1,depth - 1, -beta, -alpha, &line,TRUE,info);
-			++legalMoves;
-		}
-		move_unmake(&m[i]);
-		if (info->stopped == TRUE) {
-			return 0;
-		}
-
-		if (val > alpha) {
-			if (val >= beta) {
-				if (legalMoves==1)
-					++info->fhf;
-				else
-					++info->fh;
-				if(!(ISCAPTURE(m[i].move))) {
-					if (board.searchKillers[0][board.ply] != m[i].move) {
-						board.searchKillers[1][board.ply] = board.searchKillers[0][board.ply];
-						board.searchKillers[0][board.ply] = m[i].move;
-					}
-				}
-				return beta;
-			}
-			alpha = val;
-			pline->argmove[0] = m[i].move;
-			memcpy(pline->argmove + 1, line.argmove, line.cmove * sizeof(int));
-			pline->cmove = line.cmove + 1;
-//			if (depth==DDEPTH) {
-//				printf("nodes %lld cp %d ",inodes,val);
-//				printLine(pline);
-//			}
-		}
-	}
-
-	if (!legalMoves) {
-		if (inCheck) {
-			return -CHECKMATE_SCORE+ply;
-		} else {
-			return STALEMATE_SCORE;
-		}
-	}
-	return alpha;
-}
-
-
-//http://www.glaurungchess.com/lmr.html
-const int FullDepthMoves = 4;
-const int ReductionLimit = 3;
-int AlphaBeta(int ply,int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHINFO *info) {
-	int i;
-	int val=alpha;
-	LINE line;
-
-	if (depth == 0) {
-		pline->cmove = 0;
-		return Quiesce(0,alpha,beta,info);
-		//return Evaluate();
-	}
-	++info->nodes;
-
-	if (ply && isRepetition() ) {
-		pline->cmove=0;
-		return 0;
-	}
-	if ((info->nodes & 0xFFF) == 0) {
-		CheckUp(info);
-	}
-
-	//is the square of _our_ king attacked by the other side?  i.e. are _we_ in check?
-	int inCheck = isAttacked(board.sideToMove ^ BLACK,	kingLoc[board.sideToMove >> 3]);
-	if (inCheck) ++depth;
-#ifdef NULLMOVE
-	if (doNull && !inCheck && ply /*&& (pos->bigPce[pos->side] > 0)*/ && depth >= 4) {
-		smove nm;
-		move_makeNull(&nm);
-		int Score = -AlphaBeta(ply + 1, depth - 4, -beta, -beta + 1, &line, FALSE,info);
-		move_unmakeNull(&nm);
-		if (Score >= beta && abs(Score) < 28000) {
-			++info->nullCut;
-			return beta;
-		}
-	}
-#endif
-
-	smove m[256];
-	int mcount = generateMoves(m);  //    GenerateLegalMoves();
-	if( ply < pv.cmove) {
-			for(i = 0; i < mcount; ++i) {
-				if( m[i].move == pv.argmove[ply]) {
-					m[i].score = 2000000;
-					//if (ply==0) printf("Pv move found (ply %d)\n",ply);
-					break;
-				}
-			}
-		}
-
-
-	int legalMoves = 0;
-	int moves_searched=0;
-	for (i = 0; i < mcount; ++i) {
-		pickMove(m,i,mcount);
-		move_make(&m[i]);
-		if (!isAttacked(board.sideToMove, kingLoc[1 - (board.sideToMove >> 3)])) {
-			if (!ply && (get_ms()-info->starttime)>3000)
-				#ifndef NDEBUG
-				printf("info depth %d currmove %s (score: %7d) currmovenumber %2d ",depth,moveToUCI(m[i].move),m[i].score,i+1);
-				#else
-				printf("info depth %d currmove %s currmovenumber %d\n",depth,moveToUCI(m[i].move),i+1);
-				#endif
-			if (!moves_searched) {
-				val = -AlphaBeta(ply+1,depth - 1, -beta, -alpha, &line,TRUE,info);
-				#ifndef NDEBUG
-				if (!ply && (get_ms()-info->starttime)>3000) printf(" F Val: %d",val);
-				#endif
-			}
-			else {
-				if(moves_searched >= FullDepthMoves && depth >= ReductionLimit &&
-				         !inCheck && //this is wrong, but the real thing is expensive :P
-				         !ISCAPTURE(m[i].move)&&
-				         !ISPROMOTION(m[i].move) &&
-				         m[i].move!=board.searchKillers[0][ply] &&
-				         m[i].move!=board.searchKillers[1][ply])
-				{
-					// Search this move with reduced depth:
-					val = -AlphaBeta(ply+1,depth-2,-(alpha+1), -alpha, &line,TRUE,info);
-					++info->lmr;
-					#ifndef NDEBUG
-					if (!ply && (get_ms()-info->starttime)>3000) printf(" R Val: %d %s",val,val>alpha?":-(":":-)");
-					#endif
-
-				} else
-					val = alpha+1;
-				if (val > alpha) {
-					val = -AlphaBeta(ply + 1, depth - 1, -(alpha + 1), -alpha,	&line, TRUE, info);
-					if (val > alpha && val < beta)
-						val = -AlphaBeta(ply + 1, depth - 1, -beta, -alpha,&line, TRUE, info);
-				}
-			}
-			++legalMoves;
-			#ifndef NDEBUG
-			if (!ply && (get_ms()-info->starttime)>3000) printf("\n");
-			#endif
-
-		}
-		move_unmake(&m[i]);
-		++moves_searched;
-		if (info->stopped == TRUE) {
-			return 0;
-		}
-
-		if (val > alpha) {
-			if (val >= beta) {
-				if (legalMoves==1)
-					++info->fhf;
-				else
-					++info->fh;
-				if(!(ISCAPTUREORPROMOTION(m[i].move))) {
-					if (board.searchKillers[0][board.ply] != m[i].move) {
-						board.searchKillers[1][board.ply] = board.searchKillers[0][board.ply];
-						board.searchKillers[0][board.ply] = m[i].move;
-					}
-				}
-				return beta;
-			}
-			alpha = val;
-			pline->argmove[0] = m[i].move;
-			memcpy(pline->argmove + 1, line.argmove, line.cmove * sizeof(int));
-			pline->cmove = line.cmove + 1;
-//			if (depth==DDEPTH) {
-//				printf("nodes %lld cp %d ",inodes,val);
-//				printLine(pline);
-//			}
-		}
-	}
-
-	if (!legalMoves) {
-		if (inCheck) {
-			return -CHECKMATE_SCORE+ply;
-		} else {
-			return STALEMATE_SCORE;
-		}
-	}
-	return alpha;
-}
-
-int Quiesce(int qply, int alpha, int beta, S_SEARCHINFO *info)
+int Quiesce(int alpha, int beta, S_SEARCHINFO *info)
 {
 	int i;
 	int stand_pat = Evaluate();
@@ -436,7 +196,6 @@ int Quiesce(int qply, int alpha, int beta, S_SEARCHINFO *info)
 		return 0;
 	if ((info->nodes & 0xFFF) == 0) {
 		CheckUp(info);
-
 	}
 	if (stand_pat >= beta)
 		return beta;
@@ -444,20 +203,252 @@ int Quiesce(int qply, int alpha, int beta, S_SEARCHINFO *info)
 		alpha = stand_pat;
 	smove m[256];
 	int mcount = generateCaptureMoves(m);
+	int legalMoves=0;
 	for (i = 0; i < mcount; ++i) {
 		pickMove(m, i, mcount);
 		move_make(&m[i]);
 		ASSERT(m[i].score>=CAPTURE_SCORE);
-		if (!isAttacked(board.sideToMove, kingLoc[1 - (board.sideToMove >> 3)]))
-			score = -Quiesce(qply + 1, -beta, -alpha, info);
+		if (!isAttacked(board.sideToMove, kingLoc[1 - (board.sideToMove >> 3)])) {
+			++legalMoves;
+			score = -Quiesce( -beta, -alpha, info);
+		}
 		move_unmake(&m[i]);
 		if (info->stopped == TRUE) {
 			return 0;
 		}
-		if (score >= beta)
+		if (score >= beta) {
+			if (legalMoves == 1)
+				++info->fhf;
+			else
+				++info->fh;
 			return beta;
+		}
 		if (score > alpha)
 			alpha = score;
 	}
 	return alpha;
 }
+
+
+const int FullDepthMoves = 4;
+const int ReductionLimit = 3;
+#define NOTPV
+int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHINFO *info) {
+	int i;
+	int val=alpha;
+	LINE line;
+	int PvMove = NOMOVE;
+	HASHE *tte;
+#ifdef NOTPV
+	int PvNode = (beta-alpha)>1;
+#endif
+
+	if (board.ply && isRepetition() ) {
+		pline->cmove=0;
+		++info->nodes;
+		return 0;
+	}
+
+	if ( (tte=TT_probe(&PvMove, &val, depth, alpha, beta))
+		&&	( PvNode ?  tte->flags == hashfEXACT
+			            : val >= beta ? (tte->flags==hashfBETA)
+			                              : (tte->flags==hashfALPHA))) {
+		++info->hthit;
+//		if (PvMove != NOMOVE) {
+//			pline->cmove = 1;
+//			pline->argmove[0] = PvMove;
+//		}
+		return val;
+	} else
+		++info->htmiss;
+
+	if (depth == 0) {
+		pline->cmove = 0;
+		return Quiesce(alpha,beta,info);
+	}
+
+	++info->nodes;
+
+
+	if ((info->nodes & 0xFFF) == 0) {
+		CheckUp(info);
+	}
+
+
+
+
+
+	//is the square of _our_ king attacked by the other side?  i.e. are _we_ in check?
+	int inCheck = isAttacked(board.sideToMove ^ BLACK,	kingLoc[board.sideToMove >> 3]);
+	/* if our king is attacked by the other side, let's increment the depth */
+	if (inCheck)
+		++depth;
+
+#ifdef NULLMOVE
+	if (doNull &&
+#ifdef NOTPV
+			!PvNode &&
+#endif
+			!inCheck &&
+			board.ply /*&& (pos->bigPce[pos->side] > 0)*/ &&
+			depth >= 4) {
+		smove nm;
+		move_makeNull(&nm);
+		int Score = -AlphaBeta(depth - 4, -beta, -beta + 1, &line, FALSE,info);
+		move_unmakeNull(&nm);
+		if (Score >= beta && abs(Score) <=(ISMATE)) {
+			++info->nullCut;
+			return beta;
+		}
+	}
+#endif
+
+	//static int found=0;
+	smove m[256];
+//	int mcount = generateMoves(m);
+//	if (PvMove != NOMOVE) {
+//		if (PvMove!=pv.argmove[board.ply]) {
+//		   printf("PvMove: %s",qprintMove(PvMove));printf(" (%d) [would have used %s from PV-line] %X/%X\n",board.ply,qprintMove(pv.argmove[board.ply]),PvMove,pv.argmove[board.ply]);
+//		}
+//	}
+//	} else {
+//		if (board.ply<pv.cmove)
+//			PvMove=pv.argmove[board.ply];
+//	}
+//		//ASSERT(PvMove==pv.argmove[board.ply]);
+//		for (i = 0; i < mcount; ++i) {
+//			if (m[i].move == PvMove) {
+//				m[i].score = 2000000;
+//				//printf("Found %d\n",++found);
+//				//printf("Pv move found \n");
+//				break;
+//			}
+//		}
+
+
+	int mcount = generateMoves(m);  //    GenerateLegalMoves();
+	if( board.ply < pv.cmove) {
+			for(i = 0; i < mcount; ++i) {
+				if( m[i].move == pv.argmove[board.ply]) {
+					m[i].score = PVMOVE_SCORE;
+					//printf("Found %d\n",++found);
+					//if (ply==0) printf("Pv move found (ply %d)\n",ply);
+					break;
+				}
+			}
+		}
+
+	int BestMove = NOMOVE;
+	int legalMoves = 0;
+	int OldAlpha = alpha;
+	int BestScore = -INFINITE;
+
+	for (i = 0; i < mcount; ++i) {
+		pickMove(m,i,mcount);
+		move_make(&m[i]);
+		if (isAttacked(board.sideToMove, kingLoc[1 - (board.sideToMove >> 3)])) {
+			move_unmake(&m[i]);
+			continue;
+		}
+
+		/* LMR here */
+		if (!legalMoves) {
+			val = -AlphaBeta(depth - 1, -beta, -alpha, &line,TRUE,info);
+		}
+		else {
+			if(legalMoves >= FullDepthMoves &&
+					depth >= ReductionLimit &&
+					!inCheck &&
+#ifdef NOTPV
+					!PvNode &&
+#endif
+					!ISCAPTUREORPROMOTION(m[i].move)&&
+					m[i].move!=board.searchKillers[0][board.ply] &&
+					m[i].move!=board.searchKillers[1][board.ply])
+			{
+				// Search this move with reduced depth:
+				val = -AlphaBeta(depth-2,-(alpha+1), -alpha, &line,TRUE,info);
+				++info->lmr;
+			} else
+				val = alpha+1;
+			if (val > alpha) {
+				val = -AlphaBeta(depth - 1, -(alpha + 1), -alpha,	&line, TRUE, info);
+				++info->lmr2;
+				if (val > alpha && val < beta) {
+					val = -AlphaBeta(depth - 1, -beta, -alpha,&line, TRUE, info);
+					++info->lmr3;
+				}
+			}
+		}
+		++legalMoves;
+
+
+
+		move_unmake(&m[i]);
+		if (!board.ply && (get_ms()-info->starttime)>3000)
+			printf("info depth %d currmove %s currmovenumber %d\n",depth,moveToUCI(m[i].move),i+1);
+
+		if (info->stopped == TRUE) {
+			return 0;
+		}
+
+		if (val > BestScore) {
+			BestScore = val;
+			BestMove = m[i].move;
+			if (val > alpha) {
+				if (val >= beta) {
+					if (legalMoves == 1)
+						++info->fhf;
+					else
+						++info->fh;
+					if (!(ISCAPTUREORPROMOTION(m[i].move))) {
+						if (board.searchKillers[0][board.ply] != m[i].move) {
+							board.searchKillers[1][board.ply] = board.searchKillers[0][board.ply];
+							board.searchKillers[0][board.ply] = m[i].move;
+						}
+					}
+					TT_RecordHash(depth, beta, hashfBETA, BestMove);
+					++info->htBeta;
+					return beta;
+				}
+				alpha = val;
+				pline->argmove[0] = m[i].move;
+				memcpy(pline->argmove + 1, line.argmove,line.cmove * sizeof(int));
+				pline->cmove = line.cmove + 1;
+				if (!(ISCAPTUREORPROMOTION(m[i].move))) {
+					board.searchHistory[PIECE(m[i].move)][TO(m[i].move)]+=depth;
+				}
+			}
+		}
+
+	}
+	if (!legalMoves) {
+		if (inCheck) {
+			return -CHECKMATE_SCORE+board.ply;
+		} else {
+			return STALEMATE_SCORE;
+		}
+	}
+	if (alpha != OldAlpha) {
+			TT_RecordHash(depth, BestScore, hashfEXACT, BestMove);
+			++info->htExact;
+		} else {
+			++info->htAlpha;
+			TT_RecordHash(depth, alpha, hashfALPHA, BestMove);
+		}
+	return alpha;
+}
+
+/*
+info depth 16 (81.04%, NULLMOVES: 296264 LMR: 3961159 (69815264/11) nodes 283107225 time 170685 nps 3072410 score cp 25 pv e2e4 e7e5 b1c3 b8c6 g1f3 g8f6 d2d4 e5d4 f3d4 f8b4 d4c6 d7c6 d1d8+ e8d8 c1d2 c8e6 f1d3 (e2e4 e7e5 g1f3 b8c6 d2d4 )
+Hash - Exact:1408 Alpha: 4531018 Beta: 33186460  -- Hits: 6570177 Misses: 38244828
+bestmove e2e4
+Time taken: 170685
+
+After History heuristics in
+info depth 16 (86.17%, NULLMOVES: 249517 LMR: 3020734 (52207576/40) nodes 185983015 time 124370 nps 2537077 score cp 20 pv e2e4 e7e5 g1f3 g8f6 b1c3 b8c6 d2d4 e5d4 f3d4 d7d5 d4c6 b7c6 e4e5 f6e4 c1e3 c8f5 (e2e4 e7e5 g1f3 g8f6 b1c3 )
+Hash - Exact:546 Alpha: 3258458 Beta: 23372963  -- Hits: 7720423 Misses: 114779355
+bestmove e2e4
+Time taken: 124370
+
+ */

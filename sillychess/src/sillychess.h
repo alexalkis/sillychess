@@ -15,19 +15,21 @@
 #define NULLMOVE
 
 #ifdef NULLMOVE
-#define VERNULL		" (Null)"
+#define VERNULL		""
 #else
-#define VERNULL
+#define VERNULL		"(Null move switched off in this build)"
 #endif
 
-#define NAME		"sillychess v0.1 " __DATE__ " " __TIME__ VERNULL
+#define FULLNAME		"sillychess v0.2 " __DATE__ " " __TIME__ VERNULL
+#define NAME	"sc v0.2"
 #define START_FEN	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
+//#define NDEBUG
 #ifdef NDEBUG
 #define ASSERT(x)
 #else
 #define ASSERT(x) \
-	if(!(x)) {fprintf(stderr,"%s assertion failed. File %s, at line %d.\n",#x,__FILE__,__LINE__);\
+	if(!(x)) {fprintf(stdout,"%s assertion failed. File %s, at line %d.\n",#x,__FILE__,__LINE__);\
 	exit(1);}
 #endif
 
@@ -38,11 +40,12 @@ enum {
 	FALSE=0,
 	NOMOVE=0,
 	TRUE=1,
-	MAXDEPTH=100,
+	MAXDEPTH=200,
 	MAX_PLY_IN_A_GAME=1000,
 	FIRST_KILLER_SCORE=900000,
 	SECOND_KILLER_SCORE=800000,
-	CAPTURE_SCORE=1000000
+	CAPTURE_SCORE=1000000,
+	PVMOVE_SCORE=2000000
 };
 enum {
 	WHITE = 0, BLACK = 0x8
@@ -95,6 +98,20 @@ enum esqare {
 typedef unsigned char u8;
 typedef unsigned long long u64;
 
+
+#define    valUNKNOWN   (~0)
+#define    hashfEXACT   (1)
+#define    hashfALPHA   (2)
+#define    hashfBETA    (3)
+typedef struct tagHASHE {
+    u64 key;
+
+    unsigned char depth;
+    unsigned char flags;    // bits 0,1,2,3 store the type (exact,alpha,beta etc)
+    short value;
+    unsigned int bestMove;
+}   HASHE;
+
 struct aboard {
 	u8 bs[128];
 	u8 sideToMove;
@@ -104,9 +121,15 @@ struct aboard {
 	short int ply;
 	u64 posKey;
 
+	short int gameply;
 	u64 historyPosKey[MAX_PLY_IN_A_GAME];
 	int searchKillers[2][MAX_PLY_IN_A_GAME];
+	int searchHistory[16][128];
+	HASHE *ht;
+	int htSize;
 };
+
+
 
 struct _smove {
     unsigned int move;
@@ -145,6 +168,14 @@ typedef struct {
 	float fhf;
 	int nullCut;
 	int lmr;
+	int lmr2;
+	int lmr3;
+
+	int hthit;
+	int htmiss;
+	int htExact;
+	int htAlpha;
+	int htBeta;
 
 	int GAME_MODE;
 	int POST_THINKING;
@@ -174,7 +205,9 @@ extern u64 side;
 extern LINE pv;
 
 enum {
+	INFINITE=32000,
 	CHECKMATE_SCORE=31000,
+	ISMATE=CHECKMATE_SCORE-MAXDEPTH,
 	STALEMATE_SCORE=0,
 	DDEPTH=8
 };
@@ -188,6 +221,7 @@ void initBoard(void);
 void printBoard(void);
 int findOtherKing(void);
 void fen2board(char *str);
+char *board2fen(void);
 char *sq2algebraic(u8 sq);
 int isAttacked(int byColor, int sq);
 u64 dummyPerft(u8 depth);
@@ -199,9 +233,10 @@ int move_unmake(smove *move);
 void move_makeNull(smove *move);
 void move_unmakeNull(smove *move);
 int get_ms(void);
+void think(S_SEARCHINFO *info);
 void thinkFen(char *fen,int depth);
-int AlphaBeta(int ply,int depth, int alpha, int beta, LINE * pline, int doNull, S_SEARCHINFO *info) ;
-int Quiesce(int qply, int alpha, int beta,S_SEARCHINFO *info );
+int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull, S_SEARCHINFO *info) ;
+int Quiesce(int alpha, int beta,S_SEARCHINFO *info );
 int numOfLegalMoves(void);
 void CheckUp(S_SEARCHINFO *info);
 char *moveToUCI(int move);
@@ -215,4 +250,10 @@ void rkissSeed(int seed);
 u64 generatePosKey(void);
 
 void initHash(void);
+
+void TT_set_size(int mbSize);
+void TT_clear(void);
+HASHE *TT_probe(int *move, int *score,int depth, int alpha, int beta);
+void TT_RecordHash(int depth, int value, int hashf, int best);
+
 #endif /* SILLYCHESS_H_ */

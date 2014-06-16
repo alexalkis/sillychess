@@ -145,7 +145,7 @@ void printMoveList(/* smove *moves, int len*/) {
 //	printf("\n");
 //}
 
-int alkis=0;
+
 
 int generateMoves(smove *moves) {
 
@@ -242,19 +242,17 @@ void pushMove(int from, int to, int piece, int capturedPiece) {
 	moveList[moveIndex].move = (capturedPiece << 20) | (piece << 16)
 			| (to << 8) | from;
 	if (capturedPiece) {
-		moveList[moveIndex].score = MvvLvaScores[capturedPiece][piece]
-				+ CAPTURE_SCORE;
+		moveList[moveIndex].score = MvvLvaScores[capturedPiece][piece] + CAPTURE_SCORE;
 		//printf("Capture score: %d\n",moveList[moveIndex].score);
 	} else {
 		if (board.searchKillers[0][board.ply] == moveList[moveIndex].move) {
 			moveList[moveIndex].score = FIRST_KILLER_SCORE;
 			//printf("First killer\n");
-		} else if (board.searchKillers[1][board.ply]
-				== moveList[moveIndex].move) {
+		} else if (board.searchKillers[1][board.ply]== moveList[moveIndex].move) {
 			moveList[moveIndex].score = SECOND_KILLER_SCORE;
 			//printf("Second killer\n");
 		} else {
-			moveList[moveIndex].score = 0;
+			moveList[moveIndex].score = board.searchHistory[piece][to];
 		}
 	}
 	++moveIndex;
@@ -492,6 +490,7 @@ u64 dummyPerft(u8 depth) {
 	return nodes;
 }
 
+//Perft(6)=119060324 Nps: 12288195 (9689 ms)
 u64 Perft(u8 depth) {
 	int i;
 	u64 nodes = 0;
@@ -500,7 +499,7 @@ u64 Perft(u8 depth) {
 		return 1;
 	smove m[256];
 	int mcount = generateMoves(m);
-	if (alkis) printMoveList();
+
 	for (i = 0; i < mcount; i++) {
 		move_make(&m[i]);
 		if (!isAttacked(board.sideToMove, kingLoc[1 - (board.sideToMove >> 3)]))
@@ -543,8 +542,16 @@ void move_makeNull(smove *move) {
 	move->fiftycounter = board.fiftyCounter;
 	move->enPassantsq = board.enPassant;
 	move->castleRights = board.castleRights;
+	board.historyPosKey[board.gameply++]=board.posKey;
 	board.sideToMove ^= BLACK;
-	board.historyPosKey[board.ply++]=board.posKey;
+	board.posKey ^= side;
+
+	/* if there was an enpassant square on, hash it out */
+	if (move->enPassantsq!=ENPASSANTNULL)
+		board.posKey ^= pieceKeys[EMPTY][move->enPassantsq];
+	board.enPassant=ENPASSANTNULL;
+
+	++board.ply;
 }
 
 void move_unmakeNull(smove *move) {
@@ -552,15 +559,20 @@ void move_unmakeNull(smove *move) {
 	board.enPassant = move->enPassantsq;
 	board.fiftyCounter = move->fiftycounter;
 	board.castleRights = move->castleRights;
-	board.posKey=board.historyPosKey[--board.ply];
+	board.posKey=board.historyPosKey[--board.gameply];
+	--board.ply;
 }
 
 int move_make(smove *move)
 {
+	ASSERT(board.bs[kingLoc[0]]==WHITE_KING);
+	ASSERT(board.bs[kingLoc[1]]==BLACK_KING);
+
 	move->fiftycounter = board.fiftyCounter;
 	move->enPassantsq = board.enPassant;
 	move->castleRights = board.castleRights;
-	board.historyPosKey[board.ply++] = board.posKey;
+	board.historyPosKey[board.gameply++] = board.posKey;
+	++board.ply;
 	board.sideToMove ^= BLACK;
 	++board.fiftyCounter;
 
@@ -572,6 +584,7 @@ int move_make(smove *move)
 
 	ASSERT(from < 128 && from >= 0);
 	ASSERT(to < 128 && to >= 0);
+	ASSERT((capture&7) != KING)
 
 	board.posKey ^= pieceKeys[piece][from] ^ pieceKeys[piece][to];
 	//if (board.sideToMove)
@@ -684,15 +697,25 @@ int move_make(smove *move)
 	if (capture) {
 		board.posKey ^= pieceKeys[capture][to];
 	}
+	ASSERT(board.bs[kingLoc[0]]==WHITE_KING);
+	if (board.bs[kingLoc[1]]!=BLACK_KING) {
+		printBoard();
+		printf("\nmove was (%d) ",move->move);printMove(*move);
+		printf("\n");
+	}
+	ASSERT(board.bs[kingLoc[1]]==BLACK_KING);
 	return 0;
 }
 
 int move_unmake(smove *move) {
+	ASSERT(board.bs[kingLoc[0]]==WHITE_KING);
+	ASSERT(board.bs[kingLoc[1]]==BLACK_KING);
 	board.sideToMove ^= BLACK;
 	board.enPassant = move->enPassantsq;
 	board.fiftyCounter = move->fiftycounter;
 	board.castleRights = move->castleRights;
-	board.posKey=board.historyPosKey[--board.ply];
+	board.posKey=board.historyPosKey[--board.gameply];
+	--board.ply;
 
 	int from = FROM(move->move);
 	int to = TO(move->move);
@@ -731,6 +754,8 @@ int move_unmake(smove *move) {
 			board.bs[D8] = EMPTY;
 		}
 	}
+	ASSERT(board.bs[kingLoc[0]]==WHITE_KING);
+	ASSERT(board.bs[kingLoc[1]]==BLACK_KING);
 	return 0;
 }
 
