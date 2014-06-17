@@ -254,9 +254,11 @@ void input_loop(S_SEARCHINFO *info)
 	int exit = FALSE;
 	char line[INPUTBUFFER];
 
-//	printf("id name %s\n", NAME);
+	printf("id name %s\n", NAME);
 //	printf("id author Alex Argiropoulos\n");
-
+#ifndef NDEBUG
+	printf("NOTE: NDEBUG not defined at compilation stage.  Perfomance will not be optimum!\n");
+#endif
 	while (!exit) {
 		memset(line, 0, sizeof(line));
 		fflush(stdout);
