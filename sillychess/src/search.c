@@ -171,15 +171,15 @@ void pickMove(smove *m,int j,int n)
 
 
 int isRepetition(void) {
-	ASSERT(board.ply-board.fiftyCounter>=0);
+	ASSERT(board.gameply-board.fiftyCounter>=0);
 
 	int i;
 	if (board.fiftyCounter>=100)
 		return TRUE;
 	//for(i=board.gameply-board.fiftyCounter; i<board.gameply-1; ++i)
-	for(i=board.gameply-1; i>=board.gameply-board.fiftyCounter; i-=2)
+	for(i=board.gameply-1-1; i>=board.gameply-board.fiftyCounter; i-=2)
 		if (board.posKey==board.historyPosKey[i]) {
-			printf("Rep seen.\n");
+			//printf("Rep seen.\n");
 			return TRUE;
 		}
 	return FALSE;

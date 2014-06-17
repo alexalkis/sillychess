@@ -30,6 +30,30 @@ void showMoveList(void)
 	printf("\n");
 }
 
+
+void ParseScore(char* line, S_SEARCHINFO *info)
+{
+	LINE scline;
+	int pdepth = atoi(&line[6]);
+	int i,j;
+	smove m[256];
+	int mcount = generateMoves(m);
+
+
+
+	for (i = 0; i < mcount; i++) {
+		move_make(&m[i]);
+		if (!isAttacked(board.sideToMove,kingLoc[1 - (board.sideToMove >> 3)])) {
+			printMove(m[i]);printf(" %d\n",-AlphaBeta(pdepth,-INFINITE,INFINITE,&scline,TRUE,info));
+//			printf("Board posKey: %llX\n",board.posKey);
+//			for(j=board.gameply-board.fiftyCounter-1; j<board.gameply; ++j)
+//				printf("%d %llX\n",j,board.historyPosKey[j]);
+		}
+		move_unmake(&m[i]);
+	}
+}
+
+
 void ParsePerft(char* line, S_SEARCHINFO *info)
 {
 	int pdepth = atoi(&line[6]);
@@ -256,6 +280,8 @@ void input_loop(S_SEARCHINFO *info)
 			//think(2);
 		} else if (!strncmp(line, "perft", 5)) {
 			ParsePerft(line, info);
+		} else if (!strncmp(line, "score", 5)) {
+			ParseScore(line, info);
 		} else if (!strncmp(line, "divide", 6)) {
 			ParseDivide(line, info);
 		} else if (!strncmp(line, "ucinewgame", 10)) {

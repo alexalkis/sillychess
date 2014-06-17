@@ -21,7 +21,7 @@
 #endif
 
 #define FULLNAME		"sillychess v0.2 " __DATE__ " " __TIME__ VERNULL
-#define NAME	"sc v0.2"
+#define NAME	"sc v0.3"
 #define START_FEN	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 //#define NDEBUG

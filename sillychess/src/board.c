@@ -174,7 +174,7 @@ void initBoard(void) {
 
 	}
 	//printpsq(psq_rooks,1);
-	//printpsq(psq_pawns,1);
+	//printpsq(psq_pawns,0);
 	//exit(1);
 
 }
