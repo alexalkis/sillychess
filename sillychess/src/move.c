@@ -698,11 +698,11 @@ int move_make(smove *move)
 		board.posKey ^= pieceKeys[capture][to];
 	}
 	ASSERT(board.bs[kingLoc[0]]==WHITE_KING);
-	if (board.bs[kingLoc[1]]!=BLACK_KING) {
-		printBoard();
-		printf("\nmove was (%d) ",move->move);printMove(*move);
-		printf("\n");
-	}
+//	if (board.bs[kingLoc[1]]!=BLACK_KING) {
+//		printBoard();
+//		printf("\nmove was (%d) ",move->move);printMove(*move);
+//		printf("\n");
+//	}
 	ASSERT(board.bs[kingLoc[1]]==BLACK_KING);
 	return 0;
 }
@@ -733,7 +733,7 @@ int move_unmake(smove *move) {
 
 	if (SPECIAL(move->move) == SP_ENPASSANT) {
 		if (board.sideToMove == BLACK)
-			board.bs[to + 16] = WHITE_PAWN; //3279374
+			board.bs[to + 16] = WHITE_PAWN;
 		else
 			board.bs[to - 16] = BLACK_PAWN;
 	} else if (capturedpiece)
