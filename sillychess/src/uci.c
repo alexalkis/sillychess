@@ -80,6 +80,20 @@ void ParseDivide(char* line, S_SEARCHINFO *info)
 			(1000 * nodes) / (endtime - starttime), (endtime - starttime));
 }
 
+void ParseTestEPD(char *line, S_SEARCHINFO *info) {
+	// testepd xxxx filename
+	char *ptr=strstr(line+8," ");
+	if (!ptr) {
+		printf("testepd xxxx filename (where xxxx is time per position in milliseconds.\n");
+		return;
+	}
+	*ptr++='\0';
+	ptr[strlen(ptr)-1]='\0'; //eat the \n
+	int time=atoi(line+7);
+	testEPD(ptr,time);
+	return;
+}
+
 void ParseGo(char* line, S_SEARCHINFO *info)
 {
 
@@ -254,8 +268,8 @@ void input_loop(S_SEARCHINFO *info)
 	int exit = FALSE;
 	char line[INPUTBUFFER];
 
-	printf("id name %s\n", NAME);
-//	printf("id author Alex Argiropoulos\n");
+	printf("%s, written by Alex Argiropoulos\n", NAME);
+
 #ifndef NDEBUG
 	printf("NOTE: NDEBUG not defined at compilation stage.  Perfomance will not be optimum!\n");
 #endif
@@ -295,6 +309,8 @@ void input_loop(S_SEARCHINFO *info)
 			printBoard();
 		} else if (!strncmp(line, "ls", 2)) {
 			listMoves();
+		} else if (!strncmp(line, "testepd", 7)) {
+			ParseTestEPD(line,info);
 		} else if (!strncmp(line, "eval", 4)) {
 			printf("Eval=%d\n",Evaluate());
 		} else if (!strncmp(line, "version", 4)) {

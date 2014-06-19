@@ -54,6 +54,27 @@ int moveExists(int move){
 	}
 	return FALSE;
 }
+
+int generateLegalMoves(smove *m)
+{
+	int i;
+	int legalmoves=0;
+
+	int mcount=generateMoves(m);
+	for ( i = 0; i < mcount; ++i) {
+		move_make(&m[i]);
+		if (isAttacked(board.sideToMove, kingLoc[1 - (board.sideToMove >> 3)])) {
+			move_unmake(&m[i]);
+			m[i]=m[mcount-1];
+			--mcount;
+			--i;
+			continue;
+		}
+		++legalmoves;
+		move_unmake(&m[i]);
+	}
+	return legalmoves;
+}
 void TT_printLine(int deep, LINE *tLine)
 {
 	int i;
@@ -98,7 +119,7 @@ void TT_printLine(int deep, LINE *tLine)
 		printf("No moves from hash table probing!!!\n");
 	}
 }
-void printLine(LINE *line)
+void printLine(LINE *line,S_SEARCHINFO *info)
 {
 	int i;
 	smove m[MAXDEPTH];
@@ -117,8 +138,9 @@ void printLine(LINE *line)
 
 			break;
 		}
+		smove lm[256];
+		int mlegalcount=generateLegalMoves(lm);
 		move_make(&m[i]);
-
 		if (isAttacked(board.sideToMove,kingLoc[((board.sideToMove ^ BLACK) >> 3)])) {
 #ifndef NDEBUG
 			printf(" PV-Line is messed up\n");
@@ -126,14 +148,18 @@ void printLine(LINE *line)
 			++i;
 			break;
 		}
-		printMove(m[i]);
-		if (isAttacked(board.sideToMove ^ BLACK,kingLoc[1 - ((board.sideToMove ^ BLACK) >> 3)])) {
-			if (numOfLegalMoves()) {
-				printf("+");
-			} else {
-				printf("#");
-				++i;
-				break;
+		if (info->GAME_MODE!=GAMEMODE_UCI)
+			printf("%s",move_to_san(m[i],mlegalcount,lm));
+		else {
+			printMove(m[i]);
+			if (isAttacked(board.sideToMove ^ BLACK,kingLoc[1 - ((board.sideToMove ^ BLACK) >> 3)])) {
+				if (numOfLegalMoves()) {
+					printf("+");
+				} else {
+					printf("#");
+					++i;
+					break;
+				}
 			}
 		}
 		printf(" ");
@@ -143,7 +169,7 @@ void printLine(LINE *line)
 	}
 }
 
-void think(S_SEARCHINFO *info)
+int think(S_SEARCHINFO *info)
 {
 	int depth, finalDepth;
 	LINE line;
@@ -186,9 +212,7 @@ void think(S_SEARCHINFO *info)
 		//printBoard();printf("%llX at depth: %d Eval: %d\n",generatePosKey(),depth,Evaluate());
 		//ASSERT(board.posKey==generatePosKey());
 		CheckUp(info);
-		if (info->stopped == TRUE) {
-			break;
-		}
+
 
 		if (endtime == starttime)
 			++endtime;
@@ -201,6 +225,10 @@ void think(S_SEARCHINFO *info)
 				mate = (-CHECKMATE_SCORE - score) / 2;
 		}
 
+		LINE tLine;
+		if (info->GAME_MODE==GAMEMODE_SILLENT)
+			TT_printLine(depth,&tLine);
+		else {
 		if (info->GAME_MODE == GAMEMODE_CONSOLE) {
 			printf(
 					"info depth %d (%.2f%%, NULLMOVES: %d LMR: %d (%d/%d) nodes %lld time %d nps %lld score cp %d pv ",
@@ -208,6 +236,7 @@ void think(S_SEARCHINFO *info)
 					(endtime - info->starttime),
 					(1000 * info->nodes) / (endtime - starttime), score);
 		} else {
+
 			if (!mate)
 				printf(
 						"info depth %d score cp %d nodes %lld nps %lld time %d pv ",
@@ -223,17 +252,15 @@ void think(S_SEARCHINFO *info)
 		}
 		ASSERT(board.posKey==generatePosKey());
 		if (line.cmove)
-			printLine(&line);
+			printLine(&line,info);
 		else
 			printf("Funny, I have no PV-line!\n");
-		LINE tLine;
+
 		ASSERT(board.posKey==generatePosKey());
 		TT_printLine(depth,&tLine);
-		printf("(");printLine(&tLine);printf(")\n");
+		printf("(");printLine(&tLine,info);printf(")\n");
 		ASSERT(board.posKey==generatePosKey());
-
-		//if (mate) depth = finalDepth;
-
+		}
 		if (tLine.cmove>line.cmove)
 			pv=tLine;
 		else
@@ -241,9 +268,16 @@ void think(S_SEARCHINFO *info)
 		/* if the time needed for search of depth D will exceed the remaining time, then D+1 will exceed also...probably */
 		if (info->timeset && (info->starttime + (endtime - starttime)) > info->stoptime)
 			break;
+		fflush(stdout);
+		if (info->stopped == TRUE) {
+			break;
+		}
 	}
-	printf("Hash - Exact:%d Alpha: %d Beta: %d  -- Hits: %d Misses: %d\n",info->htExact,info->htAlpha,info->htBeta,info->hthit,info->htmiss);
-	printf("bestmove %s\n",moveToUCI(pv.argmove[0]));
+	if (info->GAME_MODE!=GAMEMODE_SILLENT) {
+		printf("Hash - Exact:%d Alpha: %d Beta: %d  -- Hits: %d Misses: %d\n",info->htExact,info->htAlpha,info->htBeta,info->hthit,info->htmiss);
+		printf("bestmove %s\n",moveToUCI(pv.argmove[0]));
+	}
+	return pv.argmove[0];
 }
 
 //depth 1 (-nan%, nullcuts: 0) nodes 21 time 1 nps 21000 score cp 50 b1c3
@@ -290,6 +324,7 @@ int main(int argc, char **argv)
 	init();
 
 	//fen2board("8/7p/5k2/5p2/p1p2P2/Pr1pPK2/1P1R3P/8 b - -");
+	//testEPD("alkis",1000);
 	input_loop(info);
 	return 0;
 
@@ -376,6 +411,7 @@ void testPerft(int n)
 	char line[256];
 	char fen[120];
 
+
 	FILE *f = fopen("/home/alex/git/local/amichess/src/perfsuite.epd", "r");
 
 	int correct = 0;
@@ -419,5 +455,80 @@ void testPerft(int n)
 
 	}
 	printf("Correct: %d -- Error: %d\n", correct, error);
+	fclose(f);
+}
+
+
+//v0.3.1 211/300 at 400ms Total time: 120542ms Total nodes: 211206528
+//v0.3   209/300 at 400ms on WAC [195/300 on laptop]
+
+void testEPD(char *filename, int miliseconds) {
+	S_SEARCHINFO info[1],totalInfo[1];
+	char line[256];
+	char fen[120];
+	int linecount=0;
+	int positions=0;
+	int solved=0;
+
+	info->GAME_MODE=GAMEMODE_SILLENT;
+	FILE *f = fopen(filename, "r");
+	if (!f) {
+		printf("Can't open \"%s\" for reading. Aborting...\n",filename);
+		return;
+	}
+
+	totalInfo->fh=totalInfo->fhf=totalInfo->htAlpha=totalInfo->htBeta=totalInfo->htExact=totalInfo->hthit=totalInfo->htmiss
+			=totalInfo->lmr=totalInfo->lmr2=totalInfo->lmr3=totalInfo->nodes=totalInfo->nullCut=0;
+	totalInfo->starttime=get_ms();
+	while (fgets(line, 256, f)) {
+		char *start = NULL;
+		char *bm = strstr(line,"bm ");
+		char *id = strchr(line, ';');
+		line[strlen(line)-1]='\0';		// eat the \n at the end
+		if (!bm) {
+			printf("Can't find bm (best move start marker) at line %d\n",linecount);
+			break;
+		} else {
+			bm+=3;
+		}
+		*(bm-1)='\0';
+		strcpy(fen, line);
+		fen2board(fen);
+		//printBoard();
+		if (!id) {
+			id = "No id!!!\n";
+		} else {
+			*id++='\0';
+			while(*id==' ')
+				++id;
+		}
+		//printf("Best move(s): %s\n",bm);
+		//printf("%s\n",id);
+		info->starttime=get_ms();
+		info->stoptime=get_ms()+miliseconds;
+		info->stopped=FALSE;
+		info->timeset=TRUE;
+		TT_clear();
+		int bestMove=think(info);
+
+		smove m;
+		m.move=bestMove;
+		smove lm[256];
+		int mcount=generateLegalMoves(lm);
+		move_make(&m);
+		char *engine=move_to_san(m,mcount,lm);
+		char *res=strstr(bm,engine);
+		move_unmake(&m);
+		if (res) {
+			++solved;
+		}
+		++positions;
+		printf("%d/%d (%s) Engine: %s EPD: %s -- %s\n",solved,positions,id,engine,bm,res?"SOLVED":"NOT SOLVED");
+		totalInfo->nodes+=info->nodes;
+
+
+	}
+	totalInfo->stoptime=get_ms();
+	printf("Total time: %dms Total nodes: %lld\n",totalInfo->stoptime-totalInfo->starttime,totalInfo->nodes);
 	fclose(f);
 }

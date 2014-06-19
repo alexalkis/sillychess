@@ -20,8 +20,8 @@
 #define VERNULL		"(Null move switched off in this build)"
 #endif
 
-#define FULLNAME		"sillychess v0.3 " __DATE__ " " __TIME__ VERNULL
-#define NAME	"sc v0.3"
+#define FULLNAME		"sillychess v0.3.1 " __DATE__ " " __TIME__ VERNULL
+#define NAME	"sc v0.3.1"
 #define START_FEN	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 //#define NDEBUG
@@ -148,7 +148,8 @@ typedef struct LINE {
 
 enum {
 	GAMEMODE_CONSOLE,
-	GAMEMODE_UCI
+	GAMEMODE_UCI,
+	GAMEMODE_SILLENT
 };
 
 typedef struct {
@@ -213,8 +214,9 @@ enum {
 };
 
 void InitMvvLva(void) ;
+char *move_to_san(smove m,int mcount,smove *moves);
 void printMoveList(void);
-void printLine(LINE *line);
+void printLine(LINE *line,S_SEARCHINFO *info);
 int generateMoves(smove *moves);
 int generateCaptureMoves(smove *moves);
 void initBoard(void);
@@ -233,7 +235,7 @@ int move_unmake(smove *move);
 void move_makeNull(smove *move);
 void move_unmakeNull(smove *move);
 int get_ms(void);
-void think(S_SEARCHINFO *info);
+int think(S_SEARCHINFO *info);
 void thinkFen(char *fen,int depth);
 int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull, S_SEARCHINFO *info) ;
 int Quiesce(int alpha, int beta,S_SEARCHINFO *info );
@@ -256,4 +258,6 @@ void TT_clear(void);
 HASHE *TT_probe(int *move, int *score,int depth, int alpha, int beta);
 void TT_RecordHash(int depth, int value, int hashf, int best);
 
+
+void testEPD(char *filename, int miliseconds);
 #endif /* SILLYCHESS_H_ */

@@ -49,6 +49,74 @@ void InitMvvLva(void) {
 	}
 }
 
+char *move_to_san(smove m,int mcount,smove *moves)
+{
+	static char *filestr = "abcdefgh";
+	static char *rankstr = "12345678";
+	static char *piecestr= " PKN BRQ";
+	static char buffer[12];
+	int i;
+	int from = m.move & 0xff;
+	int to = (m.move >> 8) & 0xff;
+	int prom = (m.move >> 24) & 0x7;
+	int piece=COLORLESSPIECE(m.move);
+
+	if (SPECIAL(m.move)==SP_CASTLE) {
+		if (to>from)
+			strcpy(buffer,"O-O");
+		else
+			strcpy(buffer,"O-O-O");
+		return buffer;
+	}
+	memset(buffer,0,sizeof(buffer));
+	int rowsmatch,colsmatch;
+	rowsmatch=colsmatch=0;
+	int cursor=0;
+	//printf("Piece=%d\n",piece);
+
+	if (piece!=PAWN) {
+		buffer[0]=piecestr[piece];
+		cursor=1;
+		for(i=0; i<mcount; ++i) {
+			if (moves[i].move==m.move) continue;
+			if (TO(moves[i].move)==to && PIECE(moves[i].move)==PIECE(m.move)) {
+				int from2=FROM(moves[i].move);
+				if (ROW(from)==ROW(from2))
+					rowsmatch=1;
+				if (COL(from)==COL(from2))
+					colsmatch=1;
+			}
+		}
+		if (rowsmatch)
+			buffer[cursor++]=filestr[COL(from)];
+		if (colsmatch)
+			buffer[cursor++]=rankstr[ROW(from)];
+	} else if (ISCAPTURE(m.move)) {
+			cursor=0;
+			buffer[cursor++]=filestr[COL(from)];
+	}
+
+	if (ISCAPTURE(m.move)) {
+		buffer[cursor++]='x';
+	}
+	buffer[cursor++]=filestr[COL(to)];
+	buffer[cursor++]=rankstr[ROW(to)];
+	if (prom) {
+		buffer[cursor++]='=';
+		buffer[cursor++]=piecestr[prom];
+	}
+	/* the following ASSUMES we have move_make the move before calling here */
+	if (isAttacked(board.sideToMove ^ BLACK,kingLoc[1 - ((board.sideToMove ^ BLACK) >> 3)])) {
+		if (numOfLegalMoves()) {
+			buffer[cursor++]='+';
+		} else {
+			buffer[cursor++]='#';
+		}
+	}
+	buffer[cursor]='\0';
+	return buffer;
+}
+
 void printMove(smove m) {
 	static char *filestr = "abcdefgh";
 	static char *rankstr = "12345678";

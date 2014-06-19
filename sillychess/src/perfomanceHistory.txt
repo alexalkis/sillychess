@@ -1,0 +1,12 @@
+
+v0.3.1
+info depth 12 (88.60%, NULLMOVES: 9162 LMR: 119975 (2201470/3) nodes 9282900 time 5754 nps 3159598 score cp 20 pv e4 e5 Nf3 Nf6 Nc3 Nc6 d4 exd4 Nxd4 d5 Nxc6 bxc6 (e4 e5 Nf3 Nf6 Nc3 Nc6 d4 )
+Hash - Exact:425 Alpha: 152092 Beta: 1105211  -- Hits: 375529 Misses: 5538572
+bestmove e2e4
+Time taken: 5754
+
+v0.3
+info depth 12 (87.71%, NULLMOVES: 10830 LMR: 139190 (2504325/0) nodes 9531493 time 6384 nps 2909491 score cp 15 pv e2e4 e7e5 g1f3 g8f6 b1c3 b8c6 d2d4 f8b4 d4d5 b4c3+ (e2e4 e7e5 g1f3 )
+Hash - Exact:570 Alpha: 177783 Beta: 1211733  -- Hits: 441766 Misses: 6086356
+bestmove e2e4
+Time taken: 6384
