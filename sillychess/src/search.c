@@ -283,6 +283,8 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 
 	if (depth == 0) {
 		pline->cmove = 0;
+		if (board.ply>info->maxSearchPly)
+			info->maxSearchPly=board.ply;
 		return Quiesce(alpha,beta,info);
 	}
 

@@ -196,7 +196,7 @@ int think(S_SEARCHINFO *info)
 			finalDepth = MAXDEPTH;
 	for (depth = 1; depth <= finalDepth; ++depth) {
 		ASSERT(board.ply==0);
-		info->lmr2=info->lmr3=info->lmr=info->fh=info->fhf=info->nullCut=0;
+		info->maxSearchPly=info->lmr2=info->lmr3=info->lmr=info->fh=info->fhf=info->nullCut=0;
 		int i;
 		for (i = 0; i < MAXDEPTH; ++i) {
 			board.searchKillers[0][i] = board.searchKillers[1][i] = NOMOVE;
@@ -226,52 +226,53 @@ int think(S_SEARCHINFO *info)
 		}
 
 		LINE tLine;
+		TT_printLine(depth,&tLine);
 		if (info->GAME_MODE==GAMEMODE_SILLENT)
-			TT_printLine(depth,&tLine);
+			;
 		else {
 		if (info->GAME_MODE == GAMEMODE_CONSOLE) {
 			printf(
-					"info depth %d (%.2f%%, NULLMOVES: %d LMR: %d (%d/%d) nodes %lld time %d nps %lld score cp %d pv ",
-					depth, (info->fhf * 100.0f / (info->fh + info->fhf)), info->nullCut,info->lmr,info->lmr2,info->lmr3, info->nodes,
+					"info depth %d seldepth %d (%.2f%%, NULLMOVES: %d LMR: %d (%d/%d) nodes %lld time %d nps %lld score cp %d pv ",
+					depth, info->maxSearchPly,(info->fhf * 100.0f / (info->fh + info->fhf)), info->nullCut,info->lmr,info->lmr2,info->lmr3, info->nodes,
 					(endtime - info->starttime),
 					(1000 * info->nodes) / (endtime - starttime), score);
+			ASSERT(board.posKey==generatePosKey());
+			if (line.cmove)
+				printLine(&line,info);
+			else
+				printf("Funny, I have no PV-line!\n");
+			printf("(");printLine(&tLine,info);printf(")\n");
+			ASSERT(board.posKey==generatePosKey());
+
 		} else {
 
 			if (!mate)
 				printf(
-						"info depth %d score cp %d nodes %lld nps %lld time %d pv ",
-						depth, score, info->nodes,
+						"info depth %d seldepth %d score cp %d nodes %lld nps %lld time %d pv ",
+						depth,info->maxSearchPly, score, info->nodes,
 						(1000 * info->nodes) / (endtime - starttime),
 						(endtime - info->starttime));
 			else
 				printf(
-						"info depth %d score mate %d nodes %lld nps %lld time %d pv ",
-						depth, mate, info->nodes,
+						"info depth %d seldepth %d score mate %d nodes %lld nps %lld time %d pv ",
+						depth,info->maxSearchPly, mate, info->nodes,
 						(1000 * info->nodes) / (endtime - starttime),
 						(endtime - info->starttime));
+			printLine(&pv,info);printf("\n");
 		}
-		ASSERT(board.posKey==generatePosKey());
-		if (line.cmove)
-			printLine(&line,info);
-		else
-			printf("Funny, I have no PV-line!\n");
+		}
+		fflush(stdout);
 
-		ASSERT(board.posKey==generatePosKey());
-		TT_printLine(depth,&tLine);
-		printf("(");printLine(&tLine,info);printf(")\n");
-		ASSERT(board.posKey==generatePosKey());
-		}
 		if (tLine.cmove>line.cmove)
 			pv=tLine;
 		else
 			pv = line;
-		/* if the time needed for search of depth D will exceed the remaining time, then D+1 will exceed also...probably */
-		if (info->timeset && (info->starttime + (endtime - starttime)) > info->stoptime)
-			break;
-		fflush(stdout);
 		if (info->stopped == TRUE) {
 			break;
 		}
+		/* if the time needed for search of depth D will exceed the remaining time, then D+1 will exceed also...probably */
+		if (info->timeset && (info->starttime + (endtime - starttime)) > info->stoptime)
+			break;
 	}
 	if (info->GAME_MODE!=GAMEMODE_SILLENT) {
 		printf("Hash - Exact:%d Alpha: %d Beta: %d  -- Hits: %d Misses: %d\n",info->htExact,info->htAlpha,info->htBeta,info->hthit,info->htmiss);
@@ -457,9 +458,9 @@ void testPerft(int n)
 	printf("Correct: %d -- Error: %d\n", correct, error);
 	fclose(f);
 }
-
-
-//v0.3.1 211/300 at 400ms Total time: 120542ms Total nodes: 211206528
+//v0.3.1 271/879 at 1000ms on ECM Total time: 880651ms Total nodes: 1535082412
+//V0.3.1 214/300 at 400ms after a minor modification in search (seldepth logging + small bug in signess of time variables fixed)
+//v0.3.1 215/300 at 400ms  Total time: 120581ms Total nodes: 206948188 [198/300 on laptop, Total nodes: 92094101]
 //v0.3   209/300 at 400ms on WAC [195/300 on laptop]
 
 void testEPD(char *filename, int miliseconds) {
@@ -473,7 +474,7 @@ void testEPD(char *filename, int miliseconds) {
 	info->GAME_MODE=GAMEMODE_SILLENT;
 	FILE *f = fopen(filename, "r");
 	if (!f) {
-		printf("Can't open \"%s\" for reading. Aborting...\n",filename);
+		printf("Can't open \"%s\" for reading.\n",filename);
 		return;
 	}
 

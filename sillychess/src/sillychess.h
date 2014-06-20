@@ -153,9 +153,9 @@ enum {
 };
 
 typedef struct {
-
-	int starttime;
-	int stoptime;
+	int maxSearchPly;
+	unsigned int starttime;
+	unsigned int stoptime;
 	int depth;
 	int timeset;
 	int movestogo;

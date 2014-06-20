@@ -766,11 +766,6 @@ int move_make(smove *move)
 		board.posKey ^= pieceKeys[capture][to];
 	}
 	ASSERT(board.bs[kingLoc[0]]==WHITE_KING);
-//	if (board.bs[kingLoc[1]]!=BLACK_KING) {
-//		printBoard();
-//		printf("\nmove was (%d) ",move->move);printMove(*move);
-//		printf("\n");
-//	}
 	ASSERT(board.bs[kingLoc[1]]==BLACK_KING);
 	return 0;
 }
