@@ -315,7 +315,8 @@ void input_loop(S_SEARCHINFO *info)
 			printf("Eval=%d\n",Evaluate());
 		} else if (!strncmp(line, "version", 4)) {
 			puts(FULLNAME);
-			printf(	"- Iterative deepening\n"
+			printf(	"- 0x88 board"
+					"- Iterative deepening\n"
 					"- Null move reduction (TODO: Implement material trigger to switch it off)\n"
 					"- MVV/LVA\n"
 					"- Killer heuristics\n"

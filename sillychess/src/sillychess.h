@@ -20,8 +20,9 @@
 #define VERNULL		"(Null move switched off in this build)"
 #endif
 
-#define FULLNAME		"sillychess v0.3.1 " __DATE__ " " __TIME__ VERNULL
 #define NAME	"sc v0.3.1"
+#define FULLNAME		NAME " " __DATE__ " " __TIME__ VERNULL
+
 #define START_FEN	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 //#define NDEBUG
