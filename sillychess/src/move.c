@@ -216,10 +216,8 @@ void printMoveList(/* smove *moves, int len*/) {
 
 
 int generateMoves(smove *moves) {
-
 	int i;
 
-	//ksq = -1;
 	moveList = moves;
 	moveIndex = 0;
 	for (i = 0; i < 128; ++i) {
@@ -234,7 +232,6 @@ int generateMoves(smove *moves) {
 				break;
 			case KING:
 				generateKingMoves(color, i);
-				//ksq = i; /* grab the king square to use for possible castling later */
 				break;
 			case KNIGHT:
 				generateKnightMoves(color, i);
@@ -277,6 +274,15 @@ int generateMoves(smove *moves) {
 
 				pushSpecialMove(E1, C1, WHITE_KING, EMPTY, EMPTY, SP_CASTLE);
 		}
+
+		if (board.enPassant!=ENPASSANTNULL && ROW(board.enPassant)==5) {
+			if (board.bs[board.enPassant-16-1]==WHITE_PAWN) {
+				pushSpecialMove(board.enPassant-16-1,board.enPassant,WHITE_PAWN,BLACK_PAWN,EMPTY,SP_ENPASSANT);
+			}
+			if (board.bs[board.enPassant-16+1]==WHITE_PAWN) {
+				pushSpecialMove(board.enPassant-16+1,board.enPassant,WHITE_PAWN,BLACK_PAWN,EMPTY,SP_ENPASSANT);
+			}
+		}
 	} else {
 		if (board.castleRights & CASTLE_BK) {
 			if ((board.bs[F8] == EMPTY) && (board.bs[G8] == EMPTY)
@@ -295,6 +301,17 @@ int generateMoves(smove *moves) {
 
 				pushSpecialMove(E8, C8, BLACK_KING, EMPTY, EMPTY, SP_CASTLE);
 		}
+
+
+		if (board.enPassant!=ENPASSANTNULL && ROW(board.enPassant)==2) {
+			if (board.bs[board.enPassant+16-1]==BLACK_PAWN) {
+				pushSpecialMove(board.enPassant+16-1,board.enPassant,BLACK_PAWN,WHITE_PAWN,EMPTY,SP_ENPASSANT);
+			}
+			if (board.bs[board.enPassant+16+1]==BLACK_PAWN) {
+				pushSpecialMove(board.enPassant+16+1,board.enPassant,BLACK_PAWN,WHITE_PAWN,EMPTY,SP_ENPASSANT);
+			}
+		}
+
 	}
 
 	return moveIndex;
@@ -324,10 +341,12 @@ void pushMove(int from, int to, int piece, int capturedPiece) {
 		}
 	}
 	++moveIndex;
+#ifndef NDEBUG
 	to = TO(moveList[moveIndex - 1].move);
 	from = FROM(moveList[moveIndex - 1].move);
 	ASSERT(to < 128 && to >= 0);
 	ASSERT(from < 128 && from >= 0);
+#endif
 }
 
 void pushSpecialMove(int from, int to, int piece, int capturedPiece,
@@ -345,11 +364,14 @@ void pushSpecialMove(int from, int to, int piece, int capturedPiece,
 				| (piece << 16) | (to << 8) | from;
 		if (special==SP_ENPASSANT)
 			moveList[moveIndex].score=105+CAPTURE_SCORE;
+		//printf("score=%d enpassant sq: %s\n",moveList[moveIndex].score,sq2algebraic(board.enPassant));
 		++moveIndex;
+#ifndef NDEBUG
 	to = TO(moveList[moveIndex - 1].move);
 	from = FROM(moveList[moveIndex - 1].move);
 	ASSERT(to < 128 && to >= 0);
 	ASSERT(from < 128 && from >= 0);
+#endif
 }
 
 void pushPromotion(int from, int to, int color, int capturedPiece) {
@@ -359,31 +381,31 @@ void pushPromotion(int from, int to, int color, int capturedPiece) {
 	moveList[moveIndex].move = ((color | BISHOP) << 24)
 			| (capturedPiece << 20) | ((color | PAWN) << 16) | (to << 8) | from;
 	moveList[moveIndex++].score = MvvLvaScores[capturedPiece][PAWN]+MvvLvaScores[BISHOP][PAWN]+CAPTURE_SCORE;
-	to = TO(moveList[moveIndex - 1].move);
-	from = FROM(moveList[moveIndex - 1].move);
-	ASSERT(to < 128 && to >= 0);
-	ASSERT(from < 128 && from >= 0);
+//	to = TO(moveList[moveIndex - 1].move);
+//	from = FROM(moveList[moveIndex - 1].move);
+//	ASSERT(to < 128 && to >= 0);
+//	ASSERT(from < 128 && from >= 0);
 	moveList[moveIndex].move = ((color | KNIGHT) << 24)
 			| (capturedPiece << 20) | ((color | PAWN) << 16) | (to << 8) | from;
 	moveList[moveIndex++].score = MvvLvaScores[capturedPiece][PAWN]+MvvLvaScores[KNIGHT][PAWN]+CAPTURE_SCORE;
-	to = TO(moveList[moveIndex - 1].move);
-	from = FROM(moveList[moveIndex - 1].move);
-	ASSERT(to < 128 && to >= 0);
-	ASSERT(from < 128 && from >= 0);
+//	to = TO(moveList[moveIndex - 1].move);
+//	from = FROM(moveList[moveIndex - 1].move);
+//	ASSERT(to < 128 && to >= 0);
+//	ASSERT(from < 128 && from >= 0);
 	moveList[moveIndex].move = ((color | ROOK) << 24) | (capturedPiece << 20)
 			| ((color | PAWN) << 16) | (to << 8) | from;
 	moveList[moveIndex++].score = MvvLvaScores[capturedPiece][PAWN]+MvvLvaScores[ROOK][PAWN]+CAPTURE_SCORE;
-	to = TO(moveList[moveIndex - 1].move);
-	from = FROM(moveList[moveIndex - 1].move);
-	ASSERT(to < 128 && to >= 0);
-	ASSERT(from < 128 && from >= 0);
+//	to = TO(moveList[moveIndex - 1].move);
+//	from = FROM(moveList[moveIndex - 1].move);
+//	ASSERT(to < 128 && to >= 0);
+//	ASSERT(from < 128 && from >= 0);
 	moveList[moveIndex].move = ((color | QUEEN) << 24) | (capturedPiece << 20)
 			| ((color | PAWN) << 16) | (to << 8) | from;
 	moveList[moveIndex++].score = MvvLvaScores[capturedPiece][PAWN]+MvvLvaScores[QUEEN][PAWN]+CAPTURE_SCORE;
-	to = TO(moveList[moveIndex - 1].move);
-	from = FROM(moveList[moveIndex - 1].move);
-	ASSERT(to < 128 && to >= 0);
-	ASSERT(from < 128 && from >= 0);
+//	to = TO(moveList[moveIndex - 1].move);
+//	from = FROM(moveList[moveIndex - 1].move);
+//	ASSERT(to < 128 && to >= 0);
+//	ASSERT(from < 128 && from >= 0);
 }
 
 //void pushenPassantMove(int from, int to, int piece, int capturedPiece) {
@@ -511,18 +533,6 @@ void generatePawnMoves(int color, int pos) {
 			pushPromotion(pos, to + 1, color, board.bs[to + 1]);
 		else
 			pushMove(pos, to + 1, color | PAWN, board.bs[to + 1]);
-	}
-
-	/* TODO: Move en passant check out of loop and have it checked _once_ after loop (as we do with castling)*/
-	if (board.enPassant == (to - 1)) {
-		ASSERT(board.bs[to - 1] == EMPTY);
-		pushSpecialMove(pos, to - 1, color | PAWN, (color ^ BLACK) | PAWN,
-				EMPTY, SP_ENPASSANT);
-	}
-	if (board.enPassant == (to + 1)) {
-		ASSERT(board.bs[to + 1] == EMPTY);
-		pushSpecialMove(pos, to + 1, color | PAWN, (color ^ BLACK) | PAWN,
-				EMPTY, SP_ENPASSANT);
 	}
 
 	if ((color == BLACK && rank == 6) || (color == WHITE && rank == 1)) {

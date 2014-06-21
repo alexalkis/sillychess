@@ -213,6 +213,7 @@ void listMoves(void) {
 		pickMove(m,i,mcount);
 		move_make(&m[i]);
 		if (isAttacked(board.sideToMove, kingLoc[1 - (board.sideToMove >> 3)])) {
+			//printf("ILLEGAL %s %d\n",moveToUCI(m[i].move),m[i].score);
 			move_unmake(&m[i]);
 			continue;
 		}
