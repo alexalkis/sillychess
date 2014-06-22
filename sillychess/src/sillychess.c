@@ -196,7 +196,7 @@ int think(S_SEARCHINFO *info)
 			finalDepth = MAXDEPTH;
 	for (depth = 1; depth <= finalDepth; ++depth) {
 		ASSERT(board.ply==0);
-		info->maxSearchPly=info->lmr2=info->lmr3=info->lmr=info->fh=info->fhf=info->nullCut=0;
+		info->displayCurrmove=info->maxSearchPly=info->lmr2=info->lmr3=info->lmr=info->fh=info->fhf=info->nullCut=0;
 		int i;
 		for (i = 0; i < MAXDEPTH; ++i) {
 			board.searchKillers[0][i] = board.searchKillers[1][i] = NOMOVE;
@@ -230,36 +230,37 @@ int think(S_SEARCHINFO *info)
 		if (info->GAME_MODE==GAMEMODE_SILLENT)
 			;
 		else {
-		if (info->GAME_MODE == GAMEMODE_CONSOLE) {
-			printf(
-					"info depth %d seldepth %d (%.2f%%, NULLMOVES: %d LMR: %d (%d/%d) nodes %lld time %d nps %lld score cp %d pv ",
-					depth, info->maxSearchPly,(info->fhf * 100.0f / (info->fh + info->fhf)), info->nullCut,info->lmr,info->lmr2,info->lmr3, info->nodes,
-					(endtime - info->starttime),
-					(1000 * info->nodes) / (endtime - starttime), score);
-			ASSERT(board.posKey==generatePosKey());
-			if (line.cmove)
-				printLine(&line,info);
-			else
-				printf("Funny, I have no PV-line!\n");
-			printf("(");printLine(&tLine,info);printf(")\n");
-			ASSERT(board.posKey==generatePosKey());
-
-		} else {
-
-			if (!mate)
+			if (info->GAME_MODE == GAMEMODE_CONSOLE) {
 				printf(
-						"info depth %d seldepth %d score cp %d nodes %lld nps %lld time %d pv ",
-						depth,info->maxSearchPly, score, info->nodes,
-						(1000 * info->nodes) / (endtime - starttime),
-						(endtime - info->starttime));
-			else
-				printf(
-						"info depth %d seldepth %d score mate %d nodes %lld nps %lld time %d pv ",
-						depth,info->maxSearchPly, mate, info->nodes,
-						(1000 * info->nodes) / (endtime - starttime),
-						(endtime - info->starttime));
-			printLine(&pv,info);printf("\n");
-		}
+						"info depth %d seldepth %d (%.2f%%, NULLMOVES: %d LMR: %d (%d/%d) nodes %lld time %d nps %lld score cp %d pv ",
+						depth, info->maxSearchPly,(info->fhf * 100.0f / (info->fh + info->fhf)), info->nullCut,info->lmr,info->lmr2,info->lmr3, info->nodes,
+						(endtime - info->starttime),
+						(1000 * info->nodes) / (endtime - starttime), score);
+				ASSERT(board.posKey==generatePosKey());
+				if (line.cmove)
+					printLine(&line,info);
+				else
+					printf("Funny, I have no PV-line!\n");
+				printf("(");printLine(&tLine,info);printf(")\n");
+				ASSERT(board.posKey==generatePosKey());
+
+			} else {
+				if (info->stopped==FALSE) { //dont print when we've stopped (score is always 0 if we print)
+					if (!mate)
+						printf(
+								"info depth %d seldepth %d score cp %d nodes %lld nps %lld time %d pv ",
+								depth,info->maxSearchPly, score, info->nodes,
+								(1000 * info->nodes) / (endtime - starttime),
+								(endtime - info->starttime));
+					else
+						printf(
+								"info depth %d seldepth %d score mate %d nodes %lld nps %lld time %d pv ",
+								depth,info->maxSearchPly, mate, info->nodes,
+								(1000 * info->nodes) / (endtime - starttime),
+								(endtime - info->starttime));
+					printLine(&pv,info);printf("\n");
+				}
+			}
 		}
 		fflush(stdout);
 
@@ -460,7 +461,7 @@ void testPerft(int n)
 	fclose(f);
 }
 //v0.3.1 271/879 at 1000ms on ECM Total time: 880651ms Total nodes: 1535082412
-//V0.3.1 214/300 at 400ms after a minor modification in search (seldepth logging + small bug in signess of time variables fixed)
+//V0.3.1 214/300 at 400ms after a minor modification in search (seldepth logging + small bug in signedness of time variables fixed)
 //v0.3.1 215/300 at 400ms  Total time: 120581ms Total nodes: 206948188 [198/300 on laptop, Total nodes: 92094101]
 //v0.3   209/300 at 400ms on WAC [195/300 on laptop]
 

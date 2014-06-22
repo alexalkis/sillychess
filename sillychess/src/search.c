@@ -158,10 +158,13 @@ int numOfLegalMoves(void){
 
 void CheckUp(S_SEARCHINFO *info) {
 	//printf("Checked: %d\n",info->stoptime-get_ms());
-	if(info->timeset == TRUE && get_ms() > info->stoptime) {
+	int time=get_ms();
+	if(info->timeset == TRUE && time > info->stoptime) {
 
 		info->stopped = TRUE;
 	}
+	if (info->GAME_MODE!=GAMEMODE_SILLENT && (time-info->starttime)>3000)
+		info->displayCurrmove=TRUE;
 	ReadInput(info);
 }
 
@@ -406,7 +409,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 
 
 		move_unmake(&m[i]);
-		if (!board.ply && (get_ms()-info->starttime)>3000)
+		if (!board.ply && info->displayCurrmove)
 			printf("info depth %d currmove %s currmovenumber %d\n",depth,moveToUCI(m[i].move),i+1);
 
 		if (info->stopped == TRUE) {

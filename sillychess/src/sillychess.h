@@ -179,6 +179,8 @@ typedef struct {
 	int htAlpha;
 	int htBeta;
 
+	int displayCurrmove;
+
 	int GAME_MODE;
 	int POST_THINKING;
 
