@@ -20,7 +20,7 @@
 #define VERNULL		"(Null move switched off in this build)"
 #endif
 
-#define NAME	"sc v0.3.1"
+#define NAME	"sc v0.3.2"
 #define FULLNAME		NAME " " __DATE__ " " __TIME__ VERNULL
 
 #define START_FEN	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -128,6 +128,9 @@ struct aboard {
 	int searchHistory[16][128];
 	HASHE *ht;
 	int htSize;
+
+	int pawnCount[2];
+	int bigCount[2];
 };
 
 

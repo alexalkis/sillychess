@@ -75,7 +75,7 @@ int generateLegalMoves(smove *m)
 	}
 	return legalmoves;
 }
-void TT_printLine(int deep, LINE *tLine)
+void TT_fillPVLineFromTT(int deep, LINE *tLine)
 {
 	int i;
 	int moveCounter=0;
@@ -226,7 +226,7 @@ int think(S_SEARCHINFO *info)
 		}
 
 		LINE tLine;
-		TT_printLine(depth,&tLine);
+		TT_fillPVLineFromTT(depth,&tLine);
 		if (info->GAME_MODE==GAMEMODE_SILLENT)
 			;
 		else {
@@ -271,6 +271,7 @@ int think(S_SEARCHINFO *info)
 		if (info->stopped == TRUE) {
 			break;
 		}
+
 		/* if the time needed for search of depth D will exceed the remaining time, then D+1 will exceed also...probably */
 		if (info->timeset && (info->starttime + (endtime - starttime)) > info->stoptime)
 			break;
@@ -461,6 +462,8 @@ void testPerft(int n)
 	fclose(f);
 }
 //v0.3.1 271/879 at 1000ms on ECM Total time: 880651ms Total nodes: 1535082412
+
+//v0.3.1 221/300 at 400ms razoring + futility pruning
 //V0.3.1 214/300 at 400ms after a minor modification in search (seldepth logging + small bug in signedness of time variables fixed)
 //v0.3.1 215/300 at 400ms  Total time: 120581ms Total nodes: 206948188 [198/300 on laptop, Total nodes: 92094101]
 //v0.3   209/300 at 400ms on WAC [195/300 on laptop]

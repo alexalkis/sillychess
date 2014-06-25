@@ -75,11 +75,12 @@ char *move_to_san(smove m,int mcount,smove *moves)
 	//printf("Piece=%d\n",piece);
 
 	if (piece!=PAWN) {
-		buffer[0]=piecestr[piece];
-		cursor=1;
+		buffer[cursor++]=piecestr[piece];
+		int disambiguity=0;
 		for(i=0; i<mcount; ++i) {
 			if (moves[i].move==m.move) continue;
 			if (TO(moves[i].move)==to && PIECE(moves[i].move)==PIECE(m.move)) {
+				disambiguity=1;
 				int from2=FROM(moves[i].move);
 				if (ROW(from)==ROW(from2))
 					rowsmatch=1;
@@ -87,7 +88,7 @@ char *move_to_san(smove m,int mcount,smove *moves)
 					colsmatch=1;
 			}
 		}
-		if (rowsmatch)
+		if (rowsmatch || disambiguity)
 			buffer[cursor++]=filestr[COL(from)];
 		if (colsmatch)
 			buffer[cursor++]=rankstr[ROW(from)];

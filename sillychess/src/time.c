@@ -11,8 +11,11 @@
 #else
 #include "sys/time.h"
 #include "sys/select.h"
+#include <sys/types.h>
 #include "unistd.h"
 #include "string.h"
+#include <errno.h>
+
 #endif
 
 #ifndef __AMIGA__
@@ -41,6 +44,8 @@ int get_ms()
 // http://home.arcor.de/dreamlike/chess/
 int InputWaiting(void)
 {
+	static int numIntrSignal=0;
+
 #ifndef WIN32
   fd_set readfds;
   struct timeval tv;
@@ -48,7 +53,26 @@ int InputWaiting(void)
   FD_SET (fileno(stdin), &readfds);
   tv.tv_sec=0; tv.tv_usec=0;
 //  int a=get_ms();
-  select(16, &readfds, 0, 0, &tv);
+  int ret=select(16, &readfds, 0, 0, &tv);
+  if (ret==-1) {
+#ifndef NDEBUG
+	  switch(errno) {
+	  case EBADF:
+		  printf("Bad file number???\n");
+		  break;
+	  case EINTR:
+		  printf("******************************* Interrupt signal #%d\n",++numIntrSignal);
+		  return 0;	//HACK
+		  break;
+	  case EINVAL:
+		  printf("The timeout argument is invalid; one of the components is negative or too large.\n");
+		  break;
+	  }
+#else
+	  // in release build just return 0 when select errors out.
+	  return 0;
+#endif
+  }
 //  int b=get_ms();
 //  b-=a;
 //  if (b)
@@ -86,6 +110,8 @@ void ReadInput(S_SEARCHINFO *info) {
 
     if (InputWaiting()) {
 		info->stopped = TRUE;
+		info->displayCurrmove=FALSE;
+		printf("Crap input found triggered!!\n");
 		do {
 		  bytes=read(fileno(stdin),input,256);
 		} while (bytes<0);

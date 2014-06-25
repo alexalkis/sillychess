@@ -111,28 +111,37 @@ int Evaluate(void) {
 	int i;
 	int sq88;
 	int mat = 0;
+	board.bigCount[0]=board.bigCount[1]=0;
+	board.pawnCount[0]=board.pawnCount[1]=0;
 	for (i = 0; i < 64; ++i) {
 		sq88=i + (i & ~7);
 		if ((board.bs[sq88] != EMPTY)) {
 			mat += matValues[board.bs[sq88]];
 			int piece=board.bs[sq88]&0x07;
+			int color=(board.bs[sq88]&BLACK)>>3;
 			switch(piece) {
+			case KING:
+				continue;	// so we dont increment bigCount
+				break;
 			case PAWN:
-				mat+=psq_pawns[(board.bs[sq88]&BLACK)>>3][i];
+				mat+=psq_pawns[color][i];
+				++board.pawnCount[color];
+				continue;
 				break;
 			case BISHOP:
-				mat+=psq_bishops[(board.bs[sq88]&BLACK)>>3][i];
+				mat+=psq_bishops[color][i];
 				break;
 			case KNIGHT:
-				mat+=psq_knights[(board.bs[sq88]&BLACK)>>3][i];
+				mat+=psq_knights[color][i];
 				break;
 			case ROOK:
-				mat+=psq_rooks[(board.bs[sq88]&BLACK)>>3][i];
+				mat+=psq_rooks[color][i];
 				break;
 			case QUEEN:
-				mat+=psq_queens[(board.bs[sq88]&BLACK)>>3][i];
+				mat+=psq_queens[color][i];
 				break;
 			}
+			++board.bigCount[color];
 		}
 	}
 	if ( board.sideToMove == BLACK )
@@ -162,8 +171,8 @@ void CheckUp(S_SEARCHINFO *info) {
 	if(info->timeset == TRUE && time > info->stoptime) {
 
 		info->stopped = TRUE;
-	}
-	if (info->GAME_MODE!=GAMEMODE_SILLENT && (time-info->starttime)>3000)
+		info->displayCurrmove=FALSE;
+	} else	if (info->GAME_MODE!=GAMEMODE_SILLENT && (time-info->starttime)>3000)
 		info->displayCurrmove=TRUE;
 	ReadInput(info);
 }
@@ -250,6 +259,7 @@ int Quiesce(int alpha, int beta, S_SEARCHINFO *info)
 	return alpha;
 }
 
+inline int razor_margin(int d) { return 512 + 16 * d; }
 
 const int FullDepthMoves = 4;
 const int ReductionLimit = 3;
@@ -286,7 +296,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 
 	if (depth == 0) {
 		pline->cmove = 0;
-		if (board.ply>info->maxSearchPly)
+		if (PvNode && board.ply>info->maxSearchPly)
 			info->maxSearchPly=board.ply;
 		return Quiesce(alpha,beta,info);
 	}
@@ -305,8 +315,42 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 	//is the square of _our_ king attacked by the other side?  i.e. are _we_ in check?
 	int inCheck = isAttacked(board.sideToMove ^ BLACK,	kingLoc[board.sideToMove >> 3]);
 	/* if our king is attacked by the other side, let's increment the depth */
-	if (inCheck)
+	if (inCheck) {
 		++depth;
+		goto skipprunning;
+	}
+
+	int eval=Evaluate();
+
+	if (   !PvNode
+			//&& !inCheck
+	        &&  depth < 4
+	        &&  eval + razor_margin(depth) <= alpha
+	        &&  PvMove == NOMOVE
+	        //&& !pos.pawn_on_7th(pos.side_to_move())
+	        )
+	    {
+	        if (   depth <= 1
+	            && eval + razor_margin(3) <= alpha)
+	        	return Quiesce(alpha,beta,info);
+	        int ralpha = alpha - razor_margin(depth);
+	        int v = Quiesce(ralpha,ralpha+1,info);
+	        if (v <= ralpha)
+	            return v;
+	    }
+
+
+	//  Futility pruning: child node (skipped when in check) (origin stockfish)
+	if (   !PvNode
+		&& doNull
+		//&& !inCheck
+		&&  depth < 7
+		&&  eval - (depth*100) >= beta
+		&&  abs(beta) < ISMATE
+		&&  abs(eval) < 10000
+		&&  (board.bigCount[board.sideToMove>>3] > 0)
+		)
+		return eval - (depth*100);
 
 #ifdef NULLMOVE
 	if (doNull &&
@@ -314,7 +358,8 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 			!PvNode &&
 #endif
 			!inCheck &&
-			board.ply /*&& (pos->bigPce[pos->side] > 0)*/ &&
+			board.ply &&
+			(board.bigCount[board.sideToMove>>3] > 0) &&
 			depth >= 4) {
 		smove nm;
 		move_makeNull(&nm);
@@ -327,30 +372,11 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 	}
 #endif
 
-	//static int found=0;
+
 	smove m[256];
-//	int mcount = generateMoves(m);
-//	if (PvMove != NOMOVE) {
-//		if (PvMove!=pv.argmove[board.ply]) {
-//		   printf("PvMove: %s",qprintMove(PvMove));printf(" (%d) [would have used %s from PV-line] %X/%X\n",board.ply,qprintMove(pv.argmove[board.ply]),PvMove,pv.argmove[board.ply]);
-//		}
-//	}
-//	} else {
-//		if (board.ply<pv.cmove)
-//			PvMove=pv.argmove[board.ply];
-//	}
-//		//ASSERT(PvMove==pv.argmove[board.ply]);
-//		for (i = 0; i < mcount; ++i) {
-//			if (m[i].move == PvMove) {
-//				m[i].score = 2000000;
-//				//printf("Found %d\n",++found);
-//				//printf("Pv move found \n");
-//				break;
-//			}
-//		}
-
-
-	int mcount = generateMoves(m);  //    GenerateLegalMoves();
+	int mcount;
+skipprunning:
+	mcount = generateMoves(m);  //    GenerateLegalMoves();
 	if( board.ply < pv.cmove) {
 			for(i = 0; i < mcount; ++i) {
 				if( m[i].move == pv.argmove[board.ply]) {
@@ -409,8 +435,10 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 
 
 		move_unmake(&m[i]);
-		if (!board.ply && info->displayCurrmove)
+		if (!board.ply && info->displayCurrmove) {
 			printf("info depth %d currmove %s currmovenumber %d\n",depth,moveToUCI(m[i].move),i+1);
+			fflush(stdout);
+		}
 
 		if (info->stopped == TRUE) {
 			return 0;

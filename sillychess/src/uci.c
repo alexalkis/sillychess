@@ -217,7 +217,7 @@ void listMoves(void) {
 			move_unmake(&m[i]);
 			continue;
 		}
-		printf("%s %d\n",moveToUCI(m[i].move),m[i].score);
+		printf("%s %d (move in decimal if you want a breakpoint %d ;-)\n",moveToUCI(m[i].move),m[i].score,m[i].move);
 		move_unmake(&m[i]);
 	}
 }
@@ -318,7 +318,9 @@ void input_loop(S_SEARCHINFO *info)
 			puts(FULLNAME);
 			printf(	"- 0x88 board\n"
 					"- Iterative deepening\n"
-					"- Null move reduction (TODO: Implement material trigger to switch it off)\n"
+					"- Null move reduction (TODO: move the material counting from eval to make_move and have it incremental)\n"
+					"- Futility pruning\n"
+					"- Razoring pruning\n"
 					"- MVV/LVA\n"
 					"- Killer heuristics\n"
 					"- History heuristics\n"
