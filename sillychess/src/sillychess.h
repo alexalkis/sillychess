@@ -20,7 +20,7 @@
 #define VERNULL		"(Null move switched off in this build)"
 #endif
 
-#define NAME	"sc v0.3.2"
+#define NAME	"sc v0.3.3"
 #define FULLNAME		NAME " " __DATE__ " " __TIME__ VERNULL
 
 #define START_FEN	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -104,9 +104,9 @@ typedef unsigned long long u64;
 #define    hashfEXACT   (1)
 #define    hashfALPHA   (2)
 #define    hashfBETA    (3)
+
 typedef struct tagHASHE {
     u64 key;
-
     unsigned char depth;
     unsigned char flags;    // bits 0,1,2,3 store the type (exact,alpha,beta etc)
     short value;
@@ -144,7 +144,7 @@ struct _smove {
 };
 typedef struct _smove smove;
 
-#define moveMAX	128
+//#define moveMAX	128
 typedef struct LINE {
 	int cmove;              // Number of moves in the line.
 	unsigned int argmove[MAXDEPTH];  // The line.
