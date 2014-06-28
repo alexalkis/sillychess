@@ -18,6 +18,12 @@ void TT_set_size(unsigned int mbSize) {
   while (2ULL * newSize * sizeof(HASHE) <= (mbSize << 20))
       newSize *= 2;
 
+  /*
+   * newSize is a power of two. Normally we get the index to the hash table like board.posKey % board.htSize
+   * But, if we have a size of power of two minus 1, we can replace it with board.posKey & board.htSize
+   * which is faster.
+   */
+  --newSize;
 
   if (board.ht) free(board.ht);
 
@@ -76,7 +82,7 @@ void TT_clear(void)
 
 void TT_RecordHash(int depth, int score, int hashf, int best)
 {
-        HASHE *phashe = &board.ht[board.posKey % board.htSize];
+        HASHE *phashe = &board.ht[board.posKey & board.htSize];
 
         /* if an entry arrives at a shalower depth for this position we just return (and keep the deeper entry) */
         if (phashe->key==board.posKey && phashe->depth>depth) {
@@ -104,7 +110,7 @@ void TT_RecordHash(int depth, int score, int hashf, int best)
 
 HASHE * TT_probe(int *move, int *score, int depth, int alpha, int beta)
 {
-	HASHE *phashe = &board.ht[board.posKey % board.htSize];
+	HASHE *phashe = &board.ht[board.posKey & board.htSize];
 	if (phashe->key == board.posKey && phashe->depth >= depth) {
 		*move = phashe->bestMove;
 		if (phashe->flags == hashfEXACT) {
