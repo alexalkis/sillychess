@@ -7,11 +7,10 @@
  Description : Hello World in C, Ansi-style
  ============================================================================
  */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+
 #include "sillychess.h"
-#include "move.h"
+#include <string.h>
+
 
 struct aboard board;
 

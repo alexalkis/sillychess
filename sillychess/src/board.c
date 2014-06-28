@@ -7,7 +7,6 @@
 
 
 #include "sillychess.h"
-#include <string.h>
 #include <ctype.h>
 
 #define NORTH	16

@@ -4,10 +4,9 @@
  *  Created on: Jun 1, 2014
  *      Author: alex
  */
-#include "sillychess.h"
+
 #include "move.h"
-#include <string.h>
-#include <stdlib.h>
+#include "sillychess.h"
 
 #define INPUTBUFFER		(4096)
 #define NOMOVE			0

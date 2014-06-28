@@ -8,7 +8,6 @@
 
 #include "sillychess.h"
 #include "move.h"
-#include <string.h>
 
 #define COLOR(x) (board.bs[x] & BLACK)
 

@@ -8,7 +8,6 @@
 
 #include "sillychess.h"
 #include "move.h"
-#include <string.h>
 
 /*
  PAWN = 0x01,

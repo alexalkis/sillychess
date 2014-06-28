@@ -4,9 +4,8 @@
  *  Created on: Jun 8, 2014
  *      Author: alex
  */
+
 #include "sillychess.h"
-#include <stdlib.h>
-#include <string.h>
 
 
 
