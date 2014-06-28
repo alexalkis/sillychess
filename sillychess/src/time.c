@@ -111,7 +111,7 @@ void ReadInput(S_SEARCHINFO *info) {
     if (InputWaiting()) {
 		info->stopped = TRUE;
 		info->displayCurrmove=FALSE;
-		printf("Crap input found triggered!!\n");
+		//printf("Crap input found triggered!!\n");
 		do {
 		  bytes=read(fileno(stdin),input,256);
 		} while (bytes<0);
