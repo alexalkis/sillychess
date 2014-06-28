@@ -272,7 +272,7 @@ void input_loop(S_SEARCHINFO *info)
 	printf("%s, written by Alex Argiropoulos\n", NAME);
 
 #ifndef NDEBUG
-	printf("NOTE: NDEBUG not defined at compilation stage.  Perfomance will not be optimum!\n");
+	printf("NOTE: NDEBUG not defined at compilation stage.  Performance will not be optimum!\n");
 #endif
 	while (!exit) {
 		memset(line, 0, sizeof(line));
