@@ -35,7 +35,7 @@ void ParseScore(char* line, S_SEARCHINFO *info)
 {
 	LINE scline;
 	int pdepth = atoi(&line[6]);
-	int i,j;
+	int i;
 	smove m[256];
 	int mcount = generateMoves(m);
 
@@ -58,9 +58,9 @@ void ParsePerft(char* line, S_SEARCHINFO *info)
 {
 	int pdepth = atoi(&line[6]);
 
-	int starttime = get_ms();
+	unsigned int starttime = get_ms();
 	u64 nodes = Perft(pdepth);
-	int endtime = get_ms();
+	unsigned int endtime = get_ms();
 	if (endtime == starttime)
 		++endtime;
 	printf("Perft(%d)=%lld Nps: %lld (%d ms)\n", pdepth, nodes,

@@ -44,7 +44,9 @@ int get_ms()
 // http://home.arcor.de/dreamlike/chess/
 int InputWaiting(void)
 {
+#ifndef NDEBUG
 	static int numIntrSignal=0;
+#endif
 
 #ifndef WIN32
   fd_set readfds;

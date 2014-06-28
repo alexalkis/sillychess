@@ -31,7 +31,7 @@ struct aboard board;
 LINE pv;
 void testPerft(int n);
 
-int moveExists(int move){
+int moveExists(unsigned int move){
 	int i;
 	int legalMoves = 0;
 	smove m[256];
@@ -94,9 +94,7 @@ void TT_fillPVLineFromTT(int deep, LINE *tLine)
 			move_make(&m[moveCounter]);
 			//printf("After  making move %llX\n",board.posKey);
 			++moveCounter;
-			smove n;
-			n.move=BestMove;
-			//printMove(n);printf(" <--- move legal\n");
+			//smove n;n.move=BestMove;printMove(n);printf(" <--- move legal\n");
 		} else {
 			smove n;
 			n.move=BestMove;
@@ -227,9 +225,7 @@ int think(S_SEARCHINFO *info)
 
 		LINE tLine;
 		TT_fillPVLineFromTT(depth,&tLine);
-		if (info->GAME_MODE==GAMEMODE_SILLENT)
-			;
-		else {
+		if (info->GAME_MODE!=GAMEMODE_SILLENT) {
 			if (info->GAME_MODE == GAMEMODE_CONSOLE) {
 				printf(
 						"info depth %d seldepth %d (%.2f%%, NULLMOVES: %d LMR: %d (%d/%d) nodes %lld time %d nps %lld score cp %d pv ",
@@ -487,7 +483,6 @@ void testEPD(char *filename, int miliseconds) {
 			=totalInfo->lmr=totalInfo->lmr2=totalInfo->lmr3=totalInfo->nodes=totalInfo->nullCut=0;
 	totalInfo->starttime=get_ms();
 	while (fgets(line, 256, f)) {
-		char *start = NULL;
 		char *bm = strstr(line,"bm ");
 		char *id = strchr(line, ';');
 		line[strlen(line)-1]='\0';		// eat the \n at the end

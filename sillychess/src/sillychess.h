@@ -124,10 +124,10 @@ struct aboard {
 
 	short int gameply;
 	u64 historyPosKey[MAX_PLY_IN_A_GAME];
-	int searchKillers[2][MAX_PLY_IN_A_GAME];
+	unsigned int searchKillers[2][MAX_PLY_IN_A_GAME];
 	int searchHistory[16][128];
 	HASHE *ht;
-	int htSize;
+	unsigned int htSize;
 
 	int pawnCount[2];
 	int bigCount[2];
@@ -147,7 +147,7 @@ typedef struct _smove smove;
 #define moveMAX	128
 typedef struct LINE {
 	int cmove;              // Number of moves in the line.
-	int argmove[MAXDEPTH];  // The line.
+	unsigned int argmove[MAXDEPTH];  // The line.
 } LINE;
 
 enum {
@@ -236,6 +236,7 @@ u64 dummyPerft(u8 depth);
 u64 Perft(u8 depth);
 u64 Divide(u8 depth);
 void printMove(smove m);
+void pickMove(smove *m,int j,int n);
 int move_make(smove *move);
 int move_unmake(smove *move);
 void move_makeNull(smove *move);
@@ -243,6 +244,7 @@ void move_unmakeNull(smove *move);
 int get_ms(void);
 int think(S_SEARCHINFO *info);
 void thinkFen(char *fen,int depth);
+int Evaluate(void);
 int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull, S_SEARCHINFO *info) ;
 int Quiesce(int alpha, int beta,S_SEARCHINFO *info );
 int numOfLegalMoves(void);
@@ -259,7 +261,7 @@ u64 generatePosKey(void);
 
 void initHash(void);
 
-void TT_set_size(int mbSize);
+void TT_set_size(unsigned int mbSize);
 void TT_clear(void);
 HASHE *TT_probe(int *move, int *score,int depth, int alpha, int beta);
 void TT_RecordHash(int depth, int value, int hashf, int best);

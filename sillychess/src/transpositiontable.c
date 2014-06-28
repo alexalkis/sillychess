@@ -10,9 +10,9 @@
 
 
 
-void TT_set_size(int mbSize) {
+void TT_set_size(unsigned int mbSize) {
 
-  int newSize = 1024;
+  unsigned int newSize = 1024;
 
 
   while (2ULL * newSize * sizeof(HASHE) <= (mbSize << 20))

@@ -236,7 +236,7 @@ void printBoard(void) {
 	short int row, col;
 	short int color;
 	short int piece;
-	u8 c;
+	u8 c=' ';
 
 	printf("\n   a b c d e f g h\n\n");
 	for (row = 7; row >= 0; --row) {
@@ -283,7 +283,7 @@ void printBoard(void) {
 		printf("\n");
 	}
 
-	printf("\n   a b c d e f g h\t\tPosition key: %lX",board.posKey);
+	printf("\n   a b c d e f g h\t\tPosition key: %llX",board.posKey);
 	printf("\nSide to move: %s e.p.: %s\n",
 			board.sideToMove == WHITE ? "white" : "black",
 			board.enPassant == ENPASSANTNULL ?

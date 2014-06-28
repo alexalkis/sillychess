@@ -167,7 +167,7 @@ int numOfLegalMoves(void){
 
 void CheckUp(S_SEARCHINFO *info) {
 	//printf("Checked: %d\n",info->stoptime-get_ms());
-	int time=get_ms();
+	unsigned int time=get_ms();
 	if(info->timeset == TRUE && time > info->stoptime) {
 
 		info->stopped = TRUE;
