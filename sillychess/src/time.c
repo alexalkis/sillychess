@@ -8,6 +8,7 @@
 #include "sillychess.h"
 #ifdef WIN32
 #include "windows.h"
+#include <unistd.h>
 #else
 #include "sys/time.h"
 #include "sys/select.h"

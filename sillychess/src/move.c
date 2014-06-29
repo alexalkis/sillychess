@@ -571,13 +571,13 @@ u64 Divide(u8 depth) {
 				kingLoc[1 - (board.sideToMove >> 3)])) {
 			printMove(m[i]);
 			partial += Perft(depth - 1);
-			printf("  %lld\n", partial);
+			printf("  %"INT64_FORMAT"d\n", partial);
 			nodes += partial;
 			partial = 0;
 		}
 		move_unmake(&m[i]);
 	}
-	printf("Total: %lld\n", nodes);
+	printf("Total: %"INT64_FORMAT"d\n", nodes);
 
 	return nodes;
 }

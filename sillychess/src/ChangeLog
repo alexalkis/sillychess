@@ -1,0 +1,3 @@
+2014-06-29  alex  <alex@alex-VirtualBox>
+
+	* uci.c (input_loop): Elliminated all the warnings

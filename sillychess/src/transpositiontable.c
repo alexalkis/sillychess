@@ -11,7 +11,7 @@
 
 void TT_set_size(unsigned int mbSize) {
 
-  unsigned int newSize = 1024;
+  u64 newSize = 1024;
 
 
   while (2ULL * newSize * sizeof(HASHE) <= (mbSize << 20))
@@ -34,7 +34,7 @@ void TT_set_size(unsigned int mbSize) {
       printf("Hash table memory allocation problem.  Exiting...\n");
       exit(EXIT_FAILURE);
   } else
-      printf("Transposition Table: %d entries allocated...%ld bytes.\n",newSize,newSize*sizeof(HASHE));
+      printf("Transposition Table: %"INT64_FORMAT"d entries allocated...%"INT64_FORMAT"d bytes.\n",newSize,newSize*sizeof(HASHE));
   memset(board.ht, 0, newSize * sizeof(HASHE));
 }
 
@@ -102,7 +102,7 @@ void TT_RecordHash(int depth, int score, int hashf, int best)
         phashe->depth = depth;
 //        FILE *f = fopen("/home/alex/foo.txt","a");
 //        if (f) {
-//        	fprintf(f,"%s %s %llX (D:%d Score:%d) Move in decimal: %d\n",qprintMove(best),board2fen(),board.posKey,depth,value,best);
+//        	fprintf(f,"%s %s %"INT64_FORMAT"X (D:%d Score:%d) Move in decimal: %d\n",qprintMove(best),board2fen(),board.posKey,depth,value,best);
 //        	fclose(f);
 //        }
 }

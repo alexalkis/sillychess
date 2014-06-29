@@ -89,9 +89,9 @@ void TT_fillPVLineFromTT(int deep, LINE *tLine)
 		//printf("Got move for position %d\n",i);
 		if (moveExists(BestMove)) {
 			m[moveCounter].move=BestMove;
-			//printf("Before making move %llX\n",board.posKey);
+			//printf("Before making move %"INT64_FORMAT"X\n",board.posKey);
 			move_make(&m[moveCounter]);
-			//printf("After  making move %llX\n",board.posKey);
+			//printf("After  making move %"INT64_FORMAT"X\n",board.posKey);
 			++moveCounter;
 			//smove n;n.move=BestMove;printMove(n);printf(" <--- move legal\n");
 		} else {
@@ -206,7 +206,7 @@ int think(S_SEARCHINFO *info)
 		int score = AlphaBeta(depth, -INFINITE,INFINITE, &line, TRUE, info);
 		ASSERT(board.posKey==generatePosKey());
 		int endtime = get_ms();
-		//printBoard();printf("%llX at depth: %d Eval: %d\n",generatePosKey(),depth,Evaluate());
+		//printBoard();printf("%"INT64_FORMAT"X at depth: %d Eval: %d\n",generatePosKey(),depth,Evaluate());
 		//ASSERT(board.posKey==generatePosKey());
 		CheckUp(info);
 
@@ -227,7 +227,7 @@ int think(S_SEARCHINFO *info)
 		if (info->GAME_MODE!=GAMEMODE_SILLENT) {
 			if (info->GAME_MODE == GAMEMODE_CONSOLE) {
 				printf(
-						"info depth %d seldepth %d (%.2f%%, NULLMOVES: %d LMR: %d (%d/%d) nodes %lld time %d nps %lld score cp %d pv ",
+						"info depth %d seldepth %d (%.2f%%, NULLMOVES: %d LMR: %d (%d/%d) nodes %"INT64_FORMAT"d time %d nps %"INT64_FORMAT"d score cp %d pv ",
 						depth, info->maxSearchPly,(info->fhf * 100.0f / (info->fh + info->fhf)), info->nullCut,info->lmr,info->lmr2,info->lmr3, info->nodes,
 						(endtime - info->starttime),
 						(1000 * info->nodes) / (endtime - starttime), score);
@@ -243,13 +243,13 @@ int think(S_SEARCHINFO *info)
 				if (info->stopped==FALSE) { //dont print when we've stopped (score is always 0 if we print)
 					if (!mate)
 						printf(
-								"info depth %d seldepth %d score cp %d nodes %lld nps %lld time %d pv ",
+								"info depth %d seldepth %d score cp %d nodes %"INT64_FORMAT"d nps %"INT64_FORMAT"d time %d pv ",
 								depth,info->maxSearchPly, score, info->nodes,
 								(1000 * info->nodes) / (endtime - starttime),
 								(endtime - info->starttime));
 					else
 						printf(
-								"info depth %d seldepth %d score mate %d nodes %lld nps %lld time %d pv ",
+								"info depth %d seldepth %d score mate %d nodes %"INT64_FORMAT"d nps %"INT64_FORMAT"d time %d pv ",
 								depth,info->maxSearchPly, mate, info->nodes,
 								(1000 * info->nodes) / (endtime - starttime),
 								(endtime - info->starttime));
@@ -386,7 +386,7 @@ int main(int argc, char **argv)
 	int endtime = get_ms();
 	if (endtime == starttime)
 		++endtime;
-	printf("Divide - Nodes:%lld Nps: %lld (%d ms)\n", nodes,
+	printf("Divide - Nodes:%"INT64_FORMAT"d Nps: %"INT64_FORMAT"d (%d ms)\n", nodes,
 			(1000 * nodes) / (endtime - starttime), (endtime - starttime));
 
 //	smove moves[200];
@@ -398,7 +398,7 @@ int main(int argc, char **argv)
 //		u64 nodes = Perft(i);
 //		int endtime = get_ms();
 //		if (endtime==starttime) ++endtime;
-//		printf("Perft(%d)=%lld Nps: %lld (%d ms)\n", i, nodes,
+//		printf("Perft(%d)=%"INT64_FORMAT"d Nps: %"INT64_FORMAT"d (%d ms)\n", i, nodes,
 //				(1000*nodes) / (endtime - starttime), (endtime - starttime));
 //	}
 	//testPerft(3);
@@ -529,6 +529,6 @@ void testEPD(char *filename, int miliseconds) {
 
 	}
 	totalInfo->stoptime=get_ms();
-	printf("Total time: %dms Total nodes: %lld\n",totalInfo->stoptime-totalInfo->starttime,totalInfo->nodes);
+	printf("Total time: %dms Total nodes: %"INT64_FORMAT"d\n",totalInfo->stoptime-totalInfo->starttime,totalInfo->nodes);
 	fclose(f);
 }

@@ -282,7 +282,9 @@ void printBoard(void) {
 		printf("\n");
 	}
 
-	printf("\n   a b c d e f g h\t\tPosition key: %llX",board.posKey);
+
+
+	printf("\n   a b c d e f g h\t\tPosition key: %"INT64_FORMAT"X",board.posKey);
 	printf("\nSide to move: %s e.p.: %s\n",
 			board.sideToMove == WHITE ? "white" : "black",
 			board.enPassant == ENPASSANTNULL ?

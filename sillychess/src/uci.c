@@ -44,16 +44,16 @@ void ParseScore(char* line, S_SEARCHINFO *info)
 		move_make(&m[i]);
 		if (!isAttacked(board.sideToMove,kingLoc[1 - (board.sideToMove >> 3)])) {
 			printMove(m[i]);printf(" %d\n",-AlphaBeta(pdepth,-INFINITE,INFINITE,&scline,TRUE,info));
-//			printf("Board posKey: %llX\n",board.posKey);
+//			printf("Board posKey: %"INT64_FORMAT"X\n",board.posKey);
 //			for(j=board.gameply-board.fiftyCounter-1; j<board.gameply; ++j)
-//				printf("%d %llX\n",j,board.historyPosKey[j]);
+//				printf("%d %"INT64_FORMAT"X\n",j,board.historyPosKey[j]);
 		}
 		move_unmake(&m[i]);
 	}
 }
 
 
-void ParsePerft(char* line, S_SEARCHINFO *info)
+void ParsePerft(char* line)//, S_SEARCHINFO *info)
 {
 	int pdepth = atoi(&line[6]);
 
@@ -62,11 +62,11 @@ void ParsePerft(char* line, S_SEARCHINFO *info)
 	unsigned int endtime = get_ms();
 	if (endtime == starttime)
 		++endtime;
-	printf("Perft(%d)=%lld Nps: %lld (%d ms)\n", pdepth, nodes,
+	printf("Perft(%d)=%"INT64_FORMAT"d Nps: %"INT64_FORMAT"d (%d ms)\n", pdepth, nodes,
 			(1000 * nodes) / (endtime - starttime), (endtime - starttime));
 }
 
-void ParseDivide(char* line, S_SEARCHINFO *info)
+void ParseDivide(char* line)//, S_SEARCHINFO *info)
 {
 	int pdepth = atoi(&line[7]);
 
@@ -75,11 +75,12 @@ void ParseDivide(char* line, S_SEARCHINFO *info)
 	int endtime = get_ms();
 	if (endtime == starttime)
 		++endtime;
-	printf("Perft(%d)=%lld Nps: %lld (%d ms)\n", pdepth, nodes,
+	printf("Perft(%d)=%"INT64_FORMAT"d Nps: %"INT64_FORMAT"d (%d ms)\n", pdepth, nodes,
 			(1000 * nodes) / (endtime - starttime), (endtime - starttime));
 }
 
-void ParseTestEPD(char *line, S_SEARCHINFO *info) {
+void ParseTestEPD(char *line)//, S_SEARCHINFO *info) {
+{
 	// testepd xxxx filename
 	char *ptr=strstr(line+8," ");
 	if (!ptr) {
@@ -295,11 +296,11 @@ void input_loop(S_SEARCHINFO *info)
 			ParseGo(line, info);
 			//think(2);
 		} else if (!strncmp(line, "perft", 5)) {
-			ParsePerft(line, info);
+			ParsePerft(line);//, info);
 		} else if (!strncmp(line, "score", 5)) {
 			ParseScore(line, info);
 		} else if (!strncmp(line, "divide", 6)) {
-			ParseDivide(line, info);
+			ParseDivide(line);//, info);
 		} else if (!strncmp(line, "ucinewgame", 10)) {
 			TT_clear();
 			ParsePosition("position startpos\n");
@@ -310,7 +311,7 @@ void input_loop(S_SEARCHINFO *info)
 		} else if (!strncmp(line, "ls", 2)) {
 			listMoves();
 		} else if (!strncmp(line, "testepd", 7)) {
-			ParseTestEPD(line,info);
+			ParseTestEPD(line);//,info);
 		} else if (!strncmp(line, "eval", 4)) {
 			printf("Eval=%d\n",Evaluate());
 		} else if (!strncmp(line, "version", 4)) {

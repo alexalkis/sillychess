@@ -8,6 +8,12 @@
 #ifndef SILLYCHESS_H_
 #define SILLYCHESS_H_
 
+//workarround for mingw on windows not printing %"INT64_FORMAT"X correctly
+#ifdef __MINGW32__
+#define INT64_FORMAT "I64"
+#else
+#define INT64_FORMAT "ll"
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -128,7 +134,7 @@ struct aboard {
 	unsigned int searchKillers[2][MAX_PLY_IN_A_GAME];
 	int searchHistory[16][128];
 	HASHE *ht;
-	unsigned int htSize;
+	u64 htSize;
 
 	int pawnCount[2];
 	int bigCount[2];
