@@ -845,6 +845,26 @@ int generateCaptureMoves(smove *moves) {
 			}
 		}
 	}
+
+	if (board.sideToMove == WHITE) {
+		if (board.enPassant != ENPASSANTNULL && ROW(board.enPassant) == 5) {
+			if (board.bs[board.enPassant - 16 - 1] == WHITE_PAWN) {
+				pushSpecialMove(board.enPassant - 16 - 1, board.enPassant,WHITE_PAWN, BLACK_PAWN, SP_ENPASSANT);
+			}
+			if (board.bs[board.enPassant - 16 + 1] == WHITE_PAWN) {
+				pushSpecialMove(board.enPassant - 16 + 1, board.enPassant,WHITE_PAWN, BLACK_PAWN, SP_ENPASSANT);
+			}
+		}
+	} else {
+		if (board.enPassant != ENPASSANTNULL && ROW(board.enPassant) == 2) {
+			if (board.bs[board.enPassant + 16 - 1] == BLACK_PAWN) {
+				pushSpecialMove(board.enPassant + 16 - 1, board.enPassant,BLACK_PAWN, WHITE_PAWN, SP_ENPASSANT);
+			}
+			if (board.bs[board.enPassant + 16 + 1] == BLACK_PAWN) {
+				pushSpecialMove(board.enPassant + 16 + 1, board.enPassant,BLACK_PAWN, WHITE_PAWN, SP_ENPASSANT);
+			}
+		}
+	}
 	return moveIndex;
 }
 
@@ -875,16 +895,6 @@ void generatePawnCaptureMoves(int color, int pos) {
 			pushPromotion(pos, to + 1, color, board.bs[to + 1]);
 		else
 			pushMove(pos, to + 1, color | PAWN, board.bs[to + 1]);
-	}
-
-	/* TODO: Move en passant check out of loop and have it checked _once_ after loop (as we do with castling)*/
-	if (board.enPassant == (to - 1)) {
-		ASSERT(board.bs[to - 1] == EMPTY);
-		pushSpecialMove(pos, to - 1, color | PAWN, (color ^ BLACK) | PAWN,SP_ENPASSANT);
-	}
-	if (board.enPassant == (to + 1)) {
-		ASSERT(board.bs[to + 1] == EMPTY);
-		pushSpecialMove(pos, to + 1, color | PAWN, (color ^ BLACK) | PAWN,SP_ENPASSANT);
 	}
 }
 
@@ -956,7 +966,7 @@ void generateRookCaptureMoves(int color, int pos) {
 				}
 			}
 			if (board.bs[to] != EMPTY)
-							break;
+				break;
 			to += rmoves[i];
 		}
 	}
@@ -977,7 +987,7 @@ void generateQueenCaptureMoves(int color, int pos) {
 				}
 			}
 			if (board.bs[to] != EMPTY)
-							break;
+				break;
 			to += rmoves[i];
 		}
 	}
