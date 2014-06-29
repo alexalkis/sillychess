@@ -19,16 +19,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define NULLMOVE
-
-#ifdef NULLMOVE
-#define VERNULL		""
-#else
-#define VERNULL		"(Null move switched off in this build)"
-#endif
-
 #define NAME	"sc v0.3.3"
-#define FULLNAME		NAME " " __DATE__ " " __TIME__ VERNULL
+#define FULLNAME		NAME " " __DATE__ " " __TIME__
 
 #define START_FEN	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 

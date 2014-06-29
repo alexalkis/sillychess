@@ -262,16 +262,15 @@ inline int razor_margin(int d) { return 512 + 16 * d; }
 
 const int FullDepthMoves = 4;
 const int ReductionLimit = 3;
-#define NOTPV
+
 int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHINFO *info) {
 	int i;
 	int val=alpha;
 	LINE line;
 	int PvMove = NOMOVE;
 	HASHE *tte;
-#ifdef NOTPV
 	int PvNode = (beta-alpha)>1;
-#endif
+
 
 	if (board.ply && isRepetition() ) {
 		pline->cmove=0;
@@ -351,11 +350,9 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 		)
 		return eval - (depth*100);
 
-#ifdef NULLMOVE
+
 	if (doNull &&
-#ifdef NOTPV
 			!PvNode &&
-#endif
 			!inCheck &&
 			board.ply &&
 			(board.bigCount[board.sideToMove>>3] > 0) &&
@@ -369,11 +366,12 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 			return beta;
 		}
 	}
-#endif
+
 
 
 	smove m[256];
 	int mcount;
+
 skipprunning:
 	mcount = generateMoves(m);  //    GenerateLegalMoves();
 	if (board.ply < pv.cmove) {
@@ -386,6 +384,17 @@ skipprunning:
 			}
 		}
 	}
+//	else {
+//		if (PvMove != NOMOVE) {
+//			for (i = 0; i < mcount; ++i) {
+//				if (m[i].move == PvMove) {
+//					m[i].score = PVMOVE_SCORE;
+//					break;
+//				}
+//			}
+//
+//		}
+//	}
 
 	int BestMove = NOMOVE;
 	int legalMoves = 0;
@@ -408,9 +417,7 @@ skipprunning:
 			if(legalMoves >= FullDepthMoves &&
 					depth >= ReductionLimit &&
 					!inCheck &&
-#ifdef NOTPV
 					!PvNode &&
-#endif
 					!ISCAPTUREORPROMOTION(m[i].move)&&
 					m[i].move!=board.searchKillers[0][board.ply] &&
 					m[i].move!=board.searchKillers[1][board.ply])
@@ -502,4 +509,9 @@ Hash - Exact:546 Alpha: 3258458 Beta: 23372963  -- Hits: 7720423 Misses: 1147793
 bestmove e2e4
 Time taken: 124370
 
+v0.3.3
+info depth 16 seldepth 18 (85.55%, NULLMOVES: 194669 LMR: 2497018 (27622693/32) nodes 101965805 time 63926 nps 3097193 score cp 25 pv e4 e5 Nf3 Nf6 Nc3 Nc6 d4 exd4 Nxd4 Bb4 Nxc6 dxc6 Qxd8+ Kxd8 Bd2 Be6 Bd3 (e4 e5 Nf3 Nc6 Nc3 Nf6 d4 exd4 )
+Hash - Exact:840 Alpha: 1982040 Beta: 7163984  -- Hits: 2747707 Misses: 67012774
+bestmove e2e4
+Time taken: 63927
  */

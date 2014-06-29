@@ -38,7 +38,7 @@ int moveExists(unsigned int move){
 
 	//printBoard();
 	for ( i = 0; i < mcount; ++i) {
-			//printf("%d/%d Unchecked: ",i,mcount);printMove(m[i]);printf(" ");
+
 			move_make(&m[i]);
 			if (!isAttacked(board.sideToMove, kingLoc[1 - (board.sideToMove >> 3)])) {
 				//printf("Legal: ");printMove(m[i]);printf(" ");
