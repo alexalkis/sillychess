@@ -321,7 +321,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 	int eval=Evaluate();
 
 	if (   !PvNode
-			//&& !inCheck
+			//&& !inCheck  //no need cause of the goto above
 	        &&  depth < 4
 	        &&  eval + razor_margin(depth) <= alpha
 	        &&  PvMove == NOMOVE
@@ -341,7 +341,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 	//  Futility pruning: child node (skipped when in check) (origin stockfish)
 	if (   !PvNode
 		&& doNull
-		//&& !inCheck
+		//&& !inCheck	//no need cause of the goto above
 		&&  depth < 7
 		&&  eval - (depth*100) >= beta
 		&&  abs(beta) < ISMATE
@@ -353,7 +353,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 
 	if (doNull &&
 			!PvNode &&
-			!inCheck &&
+			//!inCheck &&	//no need cause of the goto above
 			board.ply &&
 			(board.bigCount[board.sideToMove>>3] > 0) &&
 			depth >= 4) {
