@@ -4,9 +4,10 @@
  *  Created on: Jun 1, 2014
  *      Author: alex
  */
-
+#include <unistd.h>
 #include "move.h"
 #include "sillychess.h"
+
 
 #define INPUTBUFFER		(4096)
 #define NOMOVE			0
@@ -271,7 +272,9 @@ void input_loop(S_SEARCHINFO *info)
 
 	printf("%s, written by Alex Argiropoulos\n", NAME);
 
+
 #ifndef NDEBUG
+	printf("Terminal is %s\n",isatty(fileno(stdout)) ? "true": "false");
 	printf("NOTE: NDEBUG not defined at compilation stage.  Performance will not be optimum!\n");
 #endif
 	while (!exit) {
