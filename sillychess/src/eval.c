@@ -118,12 +118,12 @@ int Evaluate(void) {
 			int color=(board.bs[sq88]&BLACK)>>3;
 			switch(piece) {
 			case KING:
-				continue;	// so we dont increment bigCount
+				continue;	// so we don't increment bigCount
 				break;
 			case PAWN:
 				mat+=psq_pawns[color][i];
 				++board.pawnCount[color];
-				continue;
+				continue;	// so we don't increment bigCount
 				break;
 			case BISHOP:
 				mat+=psq_bishops[color][i];
