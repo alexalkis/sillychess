@@ -107,30 +107,31 @@ void TT_RecordHash(int depth, int score, int hashf, int best)
 //        }
 }
 
-HASHE * TT_probe(int *move, int *score, int depth, int alpha, int beta)
-{
+HASHE * TT_probe(int *move, int *score, int depth, int alpha, int beta) {
 	HASHE *phashe = &board.ht[board.posKey & board.htSize];
-	if (phashe->key == board.posKey && phashe->depth >= depth) {
+	if (phashe->key == board.posKey) {
 		*move = phashe->bestMove;
-		if (phashe->flags == hashfEXACT) {
-			*score = phashe->value;
-			if(*score > ISMATE)
-				*score -= board.ply;
-			else if(*score < -ISMATE)
-				*score += board.ply;
+		if (phashe->depth >= depth) {
+			if (phashe->flags == hashfEXACT) {
+				*score = phashe->value;
+				if (*score > ISMATE)
+					*score -= board.ply;
+				else if (*score < -ISMATE)
+					*score += board.ply;
 //			if (*score>alpha && *score<beta)
 //				return TRUE;
 //			else
 //				return FALSE;
-			return phashe;
-		}
-		if ((phashe->flags == hashfALPHA) && (phashe->value <= alpha)) {
-			*score = alpha;
-			return phashe;
-		}
-		if ((phashe->flags == hashfBETA) && (phashe->value >= beta)) {
-			*score = beta;
-			return phashe;
+				return phashe;
+			}
+			if ((phashe->flags == hashfALPHA) && (phashe->value <= alpha)) {
+				*score = alpha;
+				return phashe;
+			}
+			if ((phashe->flags == hashfBETA) && (phashe->value >= beta)) {
+				*score = beta;
+				return phashe;
+			}
 		}
 	}
 	return NULL;
