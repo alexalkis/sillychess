@@ -175,7 +175,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 	/* if our king is attacked by the other side, let's increment the depth */
 	if (inCheck) {
 		++depth;
-		goto skipprunning;
+		goto skipPrunning;
 	}
 
 	int eval=Evaluate();
@@ -233,7 +233,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 	smove m[256];
 	int mcount;
 
-skipprunning:
+skipPrunning:
 	mcount = generateMoves(m);  //    GenerateLegalMoves();
 	if (board.ply < pv.cmove) {
 		for (i = 0; i < mcount; ++i) {
@@ -277,7 +277,7 @@ skipprunning:
 		else {
 			if(legalMoves >= FullDepthMoves &&
 					depth >= ReductionLimit &&
-					!inCheck &&
+					//!inCheck &&  //inCheck is invalid here anyways (after move_make())
 					!PvNode &&
 					!ISCAPTUREORPROMOTION(m[i].move)&&
 					m[i].move!=board.searchKillers[0][board.ply] &&
@@ -287,7 +287,7 @@ skipprunning:
 				val = -AlphaBeta(depth-2,-(alpha+1), -alpha, &line,TRUE,info);
 				++info->lmr;
 			} else
-				val = alpha+1;
+				val = alpha+1;	// Hack to ensure that full-depth search is done.
 			if (val > alpha) {
 				val = -AlphaBeta(depth - 1, -(alpha + 1), -alpha,	&line, TRUE, info);
 				++info->lmr2;
