@@ -234,7 +234,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 	int mcount;
 
 skipPrunning:
-	mcount = generateMoves(m);  //    GenerateLegalMoves();
+	mcount = generateMoves(m);
 	if (board.ply < pv.cmove) {
 		for (i = 0; i < mcount; ++i) {
 			if (m[i].move == pv.argmove[board.ply]) {
