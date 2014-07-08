@@ -65,10 +65,8 @@ int isRepetition(void) {
 	int i;
 	if (board.fiftyCounter>=100)
 		return TRUE;
-	//for(i=board.gameply-board.fiftyCounter; i<board.gameply-1; ++i)
 	for(i=board.gameply-1-1; i>=board.gameply-board.fiftyCounter; i-=2)
 		if (board.posKey==board.historyPosKey[i]) {
-			//printf("Rep seen.\n");
 			return TRUE;
 		}
 	return FALSE;
