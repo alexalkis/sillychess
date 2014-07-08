@@ -8,6 +8,11 @@
 #include "sillychess.h"
 
 
+void TT_free(void)
+{
+	if (board.ht)
+		free(board.ht);
+}
 
 void TT_set_size(unsigned int mbSize) {
 

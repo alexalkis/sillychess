@@ -174,7 +174,7 @@ int think(S_SEARCHINFO *info)
 	line.cmove = 0;
 	pv.cmove=0;
 
-	info->nodes=info->fh=info->fhf=info->nullCut=0;
+	info->qnodes=info->nodes=info->fh=info->fhf=info->nullCut=0;
 	info->htAlpha=info->htBeta=info->htExact=info->hthit=info->htmiss=0;
 	board.ply=0;
 	info->stopped = FALSE;
@@ -227,8 +227,8 @@ int think(S_SEARCHINFO *info)
 		if (info->GAME_MODE!=GAMEMODE_SILLENT) {
 			if (info->GAME_MODE == GAMEMODE_CONSOLE) {
 				printf(
-						"info depth %d seldepth %d (%.2f%%, NULLMOVES: %d LMR: %d (%d/%d) nodes %"INT64_FORMAT"d time %d nps %"INT64_FORMAT"d score cp %d pv ",
-						depth, info->maxSearchPly,(info->fhf * 100.0f / (info->fh + info->fhf)), info->nullCut,info->lmr,info->lmr2,info->lmr3, info->nodes,
+						"info depth %d seldepth %d (%.2f%%, NULLMOVES: %d LMR: %d (%d/%d) nodes %"INT64_FORMAT"d qnodes %"INT64_FORMAT"d time %d nps %"INT64_FORMAT"d score cp %d pv ",
+						depth, info->maxSearchPly,(info->fhf * 100.0f / (info->fh + info->fhf)), info->nullCut,info->lmr,info->lmr2,info->lmr3, info->nodes,info->qnodes,
 						(endtime - info->starttime),
 						(1000 * info->nodes) / (endtime - starttime), score);
 				ASSERT(board.posKey==generatePosKey());
@@ -325,6 +325,7 @@ int main(int argc, char **argv)
 	//testEPD("alkis",1000);
 	//fen2board("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 0 23");
 	input_loop(info);
+	TT_free();
 	return 0;
 
 	//fen2board("3Q4/p3b1k1/2p2rPp/2q5/4B3/P2P4/7P/6RK w - -");  // mate in 4

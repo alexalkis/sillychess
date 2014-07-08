@@ -80,10 +80,10 @@ int Quiesce(int alpha, int beta, S_SEARCHINFO *info)
 	int stand_pat = Evaluate();
 	int score = stand_pat;
 
-	++info->nodes;
+	++info->qnodes;
 	if (isRepetition())
 		return 0;
-	if ((info->nodes & 0xFFF) == 0) {
+	if ((info->qnodes & 0xFFF) == 0) {
 		CheckUp(info);
 	}
 	if (stand_pat >= beta)
@@ -132,9 +132,9 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 	int PvNode = (beta-alpha)>1;
 
 
+	++info->nodes;
 	if (board.ply && isRepetition() ) {
 		pline->cmove=0;
-		++info->nodes;
 		return 0;
 	}
 
@@ -143,7 +143,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 			            : val >= beta ? (tte->flags==hashfBETA)
 			                              : (tte->flags==hashfALPHA))) {
 		++info->hthit;
-		++info->nodes;
+
 //		if (PvMove != NOMOVE) {
 //			pline->cmove = 1;
 //			pline->argmove[0] = PvMove;
@@ -159,7 +159,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 		return Quiesce(alpha,beta,info);
 	}
 
-	++info->nodes;
+
 
 
 	if ((info->nodes & 0xFFF) == 0) {

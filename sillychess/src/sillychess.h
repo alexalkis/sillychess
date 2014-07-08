@@ -164,6 +164,7 @@ typedef struct {
 	int movestogo;
 
 	u64 nodes;
+	u64 qnodes;
 
 	int quit;
 	int stopped;
@@ -262,6 +263,7 @@ void initHash(void);
 
 void TT_set_size(unsigned int mbSize);
 void TT_clear(void);
+void TT_free(void);
 HASHE *TT_probe(int *move, int *score,int depth, int alpha, int beta);
 void TT_RecordHash(int depth, int value, int hashf, int best);
 
