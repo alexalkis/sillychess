@@ -246,7 +246,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 
 	++info->nodes;
 	if (board.ply && isRepetition() ) {
-		pline->cmove=0;
+		//pline->cmove=0;
 		return 0;
 	}
 
