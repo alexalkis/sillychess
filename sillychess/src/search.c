@@ -351,8 +351,6 @@ skipPrunning:
 		for (i = 0; i < mcount; ++i) {
 			if (m[i].move == pv.argmove[board.ply]) {
 				m[i].score = PVMOVE_SCORE;
-				//printf("Found %d\n",++found);
-				//if (ply==0) printf("Pv move found (ply %d)\n",ply);
 				break;
 			}
 		}
