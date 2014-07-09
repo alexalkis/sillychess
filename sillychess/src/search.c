@@ -9,6 +9,120 @@
 #include "sillychess.h"
 #include "move.h"
 
+LINE pv;
+
+int think(S_SEARCHINFO *info)
+{
+	int depth, finalDepth;
+	LINE line;
+
+	line.cmove = 0;
+	pv.cmove=0;
+
+	info->qnodes=info->nodes=info->fh=info->fhf=info->nullCut=0;
+	info->htAlpha=info->htBeta=info->htExact=info->hthit=info->htmiss=0;
+	board.ply=0;
+	info->stopped = FALSE;
+	for (depth = 0; depth < MAXDEPTH; ++depth) {
+		board.searchKillers[0][depth] = board.searchKillers[1][depth] = NOMOVE;
+		pv.argmove[depth] = NOMOVE;
+	}
+	int i,j;
+	for(i=0; i<16;++i)
+		for(j=0; j<128;++j)
+			board.searchHistory[i][j]=0;
+
+	if (info->timeset == FALSE)
+		finalDepth = info->depth;
+	else
+		finalDepth = MAXDEPTH;
+	for (depth = 1; depth <= finalDepth; ++depth) {
+		ASSERT(board.ply==0);
+		info->displayCurrmove=info->maxSearchPly=info->lmr2=info->lmr3=info->lmr=info->fh=info->fhf=info->nullCut=0;
+		int i;
+		for (i = 0; i < MAXDEPTH; ++i) {
+			board.searchKillers[0][i] = board.searchKillers[1][i] = NOMOVE;
+			line.argmove[i] = NOMOVE;
+		}
+		line.cmove=0;
+
+		int starttime = get_ms();
+		ASSERT(board.posKey==generatePosKey());
+		int score = AlphaBeta(depth, -INFINITE,INFINITE, &line, TRUE, info);
+		ASSERT(board.posKey==generatePosKey());
+		int endtime = get_ms();
+		//printBoard();printf("%"INT64_FORMAT"X at depth: %d Eval: %d\n",generatePosKey(),depth,Evaluate());
+		//ASSERT(board.posKey==generatePosKey());
+		CheckUp(info);
+
+
+		if (endtime == starttime)
+			++endtime;
+
+		int mate = 0;
+		if (abs(score) >= (CHECKMATE_SCORE - MAXDEPTH)) {
+			if (score >= (CHECKMATE_SCORE - MAXDEPTH))
+				mate = (CHECKMATE_SCORE - score) / 2  + 1;
+			else
+				mate = (-CHECKMATE_SCORE - score) / 2;
+		}
+
+		LINE tLine;
+		TT_fillPVLineFromTT(depth,&tLine);
+		if (info->GAME_MODE!=GAMEMODE_SILLENT) {
+			if (info->GAME_MODE == GAMEMODE_CONSOLE) {
+				printf(
+						"info depth %d seldepth %d (%.2f%%, NULLMOVES: %d LMR: %d (%d/%d) nodes %"INT64_FORMAT"d qnodes %"INT64_FORMAT"d time %d nps %"INT64_FORMAT"d score cp %d pv ",
+						depth, info->maxSearchPly,(info->fhf * 100.0f / (info->fh + info->fhf)), info->nullCut,info->lmr,info->lmr2,info->lmr3, info->nodes,info->qnodes,
+						(endtime - info->starttime),
+						(1000 * info->nodes) / (endtime - starttime), score);
+				ASSERT(board.posKey==generatePosKey());
+				if (line.cmove)
+					printLine(&line,info);
+				else
+					printf("Funny, I have no PV-line!\n");
+				printf("(");printLine(&tLine,info);printf(")\n");
+				ASSERT(board.posKey==generatePosKey());
+
+			} else {
+				if (info->stopped==FALSE) { //dont print when we've stopped (score is always 0 if we print)
+					if (!mate)
+						printf(
+								"info depth %d seldepth %d score cp %d nodes %"INT64_FORMAT"d nps %"INT64_FORMAT"d time %d pv ",
+								depth,info->maxSearchPly, score, info->nodes,
+								(1000 * info->nodes) / (endtime - starttime),
+								(endtime - info->starttime));
+					else
+						printf(
+								"info depth %d seldepth %d score mate %d nodes %"INT64_FORMAT"d nps %"INT64_FORMAT"d time %d pv ",
+								depth,info->maxSearchPly, mate, info->nodes,
+								(1000 * info->nodes) / (endtime - starttime),
+								(endtime - info->starttime));
+					printLine(&pv,info);printf("\n");
+				}
+			}
+		}
+		fflush(stdout);
+
+		if (tLine.cmove>line.cmove)
+			pv=tLine;
+		else
+			pv = line;
+		if (info->stopped == TRUE) {
+			break;
+		}
+
+		/* if the time needed for search of depth D will exceed the remaining time, then D+1 will exceed also...probably */
+		if (info->timeset && (info->starttime + (endtime - starttime)) > info->stoptime)
+			break;
+	}
+	if (info->GAME_MODE!=GAMEMODE_SILLENT) {
+		printf("Hash - Exact:%d Alpha: %d Beta: %d  -- Hits: %d Misses: %d\n",info->htExact,info->htAlpha,info->htBeta,info->hthit,info->htmiss);
+		printf("bestmove %s\n",moveToUCI(pv.argmove[0]));
+	}
+	return pv.argmove[0];
+}
+
 int numOfLegalMoves(void){
 	int i;
 	int legalMoves = 0;

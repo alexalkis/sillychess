@@ -43,40 +43,6 @@ void TT_set_size(unsigned int mbSize) {
   memset(board.ht, 0, newSize * sizeof(HASHE));
 }
 
-char * qprintMove(int move) {
-	static char *filestr = "abcdefgh";
-	static char *rankstr = "12345678";
-	static char buffer[8];
-	int from = move & 0xff;
-	int to = (move >> 8) & 0xff;
-	int prom = (move >> 24) & 0x7;
-
-	if (move==NOMOVE) {
-		strcpy(buffer,"NOMOVE");
-		return buffer;
-	}
-	//printf("%c%c%s%c%c", filestr[from & 7], rankstr[from >> 4], cap ? "x" : "",	filestr[to & 7], rankstr[to >> 4]);
-	sprintf(buffer,"%c%c%c%c", filestr[from & 7], rankstr[from >> 4],filestr[to & 7], rankstr[to >> 4]);
-	switch (prom) {
-	case KNIGHT:
-		buffer[4]='n';
-		break;
-	case BISHOP:
-		buffer[4]='b';
-		break;
-	case ROOK:
-		buffer[4]='r';
-		break;
-	case QUEEN:
-		buffer[4]='q';
-		break;
-	}
-	if (prom)
-		buffer[5]='\0';
-	else
-		buffer[4]='\0';
-	return buffer;
-}
 
 void TT_clear(void)
 {
@@ -140,4 +106,47 @@ HASHE * TT_probe(int *move, int *score, int depth, int alpha, int beta) {
 		}
 	}
 	return NULL;
+}
+
+void TT_fillPVLineFromTT(int deep, LINE *tLine)
+{
+	int i;
+	int moveCounter=0;
+	smove m[MAXDEPTH];
+	int score;
+	int BestMove;
+
+	for (i=0; i<deep; ++i) {
+		BestMove=NOMOVE;
+		TT_probe(&BestMove,&score,0,0,0);
+		if (BestMove==NOMOVE) break;
+		//printf("Got move for position %d\n",i);
+		if (moveExists(BestMove)) {
+			m[moveCounter].move=BestMove;
+			//printf("Before making move %"INT64_FORMAT"X\n",board.posKey);
+			move_make(&m[moveCounter]);
+			//printf("After  making move %"INT64_FORMAT"X\n",board.posKey);
+			++moveCounter;
+			//smove n;n.move=BestMove;printMove(n);printf(" <--- move legal\n");
+		} else {
+			smove n;
+			n.move=BestMove;
+			printBoard();
+			printMove(n);printf(" <--- move not legal\n");
+			break;
+		}
+	}
+
+	if (moveCounter) {
+		for(i=moveCounter-1; i>=0; --i)
+			move_unmake(&m[i]);
+
+		for(i=0; i<moveCounter; ++i)
+			tLine->argmove[i]=m[i].move;
+		tLine->cmove=moveCounter;
+		//printf(" Moves: %d\n",moveCounter);
+		//printLine(&tLine);
+	} else {
+		printf("No moves from hash table probing!!!\n");
+	}
 }

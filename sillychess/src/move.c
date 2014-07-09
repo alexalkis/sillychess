@@ -37,6 +37,136 @@ const int VictimScore[16] = { 	0, 100,600, 200,0,300, 400, 500,
 								0, 100,600, 200,0,300, 400, 500};
 static int MvvLvaScores[16][16];
 
+int moveExists(unsigned int move)
+{
+	int i;
+	int legalMoves = 0;
+	smove m[256];
+	int mcount = generateMoves(m);
+
+	//printBoard();
+	for ( i = 0; i < mcount; ++i) {
+
+			move_make(&m[i]);
+			if (!isAttacked(board.sideToMove, kingLoc[1 - (board.sideToMove >> 3)])) {
+				//printf("Legal: ");printMove(m[i]);printf(" ");
+				++legalMoves;
+				if (m[i].move==move) {
+					move_unmake(&m[i]);
+					return TRUE;
+				}
+
+			}
+			move_unmake(&m[i]);
+	}
+	return FALSE;
+}
+
+int generateLegalMoves(smove *m)
+{
+	int i;
+	int legalmoves=0;
+
+	int mcount=generateMoves(m);
+	for ( i = 0; i < mcount; ++i) {
+		move_make(&m[i]);
+		if (isAttacked(board.sideToMove, kingLoc[1 - (board.sideToMove >> 3)])) {
+			move_unmake(&m[i]);
+			m[i]=m[mcount-1];
+			--mcount;
+			--i;
+			continue;
+		}
+		++legalmoves;
+		move_unmake(&m[i]);
+	}
+	return legalmoves;
+}
+
+void printLine(LINE *line,S_SEARCHINFO *info)
+{
+	int i;
+	smove m[MAXDEPTH];
+	for (i = 0; i < line->cmove; ++i) {
+		m[i].move = line->argmove[i];
+		if (!moveExists(m[i].move)) {
+			printf("Move (");printMove(m[i]);printf(") not legal, but in PV-line. It's the %d out of %d moves.\n",i+1,line->cmove);
+			int j;
+			for(j=i+1; j<line->cmove; ++j) {
+				printMove(m[j]);
+				if (!moveExists(m[i].move))
+					printf(" - Illegal\n");
+				else
+					printf(" - Legal\n");
+			}
+
+			break;
+		}
+		smove lm[256];
+		int mlegalcount=generateLegalMoves(lm);
+		move_make(&m[i]);
+		if (isAttacked(board.sideToMove,kingLoc[((board.sideToMove ^ BLACK) >> 3)])) {
+#ifndef NDEBUG
+			printf(" PV-Line is messed up\n");
+#endif
+			++i;
+			break;
+		}
+		if (info->GAME_MODE!=GAMEMODE_UCI)
+			printf("%s",move_to_san(m[i],mlegalcount,lm));
+		else {
+			printMove(m[i]);
+			if (isAttacked(board.sideToMove ^ BLACK,kingLoc[1 - ((board.sideToMove ^ BLACK) >> 3)])) {
+				if (numOfLegalMoves()) {
+					printf("+");
+				} else {
+					printf("#");
+					++i;
+					break;
+				}
+			}
+		}
+		printf(" ");
+	}
+	for (--i; i >= 0; --i) {
+		move_unmake(&m[i]);
+	}
+}
+char * qprintMove(int move) {
+	static char *filestr = "abcdefgh";
+	static char *rankstr = "12345678";
+	static char buffer[8];
+	int from = move & 0xff;
+	int to = (move >> 8) & 0xff;
+	int prom = (move >> 24) & 0x7;
+
+	if (move==NOMOVE) {
+		strcpy(buffer,"NOMOVE");
+		return buffer;
+	}
+	//printf("%c%c%s%c%c", filestr[from & 7], rankstr[from >> 4], cap ? "x" : "",	filestr[to & 7], rankstr[to >> 4]);
+	sprintf(buffer,"%c%c%c%c", filestr[from & 7], rankstr[from >> 4],filestr[to & 7], rankstr[to >> 4]);
+	switch (prom) {
+	case KNIGHT:
+		buffer[4]='n';
+		break;
+	case BISHOP:
+		buffer[4]='b';
+		break;
+	case ROOK:
+		buffer[4]='r';
+		break;
+	case QUEEN:
+		buffer[4]='q';
+		break;
+	}
+	if (prom)
+		buffer[5]='\0';
+	else
+		buffer[4]='\0';
+	return buffer;
+}
+
 void InitMvvLva(void) {
 	int Attacker;
 	int Victim;

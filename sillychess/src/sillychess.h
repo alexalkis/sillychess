@@ -235,6 +235,8 @@ int isAttacked(int byColor, int sq);
 u64 dummyPerft(u8 depth);
 u64 Perft(u8 depth);
 u64 Divide(u8 depth);
+int moveExists(unsigned int move);
+int generateLegalMoves(smove *m);
 void printMove(smove m);
 void pickMove(smove *m,int j,int n);
 int move_make(smove *move);
@@ -266,6 +268,7 @@ void TT_clear(void);
 void TT_free(void);
 HASHE *TT_probe(int *move, int *score,int depth, int alpha, int beta);
 void TT_RecordHash(int depth, int value, int hashf, int best);
+void TT_fillPVLineFromTT(int deep, LINE *tLine);
 
 
 void testEPD(char *filename, int miliseconds);
