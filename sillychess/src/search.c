@@ -46,11 +46,11 @@ int think(S_SEARCHINFO *info)
 		}
 		line.cmove=0;
 
-		int starttime = get_ms();
+		unsigned int starttime = get_ms();
 		ASSERT(board.posKey==generatePosKey());
 		int score = AlphaBeta(depth, -INFINITE,INFINITE, &line, TRUE, info);
 		ASSERT(board.posKey==generatePosKey());
-		int endtime = get_ms();
+		unsigned int endtime = get_ms();
 		//printBoard();printf("%"INT64_FORMAT"X at depth: %d Eval: %d\n",generatePosKey(),depth,Evaluate());
 		//ASSERT(board.posKey==generatePosKey());
 		CheckUp(info);
