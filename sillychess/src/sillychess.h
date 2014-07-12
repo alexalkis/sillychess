@@ -8,7 +8,7 @@
 #ifndef SILLYCHESS_H_
 #define SILLYCHESS_H_
 
-//workarround for mingw on windows not printing %"INT64_FORMAT"X correctly
+//workarround for mingw on windows not printing %llX correctly
 #ifdef __MINGW32__
 #define INT64_FORMAT "I64"
 #else
@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define NAME	"sc v0.3.5"
+#define NAME	"sc v0.3.5 (No SP)"
 #define FULLNAME		NAME " " __DATE__ " " __TIME__
 
 #define START_FEN	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"

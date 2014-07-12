@@ -384,15 +384,15 @@ skipPrunning:
 
 		int givesCheck=isAttacked(board.sideToMove^BLACK, kingLoc[board.sideToMove >> 3]);
 
-		/* Shallow prune */
-		if (	!PvNode &&
-				!givesCheck &&
-				(legalMoves >= (2 + depth))&&
-				!ISCAPTUREORPROMOTION(m[i].move)
-			) {
-			move_unmake(&m[i]);
-			continue;
-		}
+//		/* Shallow prune */
+//		if (	!PvNode &&
+//				!givesCheck &&
+//				(legalMoves >= (2 + depth))&&
+//				!ISCAPTUREORPROMOTION(m[i].move)
+//			) {
+//			move_unmake(&m[i]);
+//			continue;
+//		}
 		/* LMR here */
 		if (!legalMoves) {
 			val = -AlphaBeta(depth - 1, -beta, -alpha, &line,TRUE,info);
