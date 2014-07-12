@@ -21,7 +21,7 @@
 #ifndef __AMIGA__
 #include <stdlib.h>
 #include <sys/timeb.h>
-int get_ms()
+unsigned int get_ms()
 {
 	struct timeb timebuffer;
 	ftime(&timebuffer);

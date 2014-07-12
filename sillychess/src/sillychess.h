@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define NAME	"sc v0.3.4"
+#define NAME	"sc v0.3.5"
 #define FULLNAME		NAME " " __DATE__ " " __TIME__
 
 #define START_FEN	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -243,7 +243,7 @@ int move_make(smove *move);
 int move_unmake(smove *move);
 void move_makeNull(smove *move);
 void move_unmakeNull(smove *move);
-int get_ms(void);
+unsigned int get_ms(void);
 int think(S_SEARCHINFO *info);
 void thinkFen(char *fen,int depth);
 int Evaluate(void);

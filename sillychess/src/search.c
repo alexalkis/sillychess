@@ -141,6 +141,7 @@ int numOfLegalMoves(void){
 void CheckUp(S_SEARCHINFO *info) {
 	//printf("Checked: %d\n",info->stoptime-get_ms());
 	unsigned int time=get_ms();
+	ASSERT(time>=info->starttime);
 	if(info->timeset == TRUE && time > info->stoptime) {
 
 		info->stopped = TRUE;
@@ -192,6 +193,7 @@ int Quiesce(int alpha, int beta, S_SEARCHINFO *info)
 	int stand_pat = Evaluate();
 	int score = stand_pat;
 
+	++info->nodes;
 	++info->qnodes;
 	if (isRepetition())
 		return 0;
@@ -380,6 +382,17 @@ skipPrunning:
 			continue;
 		}
 
+		int givesCheck=isAttacked(board.sideToMove^BLACK, kingLoc[board.sideToMove >> 3]);
+
+		/* Shallow prune */
+		if (	!PvNode &&
+				!givesCheck &&
+				(legalMoves >= (2 + depth))&&
+				!ISCAPTUREORPROMOTION(m[i].move)
+			) {
+			move_unmake(&m[i]);
+			continue;
+		}
 		/* LMR here */
 		if (!legalMoves) {
 			val = -AlphaBeta(depth - 1, -beta, -alpha, &line,TRUE,info);
@@ -387,7 +400,7 @@ skipPrunning:
 		else {
 			if(legalMoves >= FullDepthMoves &&
 					depth >= ReductionLimit &&
-					//!inCheck &&  //inCheck is invalid here anyways (after move_make())
+					!givesCheck &&
 					!PvNode &&
 					!ISCAPTUREORPROMOTION(m[i].move)&&
 					m[i].move!=board.searchKillers[0][board.ply] &&
@@ -412,14 +425,17 @@ skipPrunning:
 
 
 		move_unmake(&m[i]);
+
+
+		if (info->stopped == TRUE) {
+			return 0;
+		}
+
 		if (!board.ply && info->displayCurrmove) {
 			printf("info depth %d currmove %s currmovenumber %d\n",depth,moveToUCI(m[i].move),i+1);
 			fflush(stdout);
 		}
 
-		if (info->stopped == TRUE) {
-			return 0;
-		}
 
 		if (val > BestScore) {
 			BestScore = val;
