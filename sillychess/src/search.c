@@ -382,7 +382,7 @@ skipPrunning:
 			continue;
 		}
 
-		int givesCheck=isAttacked(board.sideToMove^BLACK, kingLoc[board.sideToMove >> 3]);
+		//int givesCheck=isAttacked(board.sideToMove^BLACK, kingLoc[board.sideToMove >> 3]);
 
 //		/* Shallow prune */
 //		if (	!PvNode &&
@@ -400,7 +400,7 @@ skipPrunning:
 		else {
 			if(legalMoves >= FullDepthMoves &&
 					depth >= ReductionLimit &&
-					!givesCheck &&
+					//!givesCheck &&
 					!PvNode &&
 					!ISCAPTUREORPROMOTION(m[i].move)&&
 					m[i].move!=board.searchKillers[0][board.ply] &&
