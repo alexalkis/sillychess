@@ -128,6 +128,10 @@ struct aboard {
 	HASHE *ht;
 	u64 htSize;
 
+	int opawnCount[2];
+	int obigCount[2];
+	int matValues[2];
+	int psqValues[2];
 	int pawnCount[2];
 	int bigCount[2];
 };
@@ -194,6 +198,7 @@ extern struct aboard board;
 
 extern int kingLoc[2];
 
+extern int matValues[];
 extern int psq_pawns[2][64];
 extern int raw_psq_pawns[64];
 extern int psq_knights[2][64];

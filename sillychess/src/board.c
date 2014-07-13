@@ -127,28 +127,30 @@ void printpsq(int psq[2][64], int n) {
 	printf("\n");
 }
 void initBoard(void) {
-	u8 temp[128] = { WHITE_ROOK, WHITE_KNIGHT, WHITE_BISHOP, WHITE_QUEEN,
-			WHITE_KING, WHITE_BISHOP, WHITE_KNIGHT, WHITE_ROOK, 0, 0, 0, 0, 0,
-			0, 0, 0, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN,
-			WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, 0, 0, 0, 0, 0, 0, 0, 0, EMPTY,
-			EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-			EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-			EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-			EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-			EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-			EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-			EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
-			BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN,
-			BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, 0, 0, 0, 0, 0, 0, 0, 0,
-			BLACK_ROOK, BLACK_KNIGHT, BLACK_BISHOP, BLACK_QUEEN, BLACK_KING,
-			BLACK_BISHOP, BLACK_KNIGHT, BLACK_ROOK, 0, 0, 0, 0, 0, 0, 0, 0 };
-	memcpy(board.bs, temp, 128 * sizeof(u8));
-	board.sideToMove = WHITE;
-	board.enPassant = ENPASSANTNULL;
-	board.castleRights = 0xf;
-	board.fiftyCounter = 0;
-	board.ply = 0;
-	board.posKey=generatePosKey();
+//	u8 temp[128] = { WHITE_ROOK, WHITE_KNIGHT, WHITE_BISHOP, WHITE_QUEEN,
+//			WHITE_KING, WHITE_BISHOP, WHITE_KNIGHT, WHITE_ROOK, 0, 0, 0, 0, 0,
+//			0, 0, 0, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN,
+//			WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, 0, 0, 0, 0, 0, 0, 0, 0, EMPTY,
+//			EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
+//			EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
+//			EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
+//			EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
+//			EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
+//			EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
+//			EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY,
+//			BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN,
+//			BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, 0, 0, 0, 0, 0, 0, 0, 0,
+//			BLACK_ROOK, BLACK_KNIGHT, BLACK_BISHOP, BLACK_QUEEN, BLACK_KING,
+//			BLACK_BISHOP, BLACK_KNIGHT, BLACK_ROOK, 0, 0, 0, 0, 0, 0, 0, 0 };
+//	memcpy(board.bs, temp, 128 * sizeof(u8));
+//	board.sideToMove = WHITE;
+//	board.enPassant = ENPASSANTNULL;
+//	board.castleRights = 0xf;
+//	board.fiftyCounter = 0;
+//	board.ply = 0;
+//	board.posKey=generatePosKey();
+	board.gameply=0;
+	fen2board(START_FEN);
 	kingLoc[0] = E1;
 	kingLoc[1] = E8;
 
@@ -301,22 +303,33 @@ void fen2board(char *str) {
 	for (i = 0; i < 128; ++i)
 		board.bs[i] = EMPTY;
 
+	board.bigCount[0]=board.bigCount[1]=0;
+	board.matValues[0]=board.matValues[1]=0;
+	board.pawnCount[0]=board.pawnCount[1]=0;
 	while ((c = *str++)) {
 		switch (c) {
 		case 'r':
 			board.bs[(rank << 4) + file] = BLACK_ROOK;
+			++board.bigCount[1];
+			board.matValues[1]+=matValues[BLACK_ROOK];
 			++file;
 			break;
 		case 'n':
 			board.bs[(rank << 4) + file] = BLACK_KNIGHT;
+			++board.bigCount[1];
+			board.matValues[1]+=matValues[BLACK_KNIGHT];
 			++file;
 			break;
 		case 'b':
 			board.bs[(rank << 4) + file] = BLACK_BISHOP;
+			++board.bigCount[1];
+			board.matValues[1]+=matValues[BLACK_BISHOP];
 			++file;
 			break;
 		case 'q':
 			board.bs[(rank << 4) + file] = BLACK_QUEEN;
+			++board.bigCount[1];
+			board.matValues[1]+=matValues[BLACK_QUEEN];
 			++file;
 			break;
 		case 'k':
@@ -326,23 +339,33 @@ void fen2board(char *str) {
 			break;
 		case 'p':
 			board.bs[(rank << 4) + file] = BLACK_PAWN;
+			++board.pawnCount[1];
+			board.matValues[1]+=matValues[BLACK_PAWN];
 			++file;
 			break;
 
 		case 'R':
 			board.bs[(rank << 4) + file] = WHITE_ROOK;
+			++board.bigCount[0];
+			board.matValues[0]+=matValues[WHITE_ROOK];
 			++file;
 			break;
 		case 'N':
 			board.bs[(rank << 4) + file] = WHITE_KNIGHT;
+			++board.bigCount[0];
+			board.matValues[0]+=matValues[WHITE_KNIGHT];
 			++file;
 			break;
 		case 'B':
 			board.bs[(rank << 4) + file] = WHITE_BISHOP;
+			++board.bigCount[0];
+			board.matValues[0]+=matValues[WHITE_BISHOP];
 			++file;
 			break;
 		case 'Q':
 			board.bs[(rank << 4) + file] = WHITE_QUEEN;
+			++board.bigCount[0];
+			board.matValues[0]+=matValues[WHITE_QUEEN];
 			++file;
 			break;
 		case 'K':
@@ -352,6 +375,8 @@ void fen2board(char *str) {
 			break;
 		case 'P':
 			board.bs[(rank << 4) + file] = WHITE_PAWN;
+			++board.pawnCount[0];
+			board.matValues[0]+=matValues[WHITE_PAWN];
 			++file;
 			break;
 		case '1':

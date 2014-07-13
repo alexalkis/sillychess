@@ -108,8 +108,8 @@ int Evaluate(void) {
 	int i;
 	int sq88;
 	int mat = 0;
-	board.bigCount[0]=board.bigCount[1]=0;
-	board.pawnCount[0]=board.pawnCount[1]=0;
+	board.obigCount[0]=board.obigCount[1]=0;
+	board.opawnCount[0]=board.opawnCount[1]=0;
 	for (i = 0; i < 64; ++i) {
 		sq88=i + (i & ~7);
 		if ((board.bs[sq88] != EMPTY)) {
@@ -122,7 +122,7 @@ int Evaluate(void) {
 				break;
 			case PAWN:
 				mat+=psq_pawns[color][i];
-				++board.pawnCount[color];
+				++board.opawnCount[color];
 				continue;	// so we don't increment bigCount
 				break;
 			case BISHOP:
@@ -138,9 +138,20 @@ int Evaluate(void) {
 				mat+=psq_queens[color][i];
 				break;
 			}
-			++board.bigCount[color];
+			++board.obigCount[color];
 		}
 	}
+	if (board.obigCount[0]!=board.bigCount[0]) {
+		printf("obigcount: %d/%d\nbigcount: %d/%d\n",board.obigCount[0],board.obigCount[1],board.bigCount[0],board.bigCount[1]);
+
+	}
+	if ((board.matValues[0]+board.matValues[1])!=mat) {
+		printf("matValues: %d/%d mat: %d\n",board.matValues[0],board.matValues[1],mat);
+	}
+
+	ASSERT(board.obigCount[0]==board.bigCount[0]);
+	ASSERT(board.obigCount[1]==board.bigCount[1]);
+	ASSERT((board.matValues[0]+board.matValues[1])==mat);
 	if ( board.sideToMove == BLACK )
 	       return -mat;
 	    else

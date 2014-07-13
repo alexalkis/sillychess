@@ -738,6 +738,12 @@ void move_unmakeNull(smove *move) {
 	--board.ply;
 }
 
+
+void RemovePiecePsq(int from, int piece)
+{
+
+}
+
 int move_make(smove *move)
 {
 	ASSERT(board.bs[kingLoc[0]]==WHITE_KING);
@@ -773,9 +779,17 @@ int move_make(smove *move)
 	}
 
 	board.bs[from] = EMPTY;
+
 	if (promoted) {
 		board.posKey ^= pieceKeys[piece][to] ^ pieceKeys[promoted][to];
 		board.bs[to] = promoted;
+		if (board.sideToMove == BLACK) {
+			board.matValues[0] -= matValues[piece]+matValues[promoted];
+			++board.bigCount[0];
+		} else {
+			board.matValues[1] -= matValues[piece]+matValues[promoted];
+			++board.bigCount[1];
+		}
 	} else
 		board.bs[to] = piece;
 
@@ -862,15 +876,26 @@ int move_make(smove *move)
 		if (board.sideToMove == BLACK) {
 			board.bs[to - 16] = 0;
 			board.posKey ^= pieceKeys[BLACK_PAWN][to - 16];
+			board.matValues[1]-=matValues[BLACK_PAWN];
 		} else {
 			board.bs[to + 16] = 0;
 			board.posKey ^= pieceKeys[WHITE_PAWN][to + 16];
+			board.matValues[0]-=matValues[WHITE_PAWN];
 		}
 		/* artificially mark the move as non-capture so we don't hash-out anything at the destination square of the move */
 		capture=0;
 	}
 	if (capture) {
 		board.posKey ^= pieceKeys[capture][to];
+		if (board.sideToMove==BLACK) {
+			board.matValues[1]-=matValues[capture];
+			if (capture!=BLACK_KING && capture!=BLACK_PAWN)
+				--board.bigCount[1];
+		}else {
+			board.matValues[0]-=matValues[capture];
+			if (capture!=WHITE_KING && capture!=WHITE_PAWN)
+				--board.bigCount[0];
+		}
 	}
 	ASSERT(board.bs[kingLoc[0]]==WHITE_KING);
 	ASSERT(board.bs[kingLoc[1]]==BLACK_KING);
@@ -899,15 +924,39 @@ int move_unmake(smove *move) {
 	board.bs[to] = EMPTY;
 	board.bs[from] = piece;
 
+	int promoted = ISPROMOTION(move->move);
+	if (promoted) {
+		if (board.sideToMove == BLACK) {
+			board.matValues[1]-=matValues[promoted];
+			--board.bigCount[1];
+		} else {
+			board.matValues[0]-=matValues[promoted];
+			--board.bigCount[0];
+		}
+	}
+
 	int capturedpiece = ISCAPTURE(move->move);
 
 	if (SPECIAL(move->move) == SP_ENPASSANT) {
-		if (board.sideToMove == BLACK)
+		if (board.sideToMove == BLACK) {
 			board.bs[to + 16] = WHITE_PAWN;
-		else
+			board.matValues[0]+=matValues[WHITE_PAWN];
+		} else {
 			board.bs[to - 16] = BLACK_PAWN;
-	} else if (capturedpiece)
+			board.matValues[1]+=matValues[BLACK_PAWN];
+		}
+	} else if (capturedpiece) {
 		board.bs[to] = capturedpiece;
+		if (board.sideToMove==BLACK) {
+			board.matValues[0]+=matValues[capturedpiece];
+			if (capturedpiece!=WHITE_KING && capturedpiece!=WHITE_PAWN)
+				++board.bigCount[0];
+		}else {
+			board.matValues[1]+=matValues[capturedpiece];
+			if (capturedpiece!=BLACK_KING && capturedpiece!=BLACK_PAWN)
+				++board.bigCount[1];
+		}
+	}
 
 	if (SPECIAL(move->move) == SP_CASTLE) {
 		if (to == G1) {
