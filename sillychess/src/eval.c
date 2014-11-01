@@ -141,6 +141,8 @@ int Evaluate(void) {
 			++board.obigCount[color];
 		}
 	}
+
+	/* Checks to see if the updated on capture/uncapture material values match the calculated ones */
 	if (board.obigCount[0]!=board.bigCount[0]) {
 		printf("obigcount: %d/%d\nbigcount: %d/%d\n",board.obigCount[0],board.obigCount[1],board.bigCount[0],board.bigCount[1]);
 
