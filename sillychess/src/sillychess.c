@@ -29,7 +29,8 @@ void testPerft(int n);
 
 struct aboard board;
 
-#ifndef WIN32
+#define NOSIGHANDLER
+#if !defined(WIN32) && !defined(__AMIGA__)
 #include <execinfo.h>
 #include <signal.h>
 #include <ucontext.h>
@@ -119,14 +120,18 @@ void init(void)
 	board.gameply=0;
     board.ht=NULL;
     board.htSize=0;
+#ifdef __AMIGA__
+    TT_set_size(4);
+#else
     TT_set_size(128);
+#endif
 }
 int main(int argc, char **argv)
 {
 	S_SEARCHINFO info[1];
 	info->GAME_MODE = GAMEMODE_CONSOLE;
 	int i;
-#ifndef WIN32
+#if !defined(WIN32) && !defined(NOSIGHANDLER)
 	struct sigaction sigact;
 
 	 sigact.sa_sigaction = crit_err_hdlr;
@@ -281,6 +286,10 @@ void testPerft(int n)
 }
 //v0.3.1 271/879 at 1000ms on ECM Total time: 880651ms Total nodes: 1535082412
 
+
+
+// testepd 400 /home/alex/git/amichess/sillychess/src/wac.epd
+//v0.3.6b 220/300 at 400ms Total nodes: 262266409
 //v0.3.1 221/300 at 400ms razoring + futility pruning
 //V0.3.1 214/300 at 400ms after a minor modification in search (seldepth logging + small bug in signedness of time variables fixed)
 //v0.3.1 215/300 at 400ms  Total time: 120581ms Total nodes: 206948188 [198/300 on laptop, Total nodes: 92094101]

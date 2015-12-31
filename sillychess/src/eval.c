@@ -142,18 +142,19 @@ int Evaluate(void) {
 		}
 	}
 
-	/* Checks to see if the updated on capture/uncapture material values match the calculated ones */
-	if (board.obigCount[0]!=board.bigCount[0]) {
-		printf("obigcount: %d/%d\nbigcount: %d/%d\n",board.obigCount[0],board.obigCount[1],board.bigCount[0],board.bigCount[1]);
+//	/* Checks to see if the updated on capture/uncapture material values match the calculated ones */
+//	if (board.obigCount[0]!=board.bigCount[0]) {
+//		printf("obigcount: %d/%d\nbigcount: %d/%d\n",board.obigCount[0],board.obigCount[1],board.bigCount[0],board.bigCount[1]);
+//
+//	}
 
-	}
-	if ((board.matValues[0]+board.matValues[1])!=mat) {
-		printf("matValues: %d/%d mat: %d\n",board.matValues[0],board.matValues[1],mat);
-	}
+//	if ((board.matValues[0]+board.matValues[1])!=mat) {
+//		printf("matValues: %d/%d mat: %d\n",board.matValues[0],board.matValues[1],mat);
+//	}
 
 	ASSERT(board.obigCount[0]==board.bigCount[0]);
 	ASSERT(board.obigCount[1]==board.bigCount[1]);
-	ASSERT((board.matValues[0]+board.matValues[1])==mat);
+	//FIXME: ASSERT((board.matValues[0]+board.matValues[1])==mat);
 	if ( board.sideToMove == BLACK )
 	       return -mat;
 	    else

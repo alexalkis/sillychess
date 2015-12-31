@@ -1,3 +1,8 @@
+v0.3.6beta
+info depth 12 seldepth 13 (86.40%, NULLMOVES: 8495 LMR: 109599 (1321910/4) nodes 8357309 qnodes 4273752 time 3577 nps 6038518 score cp 20 pv e4 e5 Nf3 Nc6 d4 exd4 Nxd4 Nf6 Nxc6 bxc6 Nc3 d5 (e4 e5 Nf3 Nc6 d4 exd4 Nxd4 Nf6 Nxc6 dxc6 Qxd8+ Kxd8 )
+Hash - Exact:471 Alpha: 115091 Beta: 458020  -- Hits: 182063 Misses: 3901467
+bestmove e2e4
+Time taken: 3577
 v0.3.2
 info depth 12 seldepth 13 (86.18%, NULLMOVES: 8936 LMR: 110738 (1381165/5) nodes 5840759 time 3771 nps 3896436 score cp 20 pv e4 e5 Nf3 Nc6 d4 exd4 Nxd4 Nf6 Nxc6 bxc6 Nc3 d5 (e4 e5 Nf3 Nc6 d4 exd4 Nxd4 Nf6 Nxc6 dxc6 Qxd8+ Kxd8 )
 Hash - Exact:501 Alpha: 119132 Beta: 474708  -- Hits: 182285 Misses: 4052388

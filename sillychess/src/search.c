@@ -41,7 +41,7 @@ int think(S_SEARCHINFO *info)
 		info->displayCurrmove=info->maxSearchPly=info->lmr2=info->lmr3=info->lmr=info->fh=info->fhf=info->nullCut=0;
 		int i;
 		for (i = 0; i < MAXDEPTH; ++i) {
-			board.searchKillers[0][i] = board.searchKillers[1][i] = NOMOVE;
+			//board.searchKillers[0][i] = board.searchKillers[1][i] = NOMOVE;
 			line.argmove[i] = NOMOVE;
 		}
 		line.cmove=0;
@@ -241,6 +241,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 	int i;
 	int val=alpha;
 	LINE line;
+	line.cmove=0;
 	int PvMove = NOMOVE;
 	HASHE *tte;
 	int PvNode = (beta-alpha)>1;
@@ -257,11 +258,8 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 			            : val >= beta ? (tte->flags==hashfBETA)
 			                              : (tte->flags==hashfALPHA))) {
 		++info->hthit;
-
-//		if (PvMove != NOMOVE) {
-//			pline->cmove = 1;
-//			pline->argmove[0] = PvMove;
-//		}
+		pline->argmove[0] = PvMove;
+		pline->cmove=1;
 		return val;
 	} else
 		++info->htmiss;
@@ -273,15 +271,9 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 		return Quiesce(alpha,beta,info);
 	}
 
-
-
-
 	if ((info->nodes & 0xFFF) == 0) {
 		CheckUp(info);
 	}
-
-
-
 
 
 	//is the square of _our_ king attacked by the other side?  i.e. are _we_ in check?
@@ -458,8 +450,14 @@ skipPrunning:
 				}
 				alpha = val;
 				pline->argmove[0] = m[i].move;
-				memcpy(pline->argmove + 1, line.argmove,line.cmove * sizeof(int));
+
+				if (line.cmove>0) {
+					//ASSERT(line.cmove>=0);
+					//printf("cmove: %d\n",line.cmove);
+					memcpy(pline->argmove + 1, line.argmove,line.cmove * sizeof(int));
+				}
 				pline->cmove = line.cmove + 1;
+
 				if (!(ISCAPTUREORPROMOTION(m[i].move))) {
 					board.searchHistory[PIECE(m[i].move)][TO(m[i].move)]+=depth;
 				}

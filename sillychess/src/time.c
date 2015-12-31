@@ -11,7 +11,7 @@
 #include <unistd.h>
 #else
 #include "sys/time.h"
-#include "sys/select.h"
+
 #include <sys/types.h>
 #include <unistd.h>
 #include <errno.h>
@@ -21,6 +21,7 @@
 #ifndef __AMIGA__
 #include <stdlib.h>
 #include <sys/timeb.h>
+#include "sys/select.h"
 unsigned int get_ms()
 {
 	struct timeb timebuffer;
@@ -31,19 +32,29 @@ unsigned int get_ms()
 #else
 //#include <exec/types.h>
 //#include <exec/exec.h>
-#include <dos/dos.h>
-#include <proto/dos.h>
-int get_ms()
+//#include <devices/timer.h>
+//#include <dos/dos.h>
+//#include <proto/dos.h>
+#include <sys/timeb.h>
+unsigned int get_ms()
 {
-  struct DateStamp now;
-  DateStamp(&now);
-  return now.ds_Minute*60000+now.ds_Tick*20; /*( 20 = 1000 / 50(tickspersec))*/
+//  struct DateStamp now;
+//  DateStamp(&now);
+//  return now.ds_Minute*60000+now.ds_Tick*20; /*( 20 = 1000 / 50(tickspersec))*/
+  struct timeb timebuffer;
+  	ftime(&timebuffer);
+
+  	return (timebuffer.time * 1000) + timebuffer.millitm;
 }
 #endif
 
 // http://home.arcor.de/dreamlike/chess/
 int InputWaiting(void)
 {
+#ifdef __AMIGA__
+	return 0;
+#else
+
 #ifndef NDEBUG
 	static int numIntrSignal=0;
 #endif
@@ -102,6 +113,7 @@ int InputWaiting(void)
       GetNumberOfConsoleInputEvents(inh, &dw);
       return dw <= 1 ? 0 : dw;
 	}
+#endif
 #endif
 }
 
