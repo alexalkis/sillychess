@@ -21,7 +21,7 @@
 #ifndef __AMIGA__
 #include <stdlib.h>
 #include <sys/timeb.h>
-#include "sys/select.h"
+//#include <sys/select.h>
 unsigned int get_ms()
 {
 	struct timeb timebuffer;
