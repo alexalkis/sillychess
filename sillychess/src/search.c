@@ -349,17 +349,18 @@ skipPrunning:
 			}
 		}
 	}
-//	else {
-//		if (PvMove != NOMOVE) {
-//			for (i = 0; i < mcount; ++i) {
-//				if (m[i].move == PvMove) {
-//					m[i].score = PVMOVE_SCORE;
-//					break;
-//				}
-//			}
-//
-//		}
-//	}
+	else {
+		//printf("huh, works...\n");
+		if (PvMove != NOMOVE) {
+			for (i = 0; i < mcount; ++i) {
+				if (m[i].move == PvMove) {
+					m[i].score = PVMOVE_SCORE;
+					break;
+				}
+			}
+
+		}
+	}
 
 	int BestMove = NOMOVE;
 	int legalMoves = 0;
@@ -473,6 +474,7 @@ skipPrunning:
 		}
 	}
 	if (alpha != OldAlpha) {
+			ASSERT(alpha==BestScore);
 			TT_RecordHash(depth, BestScore, hashfEXACT, BestMove);
 			++info->htExact;
 		} else {
