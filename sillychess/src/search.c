@@ -19,7 +19,7 @@ int think(S_SEARCHINFO *info)
 	line.cmove = 0;
 	pv.cmove=0;
 
-	info->qnodes=info->nodes=info->fh=info->fhf=info->nullCut=0;
+	info->qnodes=info->nodes=info->failHigh=info->failHighFirst=info->nullCut=0;
 	info->htAlpha=info->htBeta=info->htExact=info->hthit=info->htmiss=0;
 	board.ply=0;
 	info->stopped = FALSE;
@@ -38,7 +38,7 @@ int think(S_SEARCHINFO *info)
 		finalDepth = MAXDEPTH;
 	for (depth = 1; depth <= finalDepth; ++depth) {
 		ASSERT(board.ply==0);
-		info->displayCurrmove=info->maxSearchPly=info->lmr2=info->lmr3=info->lmr=info->fh=info->fhf=info->nullCut=0;
+		info->displayCurrmove=info->maxSearchPly=info->lmr2=info->lmr3=info->lmr=info->failHigh=info->failHighFirst=info->nullCut=0;
 		int i;
 		for (i = 0; i < MAXDEPTH; ++i) {
 			//board.searchKillers[0][i] = board.searchKillers[1][i] = NOMOVE;
@@ -73,7 +73,7 @@ int think(S_SEARCHINFO *info)
 			if (info->GAME_MODE == GAMEMODE_CONSOLE) {
 				printf(
 						"info depth %d seldepth %d (%.2f%%, NULLMOVES: %d LMR: %d (%d/%d) nodes %"INT64_FORMAT"d qnodes %"INT64_FORMAT"d time %d nps %"INT64_FORMAT"d score cp %d pv ",
-						depth, info->maxSearchPly,(info->fhf * 100.0f / (info->fh + info->fhf)), info->nullCut,info->lmr,info->lmr2,info->lmr3, info->nodes,info->qnodes,
+						depth, info->maxSearchPly,(info->failHighFirst * 100.0f / (info->failHigh + info->failHighFirst)), info->nullCut,info->lmr,info->lmr2,info->lmr3, info->nodes,info->qnodes,
 						(endtime - info->starttime),
 						(1000 * info->nodes) / (endtime - starttime), score);
 				ASSERT(board.posKey==generatePosKey());
@@ -221,9 +221,9 @@ int Quiesce(int alpha, int beta, S_SEARCHINFO *info)
 		}
 		if (score >= beta) {
 			if (legalMoves == 1)
-				++info->fhf;
+				++info->failHighFirst;
 			else
-				++info->fh;
+				++info->failHigh;
 			return beta;
 		}
 		if (score > alpha)
@@ -388,7 +388,7 @@ skipPrunning:
 //		}
 		/* LMR here */
 		if (!legalMoves) {
-			val = -AlphaBeta(depth - 1, -beta, -alpha, &line,TRUE,info);
+			val = -AlphaBeta(depth - 1, -beta, -alpha, &line,doNull,info);
 		}
 		else {
 			if(legalMoves >= FullDepthMoves &&
@@ -400,15 +400,15 @@ skipPrunning:
 					m[i].move!=board.searchKillers[1][board.ply])
 			{
 				// Search this move with reduced depth:
-				val = -AlphaBeta(depth-2,-(alpha+1), -alpha, &line,TRUE,info);
+				val = -AlphaBeta(depth-2,-(alpha+1), -alpha, &line,doNull,info);
 				++info->lmr;
 			} else
 				val = alpha+1;	// Hack to ensure that full-depth search is done.
 			if (val > alpha) {
-				val = -AlphaBeta(depth - 1, -(alpha + 1), -alpha,	&line, TRUE, info);
+				val = -AlphaBeta(depth - 1, -(alpha + 1), -alpha,	&line, doNull, info);
 				++info->lmr2;
 				if (val > alpha && val < beta) {
-					val = -AlphaBeta(depth - 1, -beta, -alpha,&line, TRUE, info);
+					val = -AlphaBeta(depth - 1, -beta, -alpha,&line, doNull, info);
 					++info->lmr3;
 				}
 			}
@@ -436,13 +436,13 @@ skipPrunning:
 			if (val > alpha) {
 				if (val >= beta) {
 					if (legalMoves == 1)
-						++info->fhf;
+						++info->failHighFirst;
 					else
-						++info->fh;
-					if (!(ISCAPTUREORPROMOTION(m[i].move))) {
-						if (board.searchKillers[0][board.ply] != m[i].move) {
+						++info->failHigh;
+					if (!(ISCAPTUREORPROMOTION(BestMove))) {
+						if (board.searchKillers[0][board.ply] != BestMove) {
 							board.searchKillers[1][board.ply] = board.searchKillers[0][board.ply];
-							board.searchKillers[0][board.ply] = m[i].move;
+							board.searchKillers[0][board.ply] = BestMove;
 						}
 					}
 					TT_RecordHash(depth, beta, hashfBETA, BestMove);
@@ -450,17 +450,15 @@ skipPrunning:
 					return beta;
 				}
 				alpha = val;
-				pline->argmove[0] = m[i].move;
 
+				pline->argmove[0] = BestMove;
 				if (line.cmove>0) {
-					//ASSERT(line.cmove>=0);
-					//printf("cmove: %d\n",line.cmove);
 					memcpy(pline->argmove + 1, line.argmove,line.cmove * sizeof(int));
 				}
 				pline->cmove = line.cmove + 1;
 
-				if (!(ISCAPTUREORPROMOTION(m[i].move))) {
-					board.searchHistory[PIECE(m[i].move)][TO(m[i].move)]+=depth;
+				if (!(ISCAPTUREORPROMOTION(BestMove))) {
+					board.searchHistory[PIECE(BestMove)][TO(BestMove)]+=depth;
 				}
 			}
 		}
@@ -474,13 +472,13 @@ skipPrunning:
 		}
 	}
 	if (alpha != OldAlpha) {
-			ASSERT(alpha==BestScore);
-			TT_RecordHash(depth, BestScore, hashfEXACT, BestMove);
-			++info->htExact;
-		} else {
-			++info->htAlpha;
-			TT_RecordHash(depth, alpha, hashfALPHA, BestMove);
-		}
+		ASSERT(alpha == BestScore);
+		TT_RecordHash(depth, BestScore, hashfEXACT, BestMove);
+		++info->htExact;
+	} else {
+		++info->htAlpha;
+		TT_RecordHash(depth, alpha, hashfALPHA, BestMove);
+	}
 	return alpha;
 }
 

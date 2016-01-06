@@ -173,8 +173,8 @@ typedef struct {
 	int quit;
 	int stopped;
 
-	float fh;
-	float fhf;
+	float failHigh;
+	float failHighFirst;
 	int nullCut;
 	int lmr;
 	int lmr2;
