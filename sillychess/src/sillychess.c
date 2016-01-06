@@ -310,7 +310,7 @@ void testEPD(char *filename, int miliseconds) {
 		return;
 	}
 
-	totalInfo->fh=totalInfo->fhf=totalInfo->htAlpha=totalInfo->htBeta=totalInfo->htExact=totalInfo->hthit=totalInfo->htmiss
+	totalInfo->failHigh=totalInfo->failHighFirst=totalInfo->htAlpha=totalInfo->htBeta=totalInfo->htExact=totalInfo->hthit=totalInfo->htmiss
 			=totalInfo->lmr=totalInfo->lmr2=totalInfo->lmr3=totalInfo->nodes=totalInfo->nullCut=0;
 	totalInfo->starttime=get_ms();
 	while (fgets(line, 256, f)) {
