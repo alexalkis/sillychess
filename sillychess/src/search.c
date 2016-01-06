@@ -98,7 +98,7 @@ int think(S_SEARCHINFO *info)
 								depth,info->maxSearchPly, mate, info->nodes,
 								(1000 * info->nodes) / (endtime - starttime),
 								(endtime - info->starttime));
-					printLine(&pv,info);printf("\n");
+					printLine(&line,info);printf("\n");
 				}
 			}
 		}
