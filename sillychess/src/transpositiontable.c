@@ -91,7 +91,6 @@ HASHE * TT_probe(int *move, int *score, int depth, int alpha, int beta) {
 					*score += board.ply;
 				return phashe;
 			}
-			return phashe;
 			if ((phashe->flags == hashfALPHA) && (phashe->value <= alpha)) {
 				*score = alpha;
 				return phashe;
