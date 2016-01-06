@@ -89,12 +89,9 @@ HASHE * TT_probe(int *move, int *score, int depth, int alpha, int beta) {
 					*score -= board.ply;
 				else if (*score < -ISMATE)
 					*score += board.ply;
-//			if (*score>alpha && *score<beta)
-//				return TRUE;
-//			else
-//				return FALSE;
 				return phashe;
 			}
+			return phashe;
 			if ((phashe->flags == hashfALPHA) && (phashe->value <= alpha)) {
 				*score = alpha;
 				return phashe;
@@ -103,6 +100,7 @@ HASHE * TT_probe(int *move, int *score, int depth, int alpha, int beta) {
 				*score = beta;
 				return phashe;
 			}
+
 		}
 	}
 	return NULL;
