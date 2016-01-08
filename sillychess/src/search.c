@@ -254,13 +254,13 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 	}
 
 	if ( (tte=TT_probe(&PvMove, &val, depth, alpha, beta))
-		&&	( PvNode ?  tte->flags == hashfEXACT
-			            : val >= beta ? (tte->flags==hashfBETA)
-			                              : (tte->flags==hashfALPHA))
+//		&&	( PvNode ?  tte->flags == hashfEXACT
+//			            : val >= beta ? (tte->flags==hashfBETA)
+//			                              : (tte->flags==hashfALPHA))
 											) {
 		++info->hthit;
-		pline->argmove[0] = PvMove;
-		pline->cmove=1;
+//		pline->argmove[0] = PvMove;
+//		pline->cmove=1;
 		return val;
 	} else
 		++info->htmiss;
@@ -269,7 +269,9 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 		pline->cmove = 0;
 		if (PvNode && board.ply>info->maxSearchPly)
 			info->maxSearchPly=board.ply;
-		return Quiesce(alpha,beta,info);
+		val = Quiesce(alpha,beta,info);
+		TT_RecordHash(depth, val, hashfEXACT, NOMOVE);
+		return val;
 	}
 
 	if ((info->nodes & 0xFFF) == 0) {
