@@ -117,7 +117,8 @@ int think(S_SEARCHINFO *info)
 			break;
 	}
 	if (info->GAME_MODE!=GAMEMODE_SILLENT) {
-		printf("Hash - Exact:%d Alpha: %d Beta: %d  -- Hits: %d Misses: %d\n",info->htExact,info->htAlpha,info->htBeta,info->hthit,info->htmiss);
+		printf("Hash - Exact:%d Alpha: %d Beta: %d  -- Hits: %d Misses: %d (%.2f%%)\n",info->htExact,info->htAlpha,info->htBeta,info->hthit,info->htmiss,
+				(info->hthit*100.0f / (info->hthit+info->htmiss)));
 		printf("bestmove %s\n",moveToUCI(pv.argmove[0]));
 	}
 	return pv.argmove[0];
@@ -237,7 +238,7 @@ inline int razor_margin(int d) { return 512 + 16 * d; }
 const int FullDepthMoves = 4;
 const int ReductionLimit = 3;
 
-int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHINFO *info) {
+int AlphaBeta2(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHINFO *info) {
 	int i;
 	int val=alpha;
 	LINE line;
@@ -377,18 +378,18 @@ skipPrunning:
 			continue;
 		}
 
-		int givesCheck=isAttacked(board.sideToMove^BLACK, kingLoc[board.sideToMove >> 3]);
-
-		/* Shallow prune */
-		if (	!PvNode &&
-				!inCheck &&
-				!givesCheck &&
-				(legalMoves >= (2 + depth))&&
-				!ISCAPTUREORPROMOTION(m[i].move)
-			) {
-			move_unmake(&m[i]);
-			continue;
-		}
+//		int givesCheck=isAttacked(board.sideToMove^BLACK, kingLoc[board.sideToMove >> 3]);
+//
+//		/* Shallow prune */
+//		if (	!PvNode &&
+//				!inCheck &&
+//				!givesCheck &&
+//				(legalMoves >= (2 + depth))&&
+//				!ISCAPTUREORPROMOTION(m[i].move)
+//			) {
+//			move_unmake(&m[i]);
+//			continue;
+//		}
 		/* LMR here */
 		if (!legalMoves) {
 			val = -AlphaBeta(depth - 1, -beta, -alpha, &line,doNull,info);
@@ -484,6 +485,266 @@ skipPrunning:
 	}
 	return alpha;
 }
+
+
+int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHINFO *info) {
+	int i;
+	int val=alpha;
+	LINE line;
+	line.cmove=0;
+	int PvMove = NOMOVE;
+	HASHE *tte;
+	int PvNode = (beta-alpha)>1;
+
+
+	++info->nodes;
+	if (board.ply && isRepetition() ) {
+		//pline->cmove=0;
+		return 0;
+	}
+
+	if ( (tte=TT_probe(&PvMove, &val, depth, alpha, beta))
+//		&&	( PvNode ?  tte->flags == hashfEXACT
+//			            : val >= beta ? (tte->flags==hashfBETA)
+//			                              : (tte->flags==hashfALPHA))
+											) {
+		++info->hthit;
+//		pline->argmove[0] = PvMove;
+//		pline->cmove=1;
+		return val;
+	} else
+		++info->htmiss;
+
+	if (depth == 0) {
+		pline->cmove = 0;
+		if (PvNode && board.ply>info->maxSearchPly)
+			info->maxSearchPly=board.ply;
+		val = Quiesce(alpha,beta,info);
+		TT_RecordHash(depth, val, hashfEXACT, NOMOVE);
+		return val;
+	}
+
+	if ((info->nodes & 0xFFF) == 0) {
+		CheckUp(info);
+	}
+
+
+	//is the square of _our_ king attacked by the other side?  i.e. are _we_ in check?
+	int inCheck = isAttacked(board.sideToMove ^ BLACK,	kingLoc[board.sideToMove >> 3]);
+	// if our king is attacked by the other side, let's increment the depth
+	if (inCheck) {
+		++depth;
+		goto skipPrunning;
+	}
+//
+//	int eval=Evaluate();
+//
+//	//razor pruning
+//	if (   !PvNode
+//			//&& !inCheck  //no need cause of the goto above
+//	        &&  depth < 4
+//	        &&  eval + razor_margin(depth) <= alpha
+//	        &&  PvMove == NOMOVE
+//	        //&& !pos.pawn_on_7th(pos.side_to_move())
+//	        )
+//	    {
+//	        if (   depth <= 1
+//	            && eval + razor_margin(3) <= alpha)
+//	        	return Quiesce(alpha,beta,info);
+//	        int ralpha = alpha - razor_margin(depth);
+//	        int v = Quiesce(ralpha,ralpha+1,info);
+//	        if (v <= ralpha)
+//	            return v;
+//	    }
+//
+//
+//	//  Futility pruning: child node (skipped when in check) (origin stockfish)
+//	if (   !PvNode
+//		&& doNull
+//		//&& !inCheck	//no need cause of the goto above
+//		&&  depth < 7
+//		&&  eval - (depth*100) >= beta
+//		&&  abs(beta) < ISMATE
+//		&&  abs(eval) < 10000
+//		&&  (board.bigCount[board.sideToMove>>3] > 0)
+//		)
+//		return eval - (depth*100);
+//
+//
+	if (doNull &&
+			!PvNode &&
+			//!inCheck &&	//no need cause of the goto above
+			board.ply &&
+			(board.bigCount[board.sideToMove>>3] > 0) &&
+			depth >= 4) {
+		smove nm;
+		move_makeNull(&nm);
+		int Score = -AlphaBeta(depth - 4, -beta, -beta + 1, &line, FALSE,info);
+		move_unmakeNull(&nm);
+		if (Score >= beta && abs(Score) <=(ISMATE)) {
+			++info->nullCut;
+			return beta;
+		}
+	}
+
+
+	smove m[256];
+	int mcount;
+
+skipPrunning:
+	mcount = generateMoves(m);
+	if (board.ply < pv.cmove) {
+		for (i = 0; i < mcount; ++i) {
+			if (m[i].move == pv.argmove[board.ply]) {
+				m[i].score = PVMOVE_SCORE;
+				break;
+			}
+		}
+	}
+	else {
+		//printf("huh, works...\n");
+		if (PvMove != NOMOVE) {
+			for (i = 0; i < mcount; ++i) {
+				if (m[i].move == PvMove) {
+					m[i].score = PVMOVE_SCORE;
+					break;
+				}
+			}
+
+		}
+	}
+
+	int BestMove = NOMOVE;
+	int legalMoves = 0;
+	int OldAlpha = alpha;
+	int BestScore = -INFINITE;
+
+	for (i = 0; i < mcount; ++i) {
+		pickMove(m,i,mcount);
+		move_make(&m[i]);
+		if (isAttacked(board.sideToMove, kingLoc[1 - (board.sideToMove >> 3)])) {
+			move_unmake(&m[i]);
+			continue;
+		}
+
+//		int givesCheck=isAttacked(board.sideToMove^BLACK, kingLoc[board.sideToMove >> 3]);
+//
+//		/* Shallow prune */
+//		if (	!PvNode &&
+//				!inCheck &&
+//				!givesCheck &&
+//				(legalMoves >= (2 + depth))&&
+//				!ISCAPTUREORPROMOTION(m[i].move)
+//			) {
+//			move_unmake(&m[i]);
+//			continue;
+//		}
+
+		/* LMR here */
+		if (!legalMoves) {
+			val = -AlphaBeta(depth - 1, -beta, -alpha, &line,doNull,info);
+		}
+		else {
+			if(legalMoves >= FullDepthMoves &&
+					depth >= ReductionLimit &&
+					//!givesCheck &&
+					!PvNode &&
+					!ISCAPTUREORPROMOTION(m[i].move)&&
+					m[i].move!=board.searchKillers[0][board.ply] &&
+					m[i].move!=board.searchKillers[1][board.ply])
+			{
+				// Search this move with reduced depth:
+				val = -AlphaBeta(depth-2,-(alpha+1), -alpha, &line,doNull,info);
+				++info->lmr;
+			} else
+				val = alpha+1;	// Hack to ensure that full-depth search is done.
+			if (val > alpha) {
+				val = -AlphaBeta(depth - 1, -(alpha + 1), -alpha,	&line, doNull, info);
+				++info->lmr2;
+				if (val > alpha && val < beta) {
+					val = -AlphaBeta(depth - 1, -beta, -alpha,&line, doNull, info);
+					++info->lmr3;
+				}
+			}
+		}
+		++legalMoves;
+		move_unmake(&m[i]);
+
+		if (info->stopped == TRUE) {
+			return 0;
+		}
+
+		if (!board.ply && info->displayCurrmove) {
+			printf("info depth %d currmove %s currmovenumber %d\n",depth,moveToUCI(m[i].move),i+1);
+			fflush(stdout);
+		}
+
+
+		if (val > BestScore) {
+			BestScore = val;
+			BestMove = m[i].move;
+			if (val > alpha) {
+				if (val >= beta) {
+					if (legalMoves == 1)
+						++info->failHighFirst;
+					else
+						++info->failHigh;
+					if (!(ISCAPTUREORPROMOTION(BestMove))) {
+						if (board.searchKillers[0][board.ply] != BestMove) {
+							board.searchKillers[1][board.ply] = board.searchKillers[0][board.ply];
+							board.searchKillers[0][board.ply] = BestMove;
+						}
+					}
+					TT_RecordHash(depth, beta, hashfBETA, BestMove);
+					++info->htBeta;
+					return beta;
+				}
+				alpha = val;
+
+				pline->argmove[0] = BestMove;
+				if (line.cmove>0) {
+					memcpy(pline->argmove + 1, line.argmove,line.cmove * sizeof(int));
+				}
+				pline->cmove = line.cmove + 1;
+
+				if (!(ISCAPTUREORPROMOTION(BestMove))) {
+					board.searchHistory[PIECE(BestMove)][TO(BestMove)]+=depth;
+				}
+			}
+		}
+
+	}
+	if (!legalMoves) {
+		if (inCheck) {
+			return -CHECKMATE_SCORE+board.ply;
+		} else {
+			return STALEMATE_SCORE;
+		}
+	}
+	if (alpha != OldAlpha) {
+		ASSERT(alpha == BestScore);
+		TT_RecordHash(depth, BestScore, hashfEXACT, BestMove);
+		++info->htExact;
+	} else {
+		++info->htAlpha;
+		TT_RecordHash(depth, alpha, hashfALPHA, BestMove);
+	}
+	return alpha;
+}
+
+/*
+Position fine 70: position fen 8/k7/3p4/p2P1p2/P2P1P2/8/8/K7 w - -
+
+info depth 30 seldepth 31 (95.62%, NULLMOVES: 10674 LMR: 3493592 (18914929/3066) nodes 419530772 qnodes 102086546 time 134719 nps 24015729 score cp 295 pv Kb1 Ka8 Kb2 Kb8 Kc2 Ka7 Kd2 Kb7 Ke1 Kc8 Kf2 Kc7 Kg3 Kd7 Kh4 Ke7 Kg5 Kf8 Kf6 Kg8 Ke6 Kg7 Kxd6 Kf6 Kc5 Ke7 Kc6 Kf6 Kb5 Ke7 (Kb1 Ka8 Kb2 Kb8 Kc2 Kb7 Kc3 Ka6 Kc4 Kb6 Kd3 Kc7 Kc4 Kb6 Kd3 Kc7 Kc4 Kb6 Kd3 Kc7 Kc4 Kb6 Kd3 Kc7 Kc4 Kb6 Kd3 Kc7 Kc4 Kb6 )
+Hash - Exact:6283 Alpha: 34480679 Beta: 117114059  -- Hits: 58085006 Misses: 252971111
+bestmove a1b1
+Time taken: 134719
+
+
+
+
+*/
+
 
 /*
 info depth 16 (81.04%, NULLMOVES: 296264 LMR: 3961159 (69815264/11) nodes 283107225 time 170685 nps 3072410 score cp 25 pv e2e4 e7e5 b1c3 b8c6 g1f3 g8f6 d2d4 e5d4 f3d4 f8b4 d4c6 d7c6 d1d8+ e8d8 c1d2 c8e6 f1d3 (e2e4 e7e5 g1f3 b8c6 d2d4 )
