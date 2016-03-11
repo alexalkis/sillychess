@@ -10,12 +10,13 @@
 #include "windows.h"
 #include <unistd.h>
 #else
-#include "sys/time.h"
+#ifndef __AMIGA__
+	#include "sys/time.h"
 
-#include <sys/types.h>
-#include <unistd.h>
-#include <errno.h>
-
+	#include <sys/types.h>
+	#include <unistd.h>
+	#include <errno.h>
+#endif
 #endif
 
 #ifndef __AMIGA__
@@ -30,22 +31,30 @@ unsigned int get_ms()
 	return (timebuffer.time * 1000) + timebuffer.millitm;
 }
 #else
+
+
 //#include <exec/types.h>
 //#include <exec/exec.h>
 //#include <devices/timer.h>
-//#include <dos/dos.h>
-//#include <proto/dos.h>
-#include <sys/timeb.h>
+#include <dos/dos.h>
+#include <proto/dos.h>
+//#include <sys/timeb.h>
 unsigned int get_ms()
 {
-//  struct DateStamp now;
-//  DateStamp(&now);
-//  return now.ds_Minute*60000+now.ds_Tick*20; /*( 20 = 1000 / 50(tickspersec))*/
-  struct timeb timebuffer;
-  	ftime(&timebuffer);
-
-  	return (timebuffer.time * 1000) + timebuffer.millitm;
+  struct DateStamp now;
+  DateStamp(&now);
+  return now.ds_Minute*60000+now.ds_Tick*20; /*( 20 = 1000 / 50(tickspersec))*/
+//  struct timeb timebuffer;
+//  	ftime(&timebuffer);
+//
+//  	return (timebuffer.time * 1000) + timebuffer.millitm;
 }
+
+//#undef putchar
+//int putchar(int c)
+//{
+//	printf("%c",(char)c);
+//}
 #endif
 
 // http://home.arcor.de/dreamlike/chess/

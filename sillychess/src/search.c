@@ -72,8 +72,8 @@ int think(S_SEARCHINFO *info)
 		if (info->GAME_MODE!=GAMEMODE_SILLENT) {
 			if (info->GAME_MODE == GAMEMODE_CONSOLE) {
 				printf(
-						"info depth %d seldepth %d (%.2f%%, NULLMOVES: %d LMR: %d (%d/%d) nodes %"INT64_FORMAT"d qnodes %"INT64_FORMAT"d time %d nps %"INT64_FORMAT"d score cp %d pv ",
-						depth, info->maxSearchPly,(info->failHighFirst * 100.0f / (info->failHigh + info->failHighFirst)), info->nullCut,info->lmr,info->lmr2,info->lmr3, info->nodes,info->qnodes,
+						"info depth %d seldepth %d (%d%%, NULLMOVES: %d LMR: %d (%d/%d) nodes %"INT64_FORMAT"d qnodes %"INT64_FORMAT"d time %d nps %"INT64_FORMAT"d score cp %d pv ",
+						depth, info->maxSearchPly,(info->failHighFirst * 100 / (info->failHigh + info->failHighFirst+1)), info->nullCut,info->lmr,info->lmr2,info->lmr3, info->nodes,info->qnodes,
 						(endtime - info->starttime),
 						(1000 * info->nodes) / (endtime - starttime), score);
 				ASSERT(board.posKey==generatePosKey());
@@ -117,8 +117,8 @@ int think(S_SEARCHINFO *info)
 			break;
 	}
 	if (info->GAME_MODE!=GAMEMODE_SILLENT) {
-		printf("Hash - Exact:%d Alpha: %d Beta: %d  -- Hits: %d Misses: %d (%.2f%%)\n",info->htExact,info->htAlpha,info->htBeta,info->hthit,info->htmiss,
-				(info->hthit*100.0f / (info->hthit+info->htmiss)));
+		printf("Hash - Exact:%d Alpha: %d Beta: %d  -- Hits: %d Misses: %d (%d%%)\n",info->htExact,info->htAlpha,info->htBeta,info->hthit,info->htmiss,
+				(info->hthit*100 / (info->hthit+info->htmiss)));
 		printf("bestmove %s\n",moveToUCI(pv.argmove[0]));
 	}
 	return pv.argmove[0];
@@ -238,7 +238,7 @@ inline int razor_margin(int d) { return 512 + 16 * d; }
 const int FullDepthMoves = 4;
 const int ReductionLimit = 3;
 
-int AlphaBeta2(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHINFO *info) {
+int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHINFO *info) {
 	int i;
 	int val=alpha;
 	LINE line;
@@ -487,7 +487,7 @@ skipPrunning:
 }
 
 
-int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHINFO *info) {
+int AlphaBeta2(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHINFO *info) {
 	int i;
 	int val=alpha;
 	LINE line;

@@ -289,10 +289,15 @@ void input_loop(S_SEARCHINFO *info)
 			printf("readyok\n");
 			continue;
 		} else if (!strncmp(line, "uci", 3)) {
-			printf("id name %s\n", NAME);
-			printf("id author Alex Argiropoulos, Greece\n");
-			printf("uciok\n");
-			info->GAME_MODE = GAMEMODE_UCI;
+			if (!strncmp(line, "ucinewgame", 10)) {
+				TT_clear();
+				ParsePosition("position startpos\n");
+			} else {
+				printf("id name %s\n", NAME);
+				printf("id author Alex Argiropoulos, Greece\n");
+				printf("uciok\n");
+				info->GAME_MODE = GAMEMODE_UCI;
+			}
 		} else if (!strncmp(line, "position", 8)) {
 			ParsePosition(line);
 		} else if (!strncmp(line, "go", 2)) {
@@ -304,9 +309,6 @@ void input_loop(S_SEARCHINFO *info)
 			ParseScore(line, info);
 		} else if (!strncmp(line, "divide", 6)) {
 			ParseDivide(line);//, info);
-		} else if (!strncmp(line, "ucinewgame", 10)) {
-			TT_clear();
-			ParsePosition("position startpos\n");
 		} else if (!strncmp(line, "movelist", 8)) {
 			showMoveList();
 		} else if (!strncmp(line, "d", 1)) {
