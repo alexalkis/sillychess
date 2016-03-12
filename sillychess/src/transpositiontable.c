@@ -27,11 +27,10 @@ void TT_set_size(unsigned int mbSize) {
    * But, if we have a size of power of two minus 1, we can replace it with board.posKey & board.htSize
    * which is faster.
    */
-  --newSize;
-
   if (board.ht) free(board.ht);
 
   board.ht = (HASHE *)malloc(newSize*sizeof(HASHE));
+  --newSize;  /* alloc size is power of two, we substract one so hash & newsize will always be within array limits */
   board.htSize=newSize;
 
   if (!board.ht)
