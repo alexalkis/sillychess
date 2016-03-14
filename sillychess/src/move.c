@@ -695,6 +695,7 @@ u64 Divide(u8 depth) {
 	smove m[256];
 	int mcount = generateMoves(m);
 
+	//#pragma omp parallel for private(i)
 	for (i = 0; i < mcount; i++) {
 		move_make(&m[i]);
 		if (!isAttacked(board.sideToMove,
