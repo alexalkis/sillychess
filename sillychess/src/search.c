@@ -207,13 +207,11 @@ int Quiesce(int alpha, int beta, S_SEARCHINFO *info)
 		alpha = stand_pat;
 	smove m[256];
 	int mcount = generateCaptureMoves(m);
-	int legalMoves=0;
 	for (i = 0; i < mcount; ++i) {
 		pickMove(m, i, mcount);
 		move_make(&m[i]);
 		ASSERT(m[i].score>=CAPTURE_SCORE);
 		if (!isAttacked(board.sideToMove, kingLoc[1 - (board.sideToMove >> 3)])) {
-			++legalMoves;
 			score = -Quiesce( -beta, -alpha, info);
 		}
 		move_unmake(&m[i]);
@@ -221,19 +219,20 @@ int Quiesce(int alpha, int beta, S_SEARCHINFO *info)
 			return 0;
 		}
 		if (score >= beta) {
-			if (legalMoves == 1)
-				++info->failHighFirst;
-			else
-				++info->failHigh;
 			return beta;
 		}
 		if (score > alpha)
 			alpha = score;
 	}
-	return alpha;
+	return alpha; /* Note that alpha is Eval() if no capture-moves exist */
 }
 
-inline int razor_margin(int d) { return 512 + 16 * d; }
+#ifdef NDEBUG
+inline
+#endif
+int razor_margin(int d) {
+	return 512 + 16 * d;
+}
 
 const int FullDepthMoves = 4;
 const int ReductionLimit = 3;
