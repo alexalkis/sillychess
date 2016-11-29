@@ -49,7 +49,7 @@ void TT_clear(void)
 		memset(board.ht, 0, board.htSize * sizeof(HASHE));
 }
 
-void TT_RecordHash(int depth, int score, int hashf, int best)
+void TT_RecordHash(int depth, int score, int hashf, unsigned int best)
 {
         HASHE *phashe = &board.ht[board.posKey & board.htSize];
 
@@ -77,7 +77,7 @@ void TT_RecordHash(int depth, int score, int hashf, int best)
 //        }
 }
 
-HASHE * TT_probe(int *move, int *score, int depth, int alpha, int beta) {
+HASHE * TT_probe(unsigned int *move, int *score, int depth, int alpha, int beta) {
 	HASHE *phashe = &board.ht[board.posKey & board.htSize];
 	if (phashe->key == board.posKey) {
 		*move = phashe->bestMove;
@@ -110,7 +110,7 @@ void TT_fillPVLineFromTT(int deep, LINE *tLine)
 	int moveCounter=0;
 	smove m[MAXDEPTH];
 	int score;
-	int BestMove;
+	unsigned int BestMove;
 
 	for (i=0; i<deep; ++i) {
 		BestMove=NOMOVE;

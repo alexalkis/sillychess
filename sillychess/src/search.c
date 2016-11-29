@@ -242,7 +242,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 	int val=alpha;
 	LINE line;
 	line.cmove=0;
-	int PvMove = NOMOVE;
+	unsigned int PvMove = NOMOVE;
 	HASHE *tte;
 	int PvNode = (beta-alpha)>1;
 
@@ -364,7 +364,7 @@ skipPrunning:
 		}
 	}
 
-	int BestMove = NOMOVE;
+	unsigned int BestMove = NOMOVE;
 	int legalMoves = 0;
 	int OldAlpha = alpha;
 	int BestScore = -INFINITE;
@@ -491,7 +491,7 @@ int AlphaBeta2(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCH
 	int val=alpha;
 	LINE line;
 	line.cmove=0;
-	int PvMove = NOMOVE;
+	unsigned int PvMove = NOMOVE;
 	HASHE *tte;
 	int PvNode = (beta-alpha)>1;
 
@@ -613,7 +613,7 @@ skipPrunning:
 		}
 	}
 
-	int BestMove = NOMOVE;
+	unsigned int BestMove = NOMOVE;
 	int legalMoves = 0;
 	int OldAlpha = alpha;
 	int BestScore = -INFINITE;
