@@ -30,7 +30,7 @@ void testPerft(int n);
 struct aboard board;
 
 #define NOSIGHANDLER
-#if !defined(WIN32) && !defined(__AMIGA__)
+#if !defined(WIN32) && !defined(__AMIGA__) && !defined(__arm__)
 #include <execinfo.h>
 #include <signal.h>
 #include <ucontext.h>
