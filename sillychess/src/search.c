@@ -237,6 +237,8 @@ int razor_margin(int d) {
 const int FullDepthMoves = 4;
 const int ReductionLimit = 3;
 
+
+//Total blunder: 8/8/8/2P5/k4K2/pR1B4/P4P2/8 w - - 47 122
 int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHINFO *info) {
 	int i;
 	int val=alpha;
