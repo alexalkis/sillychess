@@ -231,14 +231,14 @@ int Quiesce(int alpha, int beta, S_SEARCHINFO *info)
 inline
 #endif
 int razor_margin(int d) {
-	return 512 + 16 * d;
+	return 200 + 16 * d;
 }
 
 const int FullDepthMoves = 4;
 const int ReductionLimit = 3;
 
 
-//Total blunder: 8/8/8/2P5/k4K2/pR1B4/P4P2/8 w - - 47 122
+//Total blunder: 8/8/8/2P5/k4K2/pR1B4/P4P2/8 w - - 47 122 FIXED with razor_margin calibration
 int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHINFO *info) {
 	int i;
 	int val=alpha;
