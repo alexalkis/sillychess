@@ -85,6 +85,7 @@ void ParseTestEPD(char *line)//, S_SEARCHINFO *info) {
 	// testepd xxxx filename
 	char *ptr=strstr(line+8," ");
 	if (!ptr) {
+		testEPD("../src/wac.epd",100);
 		printf("testepd xxxx filename (where xxxx is time per position in milliseconds.\n");
 		return;
 	}

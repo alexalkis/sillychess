@@ -272,7 +272,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 		if (PvNode && board.ply>info->maxSearchPly)
 			info->maxSearchPly=board.ply;
 		val = Quiesce(alpha,beta,info);
-		TT_RecordHash(depth, val, hashfEXACT, NOMOVE);
+		//TT_RecordHash(depth, val, hashfEXACT, NOMOVE);   //on 100ms wac.epd jumped from 130/300 to 152/300
 		return val;
 	}
 
@@ -291,6 +291,8 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 
 	int eval=Evaluate();
 
+	/*
+	// when commented out on 100ms wac.epd jumped from 152/300 to 182/300
 	//razor pruning
 	if (   !PvNode
 			//&& !inCheck  //no need cause of the goto above
@@ -308,7 +310,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 	        if (v <= ralpha)
 	            return v;
 	    }
-
+	*/
 
 	//  Futility pruning: child node (skipped when in check) (origin stockfish)
 	if (   !PvNode

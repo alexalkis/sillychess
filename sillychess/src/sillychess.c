@@ -361,6 +361,8 @@ void testEPD(char *filename, int miliseconds) {
 
 	}
 	totalInfo->stoptime=get_ms();
-	printf("Total time: %dms Total nodes: %"INT64_FORMAT"d\n",totalInfo->stoptime-totalInfo->starttime,totalInfo->nodes);
+	char buf[80];
+	sprintf(buf, "cmd: testepd %d %s",miliseconds, filename);
+	printf("Time: %dms Nodes: %"INT64_FORMAT"d %d/%d %s\n",totalInfo->stoptime-totalInfo->starttime,totalInfo->nodes, solved, positions, buf);
 	fclose(f);
 }
