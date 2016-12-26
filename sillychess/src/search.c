@@ -114,6 +114,11 @@ int think(S_SEARCHINFO *info)
 
 		/* if the time needed for search of depth D will exceed the remaining time, then D+1 will exceed also...probably */
 		if (info->timeset && (endtime + (endtime - starttime)) > info->stoptime) {
+			if (!pv.argmove[0]) {
+				FILE *problem = fopen("/home/alex/error.txt","a");
+			    fprintf(problem, "Depth: %d took %dms. Time now is %d and got stop at %d\n", depth,endtime-starttime, endtime, info->stoptime);
+			    fclose(problem);
+			}
 			break;
 		}
 	}
