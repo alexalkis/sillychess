@@ -15,6 +15,7 @@ int think(S_SEARCHINFO *info)
 {
 	int depth, finalDepth;
 	LINE line;
+	LINE tLine;
 
 	line.cmove = 0;
 	pv.cmove=0;
@@ -67,7 +68,6 @@ int think(S_SEARCHINFO *info)
 				mate = (-CHECKMATE_SCORE - score) / 2;
 		}
 
-		LINE tLine;
 		TT_fillPVLineFromTT(depth,&tLine);
 		if (info->GAME_MODE!=GAMEMODE_SILLENT) {
 			if (info->GAME_MODE == GAMEMODE_CONSOLE) {
@@ -114,12 +114,12 @@ int think(S_SEARCHINFO *info)
 
 		/* if the time needed for search of depth D will exceed the remaining time, then D+1 will exceed also...probably */
 		if (info->timeset && (endtime + (endtime - starttime)) > info->stoptime) {
-			FILE *problem = fopen("/home/alex/error.txt","a");
-			fprintf(problem, "bestmove %s\n",moveToUCI(pv.argmove[0]));
-			if (!pv.argmove[0]) {
-			    fprintf(problem, "Depth: %d took %dms. Time now is %d and got stop at %d\n", depth,endtime-starttime, endtime, info->stoptime);
-			}
-			fclose(problem);
+//			FILE *problem = fopen("/home/alex/error.txt","a");
+//			fprintf(problem, "bestmove %s\n",moveToUCI(pv.argmove[0]));
+//			if (!pv.argmove[0]) {
+//			    fprintf(problem, "Depth: %d took %dms. Time now is %d and got stop at %d\n", depth,endtime-starttime, endtime, info->stoptime);
+//			}
+//			fclose(problem);
 			break;
 		}
 	}
