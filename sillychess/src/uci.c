@@ -159,12 +159,16 @@ void ParseGo(char* line, S_SEARCHINFO *info)
 	printf("time:%d start:%d stop:%d depth:%d timeset:%d\n", time,
 			info->starttime, info->stoptime, info->depth, info->timeset);
 	int move=think(info);
-	printf("Time taken: %d\n", get_ms() - info->starttime);
+	int timeTaken = get_ms();
+	printf("Time taken: %d\n", timeTaken - info->starttime);
 	fflush(stdout);
 
 	if (!move) {
 		FILE *problem = fopen("/home/alex/error.txt","a");
 		fprintf(problem, "%s\n", line);
+		fprintf(problem, "time:%d start:%d stop:%d depth:%d timeset:%d\n", time,
+					info->starttime, info->stoptime, info->depth, info->timeset);
+		fprintf(problem, "Time taken: %d\n\n", timeTaken - info->starttime);
 		fclose(problem);
 	}
 }
