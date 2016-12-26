@@ -165,6 +165,7 @@ void ParseGo(char* line, S_SEARCHINFO *info)
 
 	if (!move) {
 		FILE *problem = fopen("/home/alex/error.txt","a");
+		fprintf(problem, "%s\n", board2fen());
 		fprintf(problem, "%s\n", line);
 		fprintf(problem, "time:%d start:%d stop:%d depth:%d timeset:%d\n", time,
 					info->starttime, info->stoptime, info->depth, info->timeset);
