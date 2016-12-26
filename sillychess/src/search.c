@@ -113,8 +113,9 @@ int think(S_SEARCHINFO *info)
 		}
 
 		/* if the time needed for search of depth D will exceed the remaining time, then D+1 will exceed also...probably */
-		if (info->timeset && (info->starttime + (endtime - starttime)) > info->stoptime)
+		if (info->timeset && (endtime + (endtime - starttime)) > info->stoptime) {
 			break;
+		}
 	}
 	if (info->GAME_MODE!=GAMEMODE_SILLENT) {
 		printf("Hash - Exact:%d Alpha: %d Beta: %d  -- Hits: %d Misses: %d (%d%%)\n",info->htExact,info->htAlpha,info->htBeta,info->hthit,info->htmiss,
@@ -226,13 +227,16 @@ int Quiesce(int alpha, int beta, S_SEARCHINFO *info)
 	}
 	return alpha; /* Note that alpha is Eval() if no capture-moves exist */
 }
-
+/*
 #ifdef NDEBUG
 inline
 #endif
 int razor_margin(int d) {
 	return 200 + 16 * d;
 }
+*/
+
+const int razor_margin[4] = { 100*483/256, 100*570/256, 100*603/256, 100*554/256 };
 
 const int FullDepthMoves = 4;
 const int ReductionLimit = 3;
@@ -297,15 +301,14 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 	if (   !PvNode
 			//&& !inCheck  //no need cause of the goto above
 	        &&  depth < 4
-	        &&  eval + razor_margin(depth) <= alpha
+	        &&  eval + razor_margin[depth] <= alpha
 	        &&  PvMove == NOMOVE
 	        //&& !pos.pawn_on_7th(pos.side_to_move())
 	        )
 	    {
-	        if (   depth <= 1
-	            && eval + razor_margin(3) <= alpha)
+	        if (depth <= 1)
 	        	return Quiesce(alpha,beta,info);
-	        int ralpha = alpha - razor_margin(depth);
+	        int ralpha = alpha - razor_margin[depth];
 	        int v = Quiesce(ralpha,ralpha+1,info);
 	        if (v <= ralpha)
 	            return v;
