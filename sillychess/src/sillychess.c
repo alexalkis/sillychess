@@ -151,7 +151,10 @@ int main(int argc, char **argv)
 	//fen2board("8/7p/5k2/5p2/p1p2P2/Pr1pPK2/1P1R3P/8 b - -");
 	//testEPD("alkis",1000);
 	//fen2board("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 0 23");
-	input_loop(info);
+	if (argc>=2 && !strcmp(argv[1],"-bench"))
+		testEPD("../src/wac.epd",100);
+	else
+		input_loop(info);
 	TT_free();
 	return 0;
 
