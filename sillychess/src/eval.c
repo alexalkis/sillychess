@@ -22,13 +22,13 @@
  BLACK_QUEEN = 0x0F
  */
 
-int matValues[] = {
-		0, 100, 20000, 300, 0, 330, 500, 900,
-		0, -100, -20000, -300,0, -330, -500, -900 };
-
 //int matValues[] = {
-//		0,  100,  20000,  325, 0,  325,  550,  1000,
-//		0, -100, -20000, -325, 0, -325, -550, -1000 };
+//		0, 100, 20000, 300, 0, 330, 500, 900,
+//		0, -100, -20000, -300,0, -330, -500, -900 };
+
+int matValues[] = {
+		0,  100,  20000,  350, 0,  350,  525,  1000,
+		0, -100, -20000, -350, 0, -350, -525, -1000 };
 
 /*
 v0.3 has the "correct" values!!! And plays worse
@@ -104,10 +104,14 @@ int raw_psq_queens[] = {
 		-20,-10,-10, -5, -5,-10,-10,-20
 };
 
+int bishopPairBonus[] = { 50, -50};
+
 int Evaluate(void) {
 	int i;
 	int sq88;
 	int mat = 0;
+	int bishopPair[2];
+	bishopPair[0]=bishopPair[1]=0;
 	board.obigCount[0]=board.obigCount[1]=0;
 	board.opawnCount[0]=board.opawnCount[1]=0;
 	for (i = 0; i < 64; ++i) {
@@ -126,6 +130,8 @@ int Evaluate(void) {
 				continue;	// so we don't increment bigCount
 				break;
 			case BISHOP:
+				if (bishopPair[color]++)
+					mat+=bishopPairBonus[color];
 				mat+=psq_bishops[color][i];
 				break;
 			case KNIGHT:
