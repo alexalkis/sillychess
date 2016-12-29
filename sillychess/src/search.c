@@ -265,11 +265,11 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 		return 0;
 	}
 
-	if ( (tte=TT_probe(&PvMove, &val, depth, alpha, beta))
-		&&	( PvNode ?  tte->flags == hashfEXACT
-			            : val >= beta ? (tte->flags==hashfBETA)
-			                              : (tte->flags==hashfALPHA))
-											) {
+	if ( (tte=TT_probe(&PvMove, &val, depth, alpha, beta)) ) {
+//		&&	( PvNode ?  tte->flags == hashfEXACT
+//			            : val >= beta ? (tte->flags==hashfBETA)
+//			                              : (tte->flags==hashfALPHA))
+//											) {
 		++info->hthit;
 //		pline->argmove[0] = PvMove;
 //		pline->cmove=1;
