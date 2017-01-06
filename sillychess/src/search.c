@@ -128,6 +128,7 @@ int think(S_SEARCHINFO *info)
 				(info->hthit*100 / (info->hthit+info->htmiss)));
 		printf("bestmove %s\n",moveToUCI(pv.argmove[0]));
 	}
+	info->depth = depth;
 	return pv.argmove[0];
 }
 

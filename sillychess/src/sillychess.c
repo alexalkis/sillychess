@@ -305,6 +305,7 @@ void testEPD(char *filename, int miliseconds) {
 	int linecount=0;
 	int positions=0;
 	int solved=0;
+	int totalDepth = 0;
 
 	info->GAME_MODE=GAMEMODE_SILLENT;
 	FILE *f = fopen(filename, "r");
@@ -358,7 +359,8 @@ void testEPD(char *filename, int miliseconds) {
 			++solved;
 		}
 		++positions;
-		printf("%d/%d (%s) Engine: %s EPD: %s -- %s\n",solved,positions,id,engine,bm,res?"SOLVED":"NOT SOLVED");
+		totalDepth += info->depth;
+		printf("%d/%d (%s) Engine: %s (D:%d) EPD: %s -- %s\n",solved,positions,id,engine, info->depth,bm,res?"SOLVED":"NOT SOLVED");
 		totalInfo->nodes+=info->nodes;
 
 
@@ -366,6 +368,6 @@ void testEPD(char *filename, int miliseconds) {
 	totalInfo->stoptime=get_ms();
 	char buf[80];
 	sprintf(buf, "cmd: testepd %d %s",miliseconds, filename);
-	printf("Time: %dms Nodes: %"INT64_FORMAT"d %d/%d %s\n",totalInfo->stoptime-totalInfo->starttime,totalInfo->nodes, solved, positions, buf);
+	printf("Time: %dms Nodes: %"INT64_FORMAT"d %d/%d Avg.Depth: %g\n%s\n",totalInfo->stoptime-totalInfo->starttime,totalInfo->nodes, solved, positions, ((double)totalDepth)/positions, buf);
 	fclose(f);
 }
