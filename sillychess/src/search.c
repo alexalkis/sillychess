@@ -255,7 +255,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 	int val=alpha;
 	LINE line;
 	line.cmove=0;
-	unsigned int PvMove = NOMOVE;
+	unsigned int ttMove = NOMOVE;
 	HASHE *tte;
 	int PvNode = (beta-alpha)>1;
 
@@ -266,7 +266,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 		return 0;
 	}
 
-	if ( (tte=TT_probe(&PvMove, &val, depth, alpha, beta)) ) {
+	if ( (tte=TT_probe(&ttMove, &val, depth, alpha, beta)) ) {
 //		&&	( PvNode ?  tte->flags == hashfEXACT
 //			            : val >= beta ? (tte->flags==hashfBETA)
 //			                              : (tte->flags==hashfALPHA))
@@ -367,9 +367,9 @@ skipPrunning:
 	}
 	else {
 		//printf("huh, works...\n");
-		if (PvMove != NOMOVE) {
+		if (ttMove != NOMOVE) {
 			for (i = 0; i < mcount; ++i) {
-				if (m[i].move == PvMove) {
+				if (m[i].move == ttMove) {
 					m[i].score = PVMOVE_SCORE;
 					break;
 				}
@@ -410,6 +410,7 @@ skipPrunning:
 		else {
 			if(legalMoves >= FullDepthMoves &&
 					depth >= ReductionLimit &&
+					m[i].move != ttMove &&
 					//!givesCheck &&
 					!PvNode &&
 					!ISCAPTUREORPROMOTION(m[i].move)&&
@@ -417,6 +418,8 @@ skipPrunning:
 					m[i].move!=board.searchKillers[1][board.ply])
 			{
 				// Search this move with reduced depth:
+//				int reduction = (2+ ((legalMoves-FullDepthMoves)>>3) );
+//				if (reduction > depth) reduction = depth;
 				val = -AlphaBeta(depth-2,-(alpha+1), -alpha, &line,doNull,info);
 				++info->lmr;
 			} else
@@ -475,7 +478,7 @@ skipPrunning:
 				pline->cmove = line.cmove + 1;
 
 				if (!(ISCAPTUREORPROMOTION(BestMove))) {
-					board.searchHistory[PIECE(BestMove)][TO(BestMove)]+=depth;
+					board.searchHistory[PIECE(BestMove)][TO(BestMove)] += depth;// * depth;
 				}
 			}
 		}
