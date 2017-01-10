@@ -72,10 +72,19 @@ int think(S_SEARCHINFO *info)
 		if (info->GAME_MODE!=GAMEMODE_SILLENT) {
 			if (info->GAME_MODE == GAMEMODE_CONSOLE) {
 				printf(
-						"info depth %d seldepth %d (%d%%, NULLMOVES: %d LMR: %d (%d/%d) nodes %"INT64_FORMAT"d qnodes %"INT64_FORMAT"d time %d nps %"INT64_FORMAT"d score cp %d pv ",
-						depth, info->maxSearchPly,(info->failHighFirst * 100 / (info->failHigh + info->failHighFirst+1)), info->nullCut,info->lmr,info->lmr2,info->lmr3, info->nodes,info->qnodes,
+						"info depth %d seldepth %d (%d%%, Null-moves: %d LMR: %d (%d/%d) nodes %"INT64_FORMAT"d qnodes %"INT64_FORMAT"d time %d nps %"INT64_FORMAT"d score cp %d pv ",
+						depth,
+						info->maxSearchPly,
+						(int) ((u64)info->failHighFirst * 100 / (info->failHigh + info->failHighFirst+1)),
+						info->nullCut,
+						info->lmr,
+						info->lmr2,
+						info->lmr3,
+						info->nodes,
+						info->qnodes,
 						(endtime - info->starttime),
-						(1000 * info->nodes) / (endtime - starttime), score);
+						(1000 * info->nodes) / (endtime - starttime),
+						score);
 				ASSERT(board.posKey==generatePosKey());
 				if (line.cmove)
 					printLine(&line,info);
@@ -256,7 +265,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 	LINE line;
 	line.cmove=0;
 	unsigned int ttMove = NOMOVE;
-	HASHE *tte;
+	Hash_Entry *tte;
 	int PvNode = (beta-alpha)>1;
 
 
@@ -331,9 +340,11 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 		&&  abs(beta) < ISMATE
 		&&  abs(eval) < 10000
 		&&  (board.bigCount[board.sideToMove>>3] > 0)
-		)
+		) {
+		//printf("alpha: %d beta: %d returning: %d\n", alpha, beta, eval - (depth*100));
 		return eval - (depth*100);
 
+	}
 
 	if (doNull &&
 			!PvNode &&

@@ -19,7 +19,7 @@ void TT_set_size(unsigned int mbSize) {
   u64 newSize = 1024;
 
 
-  while (2ULL * newSize * sizeof(HASHE) <= (mbSize << 20))
+  while (2ULL * newSize * sizeof(Hash_Entry) <= (mbSize << 20))
       newSize *= 2;
 
   /*
@@ -29,7 +29,7 @@ void TT_set_size(unsigned int mbSize) {
    */
   if (board.ht) free(board.ht);
 
-  board.ht = (HASHE *)malloc(newSize*sizeof(HASHE));
+  board.ht = (Hash_Entry *)malloc(newSize*sizeof(Hash_Entry));
   --newSize;  /* alloc size is power of two, we substract one so hash & newsize will always be within array limits */
   board.htSize=newSize;
 
@@ -38,20 +38,20 @@ void TT_set_size(unsigned int mbSize) {
       printf("Hash table memory allocation problem.  Exiting...\n");
       exit(EXIT_FAILURE);
   } else
-      printf("Transposition Table: %"INT64_FORMAT"d entries allocated...%"INT64_FORMAT"d bytes.\n",newSize,newSize*sizeof(HASHE));
-  memset(board.ht, 0, newSize * sizeof(HASHE));
+      printf("Transposition Table: %"INT64_FORMAT"d entries allocated...%"INT64_FORMAT"d bytes.\n",newSize,newSize*sizeof(Hash_Entry));
+  memset(board.ht, 0, newSize * sizeof(Hash_Entry));
 }
 
 
 void TT_clear(void)
 {
 	if (board.ht)
-		memset(board.ht, 0, board.htSize * sizeof(HASHE));
+		memset(board.ht, 0, board.htSize * sizeof(Hash_Entry));
 }
 
 void TT_RecordHash(int depth, int score, int hashf, unsigned int best)
 {
-        HASHE *phashe = &board.ht[board.posKey & board.htSize];
+        Hash_Entry *phashe = &board.ht[board.posKey & board.htSize];
 
         /* if an entry arrives at a shalower depth for this position we just return (and keep the deeper entry) */
         if (phashe->key==board.posKey && phashe->depth>depth) {
@@ -77,8 +77,8 @@ void TT_RecordHash(int depth, int score, int hashf, unsigned int best)
 //        }
 }
 
-HASHE * TT_probe(unsigned int *move, int *score, int depth, int alpha, int beta) {
-	HASHE *phashe = &board.ht[board.posKey & board.htSize];
+Hash_Entry * TT_probe(unsigned int *move, int *score, int depth, int alpha, int beta) {
+	Hash_Entry *phashe = &board.ht[board.posKey & board.htSize];
 	if (phashe->key == board.posKey) {
 		*move = phashe->bestMove;
 		if (phashe->depth >= depth) {

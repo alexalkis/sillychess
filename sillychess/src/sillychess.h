@@ -110,7 +110,7 @@ typedef struct tagHASHE {
     unsigned char flags;    // bits 0,1,2,3 store the type (exact,alpha,beta etc)
     short value;
     unsigned int bestMove;
-}   HASHE;
+}   Hash_Entry;
 
 struct aboard {
 	u8 bs[128];
@@ -125,7 +125,7 @@ struct aboard {
 	u64 historyPosKey[MAX_PLY_IN_A_GAME];
 	unsigned int searchKillers[2][MAX_PLY_IN_A_GAME];
 	int searchHistory[16][128];
-	HASHE *ht;
+	Hash_Entry *ht;
 	u64 htSize;
 
 	int opawnCount[2];
@@ -271,7 +271,7 @@ void initHash(void);
 void TT_set_size(unsigned int mbSize);
 void TT_clear(void);
 void TT_free(void);
-HASHE *TT_probe(unsigned int *move, int *score,int depth, int alpha, int beta);
+Hash_Entry *TT_probe(unsigned int *move, int *score,int depth, int alpha, int beta);
 void TT_RecordHash(int depth, int value, int hashf,unsigned int best);
 void TT_fillPVLineFromTT(int deep, LINE *tLine);
 
