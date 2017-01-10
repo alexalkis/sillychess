@@ -337,6 +337,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 
 	if (doNull &&
 			!PvNode &&
+			eval >= beta &&
 			//!inCheck &&	//no need cause of the goto above
 			board.ply &&
 			(board.bigCount[board.sideToMove>>3] > 0) &&
