@@ -119,7 +119,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.exe.release.420536199.1323494157" name="ReleaseWindows" parent="cdt.managedbuild.config.gnu.exe.release" postbuildStep="cp sillychess /home/alex/sillychess.exe;ls -l /home/alex/sillychess.exe">
+				<configuration artifactName="${ProjName}" buildArtefactType="org.eclipse.cdt.build.core.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=org.eclipse.cdt.build.core.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.release" cleanCommand="rm -rf" description="" id="cdt.managedbuild.config.gnu.exe.release.420536199.1323494157" name="ReleaseWindows" parent="cdt.managedbuild.config.gnu.exe.release" postbuildStep="cp sillychess /home/alex/sillychess.exe;ls -l /home/alex/sillychess.exe" prebuildStep="x86_64-w64-mingw32-windres ../src/windows_res/sc.rc -o resources.o">
 					<folderInfo id="cdt.managedbuild.config.gnu.exe.release.420536199.1323494157." name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.exe.release.120804034" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.exe.release">
 							<targetPlatform id="cdt.managedbuild.target.gnu.platform.exe.release.32447674" name="Debug Platform" superClass="cdt.managedbuild.target.gnu.platform.exe.release"/>
@@ -140,6 +140,9 @@
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1675222700" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool command="x86_64-w64-mingw32-gcc" id="cdt.managedbuild.tool.gnu.c.linker.exe.release.1727299547" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.exe.release">
+								<option id="gnu.c.link.option.userobjs.2052438944" superClass="gnu.c.link.option.userobjs" useByScannerDiscovery="false" valueType="userObjs">
+									<listOptionValue builtIn="false" value="resources.o"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.linker.input.1039421615" superClass="cdt.managedbuild.tool.gnu.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>

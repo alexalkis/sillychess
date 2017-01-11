@@ -1,0 +1,26 @@
+101 ICON "sc.ico"
+
+1 VERSIONINFO
+FILEVERSION     0,7,2,0
+PRODUCTVERSION  0,7,2,0
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904E4"
+    BEGIN
+      VALUE "CompanyName", "AlkSoft"
+      VALUE "FileDescription", "A little UCI chess engine"
+      VALUE "FileVersion", "0.7"
+      VALUE "InternalName", "sillychess"
+      VALUE "LegalCopyright", "Alex Argiropoulos"
+      VALUE "OriginalFilename", "sillychess.exe"
+      VALUE "ProductName", "Sillychess"
+      VALUE "ProductVersion", "0.7"
+    END
+  END
+
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x409, 1252
+  END
+END
