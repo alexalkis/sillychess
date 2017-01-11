@@ -462,7 +462,7 @@ skipPrunning:
 		}
 
 		if (!board.ply && info->displayCurrmove) {
-			printf("info depth %d currmove %s currmovenumber %d\n",depth,moveToUCI(m[i].move),i+1);
+			printf("info depth %d currmove %s currmovenumber %d\n",depth,moveToUCI(m[i].move),legalMoves);
 			fflush(stdout);
 		}
 
