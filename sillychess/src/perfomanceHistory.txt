@@ -41,3 +41,4 @@ Time: 28720ms Nodes: 46578895 184/300 Avg.Depth: 7.02 (linux main pc -- Intel(R)
 Time: 35051ms Nodes: 75175 25/300 Avg.Depth: 1 (laptop -- Interestingly enough the TT_clear() that happens between the EPDs is taking 116ms, so only depth 1)
 Time: 30428ms Nodes: 4963536 101/300 Avg.Depth: 4.26667 (rasberry pi3)
 
+TODO: http://stackoverflow.com/questions/708238/how-do-i-add-an-icon-to-a-mingw-gcc-compiled-executable
