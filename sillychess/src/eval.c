@@ -22,27 +22,9 @@
  BLACK_QUEEN = 0x0F
  */
 
-//int matValues[] = {
-//		0, 100, 20000, 300, 0, 330, 500, 900,
-//		0, -100, -20000, -300,0, -330, -500, -900 };
-
 int matValues[] = {
 		0,  100,  20000,  350, 0,  350,  525,  1000,
 		0, -100, -20000, -350, 0, -350, -525, -1000 };
-
-/*
-v0.3 has the "correct" values!!! And plays worse
-In v0.3.1 values were rolled back to their "out of my head" values
-Rank Name                  Elo    +    - games score oppo. draws
-   1 Vice 1.1             1951   12   12  2724   78%  1730   14%
-   2 sc v0.3.1            1759   16   16  1200   44%  1804   13%
-   3 sc v0.2              1757   13   13  1800   46%  1796   22%
-   4 Bremboce 0.6.2       1753   14   14  1524   49%  1758   12%
-   5 sc (no draw detect)  1717   15   15  1200   38%  1805   40%
-   6 tscp                 1706   11   11  2725   40%  1784   17%
-   7 sc v0.3              1704   14   15  1573   38%  1803   13%
-
-*/
 
 int psq_pawns[2][64];
 int psq_knights[2][64];

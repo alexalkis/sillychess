@@ -133,8 +133,13 @@ int think(S_SEARCHINFO *info)
 		}
 	}
 	if (info->GAME_MODE!=GAMEMODE_SILLENT) {
-		printf("Hash - Exact:%d Alpha: %d Beta: %d  -- Hits: %d Misses: %d (%d%%)\n",info->htExact,info->htAlpha,info->htBeta,info->hthit,info->htmiss,
-				(info->hthit*100 / (info->hthit+info->htmiss)));
+		printf("Hash - Exact:%d Alpha: %d Beta: %d  -- Hits: %d Misses: %d (%d%%)\n",
+				info->htExact,
+				info->htAlpha,
+				info->htBeta,
+				info->hthit,
+				info->htmiss,
+				(int) ((u64)info->hthit*100 / (info->hthit+info->htmiss)));
 		printf("bestmove %s\n",moveToUCI(pv.argmove[0]));
 	}
 	info->depth = depth;
