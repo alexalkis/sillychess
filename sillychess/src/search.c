@@ -11,6 +11,20 @@
 
 LINE pv;
 
+void initSearch(S_SEARCHINFO *info) {
+	info->qnodes=info->nodes=info->failHigh=info->failHighFirst=info->nullCut=0;
+	info->htAlpha=info->htBeta=info->htExact=info->hthit=info->htmiss=0;
+	board.ply=0;
+	info->stopped = FALSE;
+	for (int depth = 0; depth < MAXDEPTH; ++depth) {
+			board.searchKillers[0][depth] = board.searchKillers[1][depth] = NOMOVE;
+			pv.argmove[depth] = NOMOVE;
+		}
+	for(int i=0; i<16;++i)
+		for(int j=0; j<128;++j)
+			board.searchHistory[i][j]=0;
+}
+
 int think(S_SEARCHINFO *info)
 {
 	int depth, finalDepth;
@@ -20,31 +34,19 @@ int think(S_SEARCHINFO *info)
 	line.cmove = 0;
 	pv.cmove=0;
 
-	info->qnodes=info->nodes=info->failHigh=info->failHighFirst=info->nullCut=0;
-	info->htAlpha=info->htBeta=info->htExact=info->hthit=info->htmiss=0;
-	board.ply=0;
-	info->stopped = FALSE;
-	for (depth = 0; depth < MAXDEPTH; ++depth) {
-		board.searchKillers[0][depth] = board.searchKillers[1][depth] = NOMOVE;
-		pv.argmove[depth] = NOMOVE;
-	}
-	int i,j;
-	for(i=0; i<16;++i)
-		for(j=0; j<128;++j)
-			board.searchHistory[i][j]=0;
+	initSearch(info);
 
 	if (info->timeset == FALSE)
 		finalDepth = info->depth;
 	else
 		finalDepth = MAXDEPTH;
+
 	for (depth = 1; depth <= finalDepth; ++depth) {
 		ASSERT(board.ply==0);
 		info->displayCurrmove=info->maxSearchPly=info->lmr2=info->lmr3=info->lmr=info->failHigh=info->failHighFirst=info->nullCut=0;
 		int i;
-		for (i = 0; i < MAXDEPTH; ++i) {
-			//board.searchKillers[0][i] = board.searchKillers[1][i] = NOMOVE;
+		for (i = 0; i < MAXDEPTH; ++i)
 			line.argmove[i] = NOMOVE;
-		}
 		line.cmove=0;
 
 		unsigned int starttime = get_ms();
@@ -52,10 +54,8 @@ int think(S_SEARCHINFO *info)
 		int score = AlphaBeta(depth, -INFINITE,INFINITE, &line, TRUE, info);
 		ASSERT(board.posKey==generatePosKey());
 		unsigned int endtime = get_ms();
-		//printBoard();printf("%"INT64_FORMAT"X at depth: %d Eval: %d\n",generatePosKey(),depth,Evaluate());
-		//ASSERT(board.posKey==generatePosKey());
-		CheckUp(info);
 
+		CheckUp(info);
 
 		if (endtime == starttime)
 			++endtime;
@@ -123,16 +123,10 @@ int think(S_SEARCHINFO *info)
 
 		/* if the time needed for search of depth D will exceed the remaining time, then D+1 will exceed also...probably */
 		if (info->timeset && (endtime + (endtime - starttime)) > info->stoptime) {
-//			FILE *problem = fopen("error.txt","a");
-//			fprintf(problem, "bestmove %s\n",moveToUCI(pv.argmove[0]));
-//			if (!pv.argmove[0]) {
-//			    fprintf(problem, "Depth: %d took %dms. Time now is %d and got stop at %d\n", depth,endtime-starttime, endtime, info->stoptime);
-//			}
-//			fclose(problem);
 			break;
 		}
 	}
-	if (info->GAME_MODE!=GAMEMODE_SILLENT) {
+	if (info->GAME_MODE==GAMEMODE_CONSOLE) {
 		printf("Hash - Exact:%d Alpha: %d Beta: %d  -- Hits: %d Misses: %d (%d%%)\n",
 				info->htExact,
 				info->htAlpha,
@@ -210,7 +204,7 @@ int isRepetition(void) {
 	return FALSE;
 }
 
-int Quiesce(int alpha, int beta, S_SEARCHINFO *info)
+int Quiescence(int alpha, int beta, S_SEARCHINFO *info)
 {
 	int i;
 	int stand_pat = Evaluate();
@@ -234,7 +228,7 @@ int Quiesce(int alpha, int beta, S_SEARCHINFO *info)
 		move_make(&m[i]);
 		ASSERT(m[i].score>=CAPTURE_SCORE);
 		if (!isAttacked(board.sideToMove, kingLoc[1 - (board.sideToMove >> 3)])) {
-			score = -Quiesce( -beta, -alpha, info);
+			score = -Quiescence( -beta, -alpha, info);
 		}
 		move_unmake(&m[i]);
 		if (info->stopped == TRUE) {
@@ -248,20 +242,11 @@ int Quiesce(int alpha, int beta, S_SEARCHINFO *info)
 	}
 	return alpha; /* Note that alpha is Eval() if no capture-moves exist */
 }
-/*
-#ifdef NDEBUG
-inline
-#endif
-int razor_margin(int d) {
-	return 200 + 16 * d;
-}
-*/
+
 
 const int razor_margin[4] = { 100*483/256, 100*570/256, 100*603/256, 100*554/256 };
-
 const int FullDepthMoves = 4;
 const int ReductionLimit = 3;
-
 
 //Total blunder: 8/8/8/2P5/k4K2/pR1B4/P4P2/8 w - - 47 122 FIXED with razor_margin calibration
 int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHINFO *info) {
@@ -285,9 +270,22 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 //			            : val >= beta ? (tte->flags==hashfBETA)
 //			                              : (tte->flags==hashfALPHA))
 //											) {
+		ASSERT(ttMove!=NOMOVE);
 		++info->hthit;
-//		pline->argmove[0] = PvMove;
-//		pline->cmove=1;
+		if (tte->flags==hashfEXACT) {
+			pline->argmove[0] = ttMove;
+			pline->cmove=1;
+			if (!(ISCAPTUREORPROMOTION(ttMove))) {
+				board.searchHistory[PIECE(ttMove)][TO(ttMove)] += depth;// * depth;
+			}
+		} else if (tte->flags==hashfBETA) {
+			if (!(ISCAPTUREORPROMOTION(ttMove))) {
+				if (board.searchKillers[0][board.ply] != ttMove) {
+					board.searchKillers[1][board.ply] = board.searchKillers[0][board.ply];
+					board.searchKillers[0][board.ply] = ttMove;
+				}
+			}
+		}
 		return val;
 	} else
 		++info->htmiss;
@@ -296,7 +294,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 		pline->cmove = 0;
 		if (PvNode && board.ply>info->maxSearchPly)
 			info->maxSearchPly=board.ply;
-		val = Quiesce(alpha,beta,info);
+		val = Quiescence(alpha,beta,info);
 		//TT_RecordHash(depth, val, hashfEXACT, NOMOVE);   //on 100ms wac.epd jumped from 130/300 to 152/300
 		return val;
 	}

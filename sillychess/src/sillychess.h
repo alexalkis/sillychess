@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define NAME	"sc v0.7.2b"
+#define NAME	"sc v0.7.2c"
 #define FULLNAME		NAME " " __DATE__ " " __TIME__
 
 #define START_FEN	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -253,7 +253,7 @@ int think(S_SEARCHINFO *info);
 void thinkFen(char *fen,int depth);
 int Evaluate(void);
 int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull, S_SEARCHINFO *info) ;
-int Quiesce(int alpha, int beta,S_SEARCHINFO *info );
+int Quiescence(int alpha, int beta,S_SEARCHINFO *info );
 int numOfLegalMoves(void);
 void CheckUp(S_SEARCHINFO *info);
 char *moveToUCI(int move);

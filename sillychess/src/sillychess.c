@@ -130,7 +130,7 @@ int main(int argc, char **argv)
 {
 	S_SEARCHINFO info[1];
 	info->GAME_MODE = GAMEMODE_CONSOLE;
-	int i;
+
 #if !defined(WIN32) && !defined(NOSIGHANDLER)
 	struct sigaction sigact;
 
@@ -145,94 +145,12 @@ int main(int argc, char **argv)
 	  exit(EXIT_FAILURE);
 	 }
 #endif
-
 	init();
-
-	//fen2board("8/7p/5k2/5p2/p1p2P2/Pr1pPK2/1P1R3P/8 b - -");
-	//testEPD("alkis",1000);
-	//fen2board("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 0 23");
 	if (argc>=2 && !strcmp(argv[1],"-bench"))
 		testEPD("../src/wac.epd",100);
 	else
 		input_loop(info);
 	TT_free();
-	return 0;
-
-	//fen2board("3Q4/p3b1k1/2p2rPp/2q5/4B3/P2P4/7P/6RK w - -");  // mate in 4
-	//fen2board("8/6r1/p7/1p6/3kBn1P/P2p1P2/1P6/3R1K2 b - -");
-
-	//fen2board("2rr3k/pp3pp1/1nnqbN1p/3pN3/2pP4/2P3Q1/PPB4P/R4RK1 w - -");
-	//fen2board("8/7p/5k2/5p2/p1p2P2/Pr1pPK2/1P1R3P/8 b - -");  //wac002 fails
-	//fen2board("5rk1/1ppb3p/p1pb4/6q1/3P1p1r/2P1R2P/PP1BQ1P1/5RKN w - -");
-	//fen2board("r1bq2rk/pp3pbp/2p1p1pQ/7P/3P4/2PB1N2/PP3PPR/2KR4 w - -");
-	//fen2board("5k2/6pp/p1qN4/1p1p4/3P4/2PKP2Q/PP3r2/3R4 b - -");
-	//fen2board("7k/p7/1R5K/6r1/6p1/6P1/8/8 w - -");
-
-	//fen2board("2n4r/p1pr1kpp/3bp1q1/PP2p3/1PRP3R/1Q3N2/5P2/B3K3 w - -");
-	info->timeset = TRUE;
-	info->depth = MAXDEPTH;
-
-	info->starttime = get_ms();
-	info->stoptime = get_ms() + 6000;
-
-	think(info);
-	printf("%d ms\n", get_ms() - info->starttime);
-	return 0;
-
-	LINE line;
-	int j;
-
-	for (j = 0; j < 200; ++j) {
-
-		line.cmove = 0;
-
-		int res = AlphaBeta(DDEPTH, -INFINITE,
-				+INFINITE, &line, TRUE, info);
-
-		smove m;
-		printf("res=%d number of moves in pv: %d\n", res, line.cmove);
-
-		for (i = 0; i < line.cmove; ++i) {
-			m.move = line.argmove[i];
-			printMove(m);
-			printf(" ");
-
-		}
-		m.move = line.argmove[0];
-		move_make(&m);
-		printBoard();
-	}
-
-	return 0;
-
-	if (argc != 2)
-		i = 5;
-	else
-		i = atol(argv[1]);
-	fen2board(
-			"r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -");
-	printBoard();
-	int starttime = get_ms();
-	u64 nodes = Divide(i);
-	int endtime = get_ms();
-	if (endtime == starttime)
-		++endtime;
-	printf("Divide - Nodes:%"INT64_FORMAT"d Nps: %"INT64_FORMAT"d (%d ms)\n", nodes,
-			(1000 * nodes) / (endtime - starttime), (endtime - starttime));
-
-//	smove moves[200];
-//	int numOfMoves = generateMoves(moves);
-//	printMoveList();
-//	printf("Moves: %d\n", numOfMoves);
-//	for (i = 1; i < 6; ++i) {
-//		int starttime = get_ms();
-//		u64 nodes = Perft(i);
-//		int endtime = get_ms();
-//		if (endtime==starttime) ++endtime;
-//		printf("Perft(%d)=%"INT64_FORMAT"d Nps: %"INT64_FORMAT"d (%d ms)\n", i, nodes,
-//				(1000*nodes) / (endtime - starttime), (endtime - starttime));
-//	}
-	//testPerft(3);
 	return EXIT_SUCCESS;
 }
 
@@ -292,6 +210,7 @@ void testPerft(int n)
 
 
 // testepd 400 /home/alex/git/amichess/sillychess/src/wac.epd
+//v0.7.2c Time: 110466ms Nodes: 258516379 226/300 Avg.Depth: 9.02667
 //v0.3.6b 220/300 at 400ms Total nodes: 262266409
 //v0.3.1 221/300 at 400ms razoring + futility pruning
 //V0.3.1 214/300 at 400ms after a minor modification in search (seldepth logging + small bug in signedness of time variables fixed)
