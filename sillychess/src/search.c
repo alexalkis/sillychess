@@ -135,7 +135,8 @@ int think(S_SEARCHINFO *info)
 				info->htmiss,
 				(int) ((u64)info->hthit*100 / (info->hthit+info->htmiss)));
 	}
-	printf("bestmove %s\n",moveToUCI(pv.argmove[0]));
+	if (info->GAME_MODE!=GAMEMODE_SILLENT)
+		printf("bestmove %s\n",moveToUCI(pv.argmove[0]));
 	info->depth = depth;
 	return pv.argmove[0];
 }
@@ -280,9 +281,9 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 			}
 		} else if (tte->flags==hashfBETA) {
 			if (!(ISCAPTUREORPROMOTION(ttMove))) {
-				if (board.searchKillers[0][board.ply] != ttMove) {
-					board.searchKillers[1][board.ply] = board.searchKillers[0][board.ply];
-					board.searchKillers[0][board.ply] = ttMove;
+				if (board.searchKillers[0][board.gameply] != ttMove) {
+					board.searchKillers[1][board.gameply] = board.searchKillers[0][board.gameply];
+					board.searchKillers[0][board.gameply] = ttMove;
 				}
 			}
 		}
@@ -429,8 +430,8 @@ skipPrunning:
 					//!givesCheck &&
 					!PvNode &&
 					!ISCAPTUREORPROMOTION(m[i].move)&&
-					m[i].move!=board.searchKillers[0][board.ply] &&
-					m[i].move!=board.searchKillers[1][board.ply])
+					m[i].move!=board.searchKillers[0][board.gameply] &&
+					m[i].move!=board.searchKillers[1][board.gameply])
 			{
 				// Search this move with reduced depth:
 //				int reduction = (2+ ((legalMoves-FullDepthMoves)>>3) );
@@ -475,9 +476,9 @@ skipPrunning:
 					else
 						++info->failHigh;
 					if (!(ISCAPTUREORPROMOTION(BestMove))) {
-						if (board.searchKillers[0][board.ply] != BestMove) {
-							board.searchKillers[1][board.ply] = board.searchKillers[0][board.ply];
-							board.searchKillers[0][board.ply] = BestMove;
+						if (board.searchKillers[0][board.gameply] != BestMove) {
+							board.searchKillers[1][board.gameply] = board.searchKillers[0][board.gameply];
+							board.searchKillers[0][board.gameply] = BestMove;
 						}
 					}
 					TT_RecordHash(depth, beta, hashfBETA, BestMove);

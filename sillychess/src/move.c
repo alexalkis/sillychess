@@ -460,10 +460,10 @@ void pushMove(int from, int to, int piece, int capturedPiece) {
     moveList[moveIndex].score = MvvLvaScores[capturedPiece][piece] + CAPTURE_SCORE;
     //printf("Capture score: %d\n",moveList[moveIndex].score);
   } else {
-    if (board.searchKillers[0][board.ply] == moveList[moveIndex].move) {
+    if (board.searchKillers[0][board.gameply] == moveList[moveIndex].move) {
       moveList[moveIndex].score = FIRST_KILLER_SCORE;
       //printf("First killer\n");
-    } else if (board.searchKillers[1][board.ply]== moveList[moveIndex].move) {
+    } else if (board.searchKillers[1][board.gameply]== moveList[moveIndex].move) {
       moveList[moveIndex].score = SECOND_KILLER_SCORE;
       //printf("Second killer\n");
     } else {
