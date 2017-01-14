@@ -76,7 +76,12 @@ int main(int argc, char **argv)
 	init();
 	if (argc>=2 && !strcmp(argv[1],"-bench"))
 		testEPD("../src/wac.epd",100);
-	else
+	else if (argc>=2 && !strcmp(argv[1],"-bench2")) {
+		info->starttime=get_ms();
+		info->timeset = FALSE;
+		info->depth = 10;
+		think(info);
+	} else
 		input_loop(info);
 	TT_free();
 	return EXIT_SUCCESS;

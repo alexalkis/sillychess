@@ -155,9 +155,10 @@ void ParseGo(char* line, S_SEARCHINFO *info)
 		info->depth = MAXDEPTH;
 	} else
 		info->timeset = FALSE;
-
+#ifndef NDEBUG
 	printf("time:%d start:%d stop:%d depth:%d timeset:%d\n", time,
 			info->starttime, info->stoptime, info->depth, info->timeset);
+#endif
 	int move=think(info);
 	int timeTaken = get_ms();
 	printf("Time taken: %d\n", timeTaken - info->starttime);
