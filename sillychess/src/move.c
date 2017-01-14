@@ -764,7 +764,7 @@ void move_unmakeNull(smove *move) {
   --board.ply;
 }
 
-int valuePiecePSQ(int side,int piece,int from){
+int valuePiecePSQ(int piece,int from){
 	int from8x8 = (from + (from & 7)) >> 1;
 
 	switch(piece) {
@@ -846,21 +846,21 @@ int move_make(smove *move)
     board.bs[to] = promoted;
     if (board.sideToMove == BLACK) {
       board.matValues[0] += matValues[promoted]-matValues[piece]
-														  -valuePiecePSQ(0,piece,from)
-														  +valuePiecePSQ(0,promoted,to);// add the new piece's psq value
+														  -valuePiecePSQ(piece,from)
+														  +valuePiecePSQ(promoted,to);// add the new piece's psq value
       ++board.bigCount[0];
     } else {
       board.matValues[1] += matValues[promoted]-matValues[piece]
-														  -valuePiecePSQ(1,piece,from)
-														  +valuePiecePSQ(1,promoted,to);
+														  -valuePiecePSQ(piece,from)
+														  +valuePiecePSQ(promoted,to);
       ++board.bigCount[1];
     }
   } else {
     board.bs[to] = piece;
 	if (board.sideToMove==BLACK) {
-		board.matValues[0] += valuePiecePSQ(0,piece,to)-valuePiecePSQ(0,piece,from);
+		board.matValues[0] += valuePiecePSQ(piece,to)-valuePiecePSQ(piece,from);
 	} else {
-		board.matValues[1] += valuePiecePSQ(1,piece,to)-valuePiecePSQ(1,piece,from);
+		board.matValues[1] += valuePiecePSQ(piece,to)-valuePiecePSQ(piece,from);
 	}
   }
 
@@ -947,12 +947,12 @@ int move_make(smove *move)
     if (board.sideToMove == BLACK) {
       board.bs[to - 16] = 0;
       board.posKey ^= pieceKeys[BLACK_PAWN][to - 16];
-      board.matValues[1] -= (valuePiecePSQ(1,BLACK_PAWN,to-16) + matValues[BLACK_PAWN]);
+      board.matValues[1] -= (valuePiecePSQ(BLACK_PAWN,to-16) + matValues[BLACK_PAWN]);
 
     } else {
       board.bs[to + 16] = 0;
       board.posKey ^= pieceKeys[WHITE_PAWN][to + 16];
-      board.matValues[0] -= (valuePiecePSQ(0,WHITE_PAWN,to+16)+matValues[WHITE_PAWN]);
+      board.matValues[0] -= (valuePiecePSQ(WHITE_PAWN,to+16)+matValues[WHITE_PAWN]);
     }
     /* artificially mark the move as non-capture so we don't hash-out anything at the destination square of the move */
     capture=0;
@@ -961,11 +961,11 @@ int move_make(smove *move)
 		board.posKey ^= pieceKeys[capture][to];
 		if (board.sideToMove == BLACK) {
 			ASSERT(capture&(1<<3));
-			board.matValues[1] -= (matValues[capture]+valuePiecePSQ(1,capture,to));
+			board.matValues[1] -= (matValues[capture]+valuePiecePSQ(capture,to));
 			if (capture != BLACK_KING && capture != BLACK_PAWN)
 				--board.bigCount[1];
 		} else {
-			board.matValues[0] -= (matValues[capture]+valuePiecePSQ(0,capture,to));
+			board.matValues[0] -= (matValues[capture]+valuePiecePSQ(capture,to));
 			if (capture != WHITE_KING && capture != WHITE_PAWN)
 				--board.bigCount[0];
 		}

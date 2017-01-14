@@ -283,7 +283,7 @@ void input_loop(S_SEARCHINFO *info)
 	int exit = FALSE;
 	char line[INPUTBUFFER];
 
-	printf("%s, written by Alex Argiropoulos\n", NAME);
+	printf("%s, written by Alex Argiropoulos (compiler's version used: "__VERSION__")\n", NAME);
 
 
 #ifndef NDEBUG
@@ -336,7 +336,7 @@ void input_loop(S_SEARCHINFO *info)
 			puts(FULLNAME);
 			printf(	"- 0x88 board\n"
 					"- Iterative deepening\n"
-					"- Null move reduction (TODO: move the material counting from eval to make_move and have it incremental)\n"
+					"- Null move reduction\n"
 					"- Futility pruning\n"
 					"- Razoring pruning\n"
 					"- MVV/LVA\n"

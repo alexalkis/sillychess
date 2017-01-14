@@ -30,6 +30,8 @@ Time taken: 6384
 *********************************************** 0.7.3 ***************************************************************
 cmd: testepd 1000 ../src/wac.epd
 Time: 271926ms Nodes: 1099040218 251/300 Avg.Depth: 10.6467 (linux main pc -- Intel(R) Core(TM) i7 CPU         965  @ 3.20GHz)
+Time: 273918ms Nodes: 630170864 238/300 Avg.Depth: 10.06 (laptop -- Intel(R) Core(TM)2 CPU         T7400  @ 2.16GHz)
+
 
 cmd: testepd 100 ../src/wac.epd
 Time: 28272ms Nodes: 74371377 198/300 Avg.Depth: 7.6 (linux main pc -- Intel(R) Core(TM) i7 CPU         965  @ 3.20GHz)
