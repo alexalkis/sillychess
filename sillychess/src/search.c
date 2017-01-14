@@ -358,6 +358,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 			(board.bigCount[board.sideToMove>>3] > 0) &&
 			depth >= 4) {
 		smove nm;
+
 		move_makeNull(&nm);
 		int Score = -AlphaBeta(depth - 4, -beta, -beta + 1, &line, FALSE,info);
 		move_unmakeNull(&nm);
@@ -406,7 +407,7 @@ skipPrunning:
 			move_unmake(&m[i]);
 			continue;
 		}
-
+		//if (depth==1) printf("#%d %s (%d)\n",legalMoves+1,moveToUCI(m[i].move), m[i].move);
 //		int givesCheck=isAttacked(board.sideToMove^BLACK, kingLoc[board.sideToMove >> 3]);
 //
 //		/* Shallow prune */

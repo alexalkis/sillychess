@@ -27,8 +27,12 @@ Hash - Exact:570 Alpha: 177783 Beta: 1211733  -- Hits: 441766 Misses: 6086356
 bestmove e2e4
 Time taken: 6384
 
+*********************************************** 0.7.3 ***************************************************************
+cmd: testepd 1000 ../src/wac.epd
+Time: 271926ms Nodes: 1099040218 251/300 Avg.Depth: 10.6467 (linux main pc -- Intel(R) Core(TM) i7 CPU         965  @ 3.20GHz)
 
-
+cmd: testepd 100 ../src/wac.epd
+Time: 28272ms Nodes: 74371377 198/300 Avg.Depth: 7.6 (linux main pc -- Intel(R) Core(TM) i7 CPU         965  @ 3.20GHz)
 *********************************************** 0.7.2 ***************************************************************
 cmd: testepd 1000 ../src/wac.epd
 Time: 271164ms Nodes: 673183875 238/300 Avg.Depth: 10.0933 (linux main pc -- Intel(R) Core(TM) i7 CPU         965  @ 3.20GHz)

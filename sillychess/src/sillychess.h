@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define NAME	"sc v0.7.2d"
+#define NAME	"sc v0.7.3"
 #define FULLNAME		NAME " " __DATE__ " " __TIME__
 
 #define START_FEN	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
@@ -123,6 +123,7 @@ struct aboard {
 
 	short int gameply;
 	u64 historyPosKey[MAX_PLY_IN_A_GAME];
+	int historymatValue[2][MAX_PLY_IN_A_GAME];
 	unsigned int searchKillers[2][MAX_PLY_IN_A_GAME];
 	int searchHistory[16][128];
 	Hash_Entry *ht;
@@ -134,6 +135,9 @@ struct aboard {
 	int psqValues[2];
 	int pawnCount[2];
 	int bigCount[2];
+#ifndef NDEBUG
+	int historymoves[MAX_PLY_IN_A_GAME];
+#endif
 };
 
 

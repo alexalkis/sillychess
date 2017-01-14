@@ -764,11 +764,39 @@ void move_unmakeNull(smove *move) {
   --board.ply;
 }
 
+int valuePiecePSQ(int side,int piece,int from){
+	int from8x8 = (from + (from & 7)) >> 1;
 
-void RemovePiecePsq(int from, int piece)
-{
-
+	switch(piece) {
+	case WHITE_PAWN:
+		return psq_pawns[WHITE][from8x8];
+	case WHITE_BISHOP:
+		return psq_bishops[WHITE][from8x8];
+	case WHITE_KNIGHT:
+		return psq_knights[WHITE][from8x8];
+	case WHITE_ROOK:
+		return psq_rooks[WHITE][from8x8];
+	case WHITE_QUEEN:
+		return psq_queens[WHITE][from8x8];
+	case BLACK_PAWN:
+		return psq_pawns[1][from8x8];
+	case BLACK_BISHOP:
+		return psq_bishops[1][from8x8];
+	case BLACK_KNIGHT:
+		return psq_knights[1][from8x8];
+	case BLACK_ROOK:
+		return psq_rooks[1][from8x8];
+	case BLACK_QUEEN:
+		return psq_queens[1][from8x8];
+	case WHITE_KING:
+	case BLACK_KING:
+		return 0;
+	default:
+		ASSERT(0==printf("You should never see this...\nPiece: %d\n", piece));
+		return 20;
+	}
 }
+
 
 int move_make(smove *move)
 {
@@ -778,10 +806,16 @@ int move_make(smove *move)
   move->fiftycounter = board.fiftyCounter;
   move->enPassantsq = board.enPassant;
   move->castleRights = board.castleRights;
+  board.historymatValue[0][board.gameply]=board.matValues[0];
+  board.historymatValue[1][board.gameply]=board.matValues[1];
+#ifndef NDEBUG
+  board.historymoves[board.gameply] = move->move;
+#endif
   board.historyPosKey[board.gameply++] = board.posKey;
   ++board.ply;
   board.sideToMove ^= BLACK;
   ++board.fiftyCounter;
+
 
   int from = FROM(move->move);
   int to = TO(move->move);
@@ -793,8 +827,8 @@ int move_make(smove *move)
   ASSERT(to < 128 && to >= 0);
   ASSERT((capture&7) != KING)
 
-      board.posKey ^= pieceKeys[piece][from] ^ pieceKeys[piece][to];
-  //if (board.sideToMove)
+  board.posKey ^= pieceKeys[piece][from] ^ pieceKeys[piece][to];
+
   board.posKey ^= side;
 
   if ( COLORLESSPIECE(move->move) == PAWN || capture)
@@ -807,17 +841,28 @@ int move_make(smove *move)
   board.bs[from] = EMPTY;
 
   if (promoted) {
+	  //printf("Yeah, ***************************** %s\n", moveToUCI(move->move));
     board.posKey ^= pieceKeys[piece][to] ^ pieceKeys[promoted][to];
     board.bs[to] = promoted;
     if (board.sideToMove == BLACK) {
-      board.matValues[0] -= matValues[piece]+matValues[promoted];
+      board.matValues[0] += matValues[promoted]-matValues[piece]
+														  -valuePiecePSQ(0,piece,from)
+														  +valuePiecePSQ(0,promoted,to);// add the new piece's psq value
       ++board.bigCount[0];
     } else {
-      board.matValues[1] -= matValues[piece]+matValues[promoted];
+      board.matValues[1] += matValues[promoted]-matValues[piece]
+														  -valuePiecePSQ(1,piece,from)
+														  +valuePiecePSQ(1,promoted,to);
       ++board.bigCount[1];
     }
-  } else
+  } else {
     board.bs[to] = piece;
+	if (board.sideToMove==BLACK) {
+		board.matValues[0] += valuePiecePSQ(0,piece,to)-valuePiecePSQ(0,piece,from);
+	} else {
+		board.matValues[1] += valuePiecePSQ(1,piece,to)-valuePiecePSQ(1,piece,from);
+	}
+  }
 
   board.posKey ^= castleKeys[board.castleRights];	//xor the old value
   switch (from) {
@@ -863,8 +908,6 @@ int move_make(smove *move)
   board.posKey ^= castleKeys[board.castleRights]; //xor the new value
   /* if the move is castling move the rook */
   if (SPECIAL(move->move) == SP_CASTLE) {
-
-
     if (to == G1) {
       board.bs[H1] = EMPTY;
       board.bs[F1] = WHITE_ROOK;
@@ -875,6 +918,7 @@ int move_make(smove *move)
       board.bs[D1] = WHITE_ROOK;
       board.posKey ^= pieceKeys[WHITE_ROOK][A1]
           ^ pieceKeys[WHITE_ROOK][D1];
+      board.matValues[0] += 5;
     } else if (to == G8) {
       board.bs[H8] = EMPTY;
       board.bs[F8] = BLACK_ROOK;
@@ -883,6 +927,7 @@ int move_make(smove *move)
     } else if (to == C8) {
       board.bs[A8] = EMPTY;
       board.bs[D8] = BLACK_ROOK;
+      board.matValues[1] += -5;
       board.posKey ^= pieceKeys[BLACK_ROOK][A8]
           ^ pieceKeys[BLACK_ROOK][D8];
     }
@@ -902,27 +947,30 @@ int move_make(smove *move)
     if (board.sideToMove == BLACK) {
       board.bs[to - 16] = 0;
       board.posKey ^= pieceKeys[BLACK_PAWN][to - 16];
-      board.matValues[1]-=matValues[BLACK_PAWN];
+      board.matValues[1] -= (valuePiecePSQ(1,BLACK_PAWN,to-16) + matValues[BLACK_PAWN]);
+
     } else {
       board.bs[to + 16] = 0;
       board.posKey ^= pieceKeys[WHITE_PAWN][to + 16];
-      board.matValues[0]-=matValues[WHITE_PAWN];
+      board.matValues[0] -= (valuePiecePSQ(0,WHITE_PAWN,to+16)+matValues[WHITE_PAWN]);
     }
     /* artificially mark the move as non-capture so we don't hash-out anything at the destination square of the move */
     capture=0;
   }
-  if (capture) {
-    board.posKey ^= pieceKeys[capture][to];
-    if (board.sideToMove==BLACK) {
-      board.matValues[1]-=matValues[capture];
-      if (capture!=BLACK_KING && capture!=BLACK_PAWN)
-        --board.bigCount[1];
-    }else {
-      board.matValues[0]-=matValues[capture];
-      if (capture!=WHITE_KING && capture!=WHITE_PAWN)
-        --board.bigCount[0];
-    }
-  }
+	if (capture) {
+		board.posKey ^= pieceKeys[capture][to];
+		if (board.sideToMove == BLACK) {
+			ASSERT(capture&(1<<3));
+			board.matValues[1] -= (matValues[capture]+valuePiecePSQ(1,capture,to));
+			if (capture != BLACK_KING && capture != BLACK_PAWN)
+				--board.bigCount[1];
+		} else {
+			board.matValues[0] -= (matValues[capture]+valuePiecePSQ(0,capture,to));
+			if (capture != WHITE_KING && capture != WHITE_PAWN)
+				--board.bigCount[0];
+		}
+	}
+
   ASSERT(board.bs[kingLoc[0]]==WHITE_KING);
   ASSERT(board.bs[kingLoc[1]]==BLACK_KING);
   return 0;
@@ -936,6 +984,9 @@ int move_unmake(smove *move) {
   board.fiftyCounter = move->fiftycounter;
   board.castleRights = move->castleRights;
   board.posKey=board.historyPosKey[--board.gameply];
+  board.matValues[0]=board.historymatValue[0][board.gameply];
+  board.matValues[1]=board.historymatValue[1][board.gameply];
+
   --board.ply;
 
   int from = FROM(move->move);
@@ -953,10 +1004,10 @@ int move_unmake(smove *move) {
   int promoted = ISPROMOTION(move->move);
   if (promoted) {
     if (board.sideToMove == BLACK) {
-      board.matValues[1]-=matValues[promoted];
+
       --board.bigCount[1];
     } else {
-      board.matValues[0]-=matValues[promoted];
+
       --board.bigCount[0];
     }
   }
@@ -966,19 +1017,19 @@ int move_unmake(smove *move) {
   if (SPECIAL(move->move) == SP_ENPASSANT) {
     if (board.sideToMove == BLACK) {
       board.bs[to + 16] = WHITE_PAWN;
-      board.matValues[0]+=matValues[WHITE_PAWN];
+
     } else {
       board.bs[to - 16] = BLACK_PAWN;
-      board.matValues[1]+=matValues[BLACK_PAWN];
+
     }
   } else if (capturedpiece) {
     board.bs[to] = capturedpiece;
     if (board.sideToMove==BLACK) {
-      board.matValues[0]+=matValues[capturedpiece];
+
       if (capturedpiece!=WHITE_KING && capturedpiece!=WHITE_PAWN)
         ++board.bigCount[0];
     }else {
-      board.matValues[1]+=matValues[capturedpiece];
+
       if (capturedpiece!=BLACK_KING && capturedpiece!=BLACK_PAWN)
         ++board.bigCount[1];
     }
@@ -999,6 +1050,9 @@ int move_unmake(smove *move) {
       board.bs[D8] = EMPTY;
     }
   }
+
+
+
   ASSERT(board.bs[kingLoc[0]]==WHITE_KING);
   ASSERT(board.bs[kingLoc[1]]==BLACK_KING);
   return 0;

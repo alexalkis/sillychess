@@ -176,6 +176,8 @@ void initBoard(void) {
 	}
 	//printpsq(psq_rooks,1);
 	//printpsq(psq_pawns,0);
+	//printf("\n\n");
+	//printpsq(psq_pawns,1);
 	//exit(1);
 
 }
@@ -292,6 +294,9 @@ void printBoard(void) {
 			board.enPassant == ENPASSANTNULL ?
 					" -" : sq2algebraic(board.enPassant));
 	printf("Fen: %s\n", board2fen());
+#ifndef NDEBUG
+	printf("Last move: %s (move number %d in the game)\n", moveToUCI(board.gameply-1), board.gameply-1);
+#endif
 }
 
 void fen2board(char *str) {
@@ -311,25 +316,25 @@ void fen2board(char *str) {
 		case 'r':
 			board.bs[(rank << 4) + file] = BLACK_ROOK;
 			++board.bigCount[1];
-			board.matValues[1]+=matValues[BLACK_ROOK];
+			board.matValues[1]+=matValues[BLACK_ROOK]+psq_rooks[1][(rank<<3)+file];
 			++file;
 			break;
 		case 'n':
 			board.bs[(rank << 4) + file] = BLACK_KNIGHT;
 			++board.bigCount[1];
-			board.matValues[1]+=matValues[BLACK_KNIGHT];
+			board.matValues[1]+=matValues[BLACK_KNIGHT]+psq_knights[1][(rank<<3)+file];
 			++file;
 			break;
 		case 'b':
 			board.bs[(rank << 4) + file] = BLACK_BISHOP;
 			++board.bigCount[1];
-			board.matValues[1]+=matValues[BLACK_BISHOP];
+			board.matValues[1]+=matValues[BLACK_BISHOP]+psq_bishops[1][(rank<<3)+file];
 			++file;
 			break;
 		case 'q':
 			board.bs[(rank << 4) + file] = BLACK_QUEEN;
 			++board.bigCount[1];
-			board.matValues[1]+=matValues[BLACK_QUEEN];
+			board.matValues[1]+=matValues[BLACK_QUEEN]+psq_queens[1][(rank<<3)+file];
 			++file;
 			break;
 		case 'k':
@@ -340,32 +345,32 @@ void fen2board(char *str) {
 		case 'p':
 			board.bs[(rank << 4) + file] = BLACK_PAWN;
 			++board.pawnCount[1];
-			board.matValues[1]+=matValues[BLACK_PAWN];
+			board.matValues[1]+=matValues[BLACK_PAWN]+psq_pawns[1][(rank<<3)+file];
 			++file;
 			break;
 
 		case 'R':
 			board.bs[(rank << 4) + file] = WHITE_ROOK;
 			++board.bigCount[0];
-			board.matValues[0]+=matValues[WHITE_ROOK];
+			board.matValues[0]+=matValues[WHITE_ROOK]+psq_rooks[0][(rank<<3)+file];
 			++file;
 			break;
 		case 'N':
 			board.bs[(rank << 4) + file] = WHITE_KNIGHT;
 			++board.bigCount[0];
-			board.matValues[0]+=matValues[WHITE_KNIGHT];
+			board.matValues[0]+=matValues[WHITE_KNIGHT]+psq_knights[0][(rank<<3)+file];
 			++file;
 			break;
 		case 'B':
 			board.bs[(rank << 4) + file] = WHITE_BISHOP;
 			++board.bigCount[0];
-			board.matValues[0]+=matValues[WHITE_BISHOP];
+			board.matValues[0]+=matValues[WHITE_BISHOP]+psq_bishops[0][(rank<<3)+file];
 			++file;
 			break;
 		case 'Q':
 			board.bs[(rank << 4) + file] = WHITE_QUEEN;
 			++board.bigCount[0];
-			board.matValues[0]+=matValues[WHITE_QUEEN];
+			board.matValues[0]+=matValues[WHITE_QUEEN]+psq_queens[0][(rank<<3)+file];
 			++file;
 			break;
 		case 'K':
@@ -376,7 +381,7 @@ void fen2board(char *str) {
 		case 'P':
 			board.bs[(rank << 4) + file] = WHITE_PAWN;
 			++board.pawnCount[0];
-			board.matValues[0]+=matValues[WHITE_PAWN];
+			board.matValues[0]+=matValues[WHITE_PAWN]+psq_pawns[0][(rank<<3)+file];
 			++file;
 			break;
 		case '1':
@@ -456,4 +461,7 @@ void fen2board(char *str) {
 	board.posKey=generatePosKey();
 	/// TODO: fiftycounter and plycounter
 	board.fiftyCounter=board.ply=0;
+//	printf("*******************\n");
+//	Evaluate();
+//	printf("*******************\n");
 }
