@@ -279,6 +279,6 @@ Hash_Entry *TT_probe(unsigned int *move, int *score,int depth, int alpha, int be
 void TT_RecordHash(int depth, int value, int hashf,unsigned int best);
 void TT_fillPVLineFromTT(int deep, LINE *tLine);
 
-
+char *getCPUModel(void);
 void testEPD(char *filename, int miliseconds);
 #endif /* SILLYCHESS_H_ */
