@@ -220,6 +220,6 @@ void testEPD(char *filename, int miliseconds) {
 	totalInfo->stoptime=get_ms();
 	char buf[80];
 	sprintf(buf, "cmd: testepd %d %s",miliseconds, filename);
-	printf("Time: %dms Nodes: %"INT64_FORMAT"d %d/%d Avg.Depth: %g\n%s\n",totalInfo->stoptime-totalInfo->starttime,totalInfo->nodes, solved, positions, ((double)totalDepth)/positions, buf);
+	printf("Time: %dms Nodes: %"INT64_FORMAT"d %d/%d Avg.Depth: %g (%s)\n%s\n",totalInfo->stoptime-totalInfo->starttime,totalInfo->nodes, solved, positions, ((double)totalDepth)/positions, getCPUModel(), buf);
 	fclose(f);
 }

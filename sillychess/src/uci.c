@@ -13,6 +13,35 @@
 #define NOMOVE			0
 #define FR2SQ(f,r) ( (f)  + (r) * 16 )
 
+
+char *getCPUModel(void)
+{
+	static char cpustr[160];
+
+	cpustr[0]='\0';
+	FILE *cpuinfo = fopen("/proc/cpuinfo", "rb");
+	char *arg = 0;
+	size_t size = 0;
+
+	if (cpuinfo) {
+		while (getline(&arg, &size, cpuinfo) != -1) {
+			if (strstr(arg, "model name")) {
+				char *t = strchr(arg, ':');
+				if (t) {
+					t += 2;
+					if (t[strlen(t)-1]=='\n')
+						t[strlen(t)-1] = '\0';
+					strcat(cpustr, t);
+				}
+				break;
+			}
+		}
+		free(arg);
+		fclose(cpuinfo);
+	}
+	return cpustr;
+}
+
 void showMoveList(void)
 {
 	int i;
@@ -284,7 +313,6 @@ void input_loop(S_SEARCHINFO *info)
 	char line[INPUTBUFFER];
 
 	printf("%s, written by Alex Argiropoulos (compiler's version used: "__VERSION__")\n", NAME);
-
 
 #ifndef NDEBUG
 	printf("Terminal is %s\n",isatty(fileno(stdout)) ? "true": "false");
