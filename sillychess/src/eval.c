@@ -154,7 +154,7 @@ int Evaluate(void) {
 	ASSERT(board.obigCount[0]==board.bigCount[0]);
 	ASSERT(board.obigCount[1]==board.bigCount[1]);
 	ASSERT((board.matValues[0]+board.matValues[1])==mat);
-	//FIXME: ASSERT((board.matValues[0]+board.matValues[1])==mat);
+
 	if ( board.sideToMove == BLACK )
 	       return -mat;
 	    else
