@@ -4,6 +4,10 @@
  *  Created on: Jun 1, 2014
  *      Author: alex
  */
+#define _GNU_SOURCE
+#ifdef WIN32
+#include "windows.h"
+#endif
 #include <unistd.h>
 #include <stdio.h>
 #include "move.h"
@@ -14,12 +18,68 @@
 #define NOMOVE			0
 #define FR2SQ(f,r) ( (f)  + (r) * 16 )
 
+#ifdef WIN32
+/* http://stackoverflow.com/questions/735126/are-there-alternate-implementations-of-gnu-getline-interface/735472#735472 */
+/* This code is public domain -- Will Hartung 4/9/09 */
+size_t getline(char **lineptr, size_t *n, FILE *stream) {
+    char *bufptr = NULL;
+    char *p = bufptr;
+    size_t size;
+    int c;
+
+    if (lineptr == NULL) {
+        return -1;
+    }
+    if (stream == NULL) {
+        return -1;
+    }
+    if (n == NULL) {
+        return -1;
+    }
+    bufptr = *lineptr;
+    size = *n;
+
+    c = fgetc(stream);
+    if (c == EOF) {
+        return -1;
+    }
+    if (bufptr == NULL) {
+        bufptr = malloc(128);
+        if (bufptr == NULL) {
+            return -1;
+        }
+        size = 128;
+    }
+    p = bufptr;
+    while(c != EOF) {
+        if ((p - bufptr) > (size - 1)) {
+            size = size + 128;
+            bufptr = realloc(bufptr, size);
+            if (bufptr == NULL) {
+                return -1;
+            }
+        }
+        *p++ = c;
+        if (c == '\n') {
+            break;
+        }
+        c = fgetc(stream);
+    }
+
+    *p++ = '\0';
+    *lineptr = bufptr;
+    *n = size;
+
+    return p - bufptr - 1;
+}
+#endif
 
 char *getCPUModel(void)
 {
 	static char cpustr[160];
 
 	cpustr[0]='\0';
+#ifdef __linux__
 	FILE *cpuinfo = fopen("/proc/cpuinfo", "rb");
 	char *arg = 0;
 	size_t size = 0;
@@ -40,6 +100,17 @@ char *getCPUModel(void)
 		free(arg);
 		fclose(cpuinfo);
 	}
+#endif
+#ifdef WIN32
+	HKEY hKey;
+	DWORD cbData=sizeof(cpustr);
+	if(RegOpenKeyEx(HKEY_LOCAL_MACHINE,"HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0\\", 0, KEY_QUERY_VALUE, &hKey) == ERROR_SUCCESS) {
+		if(RegQueryValueEx(hKey, "ProcessorNameString", NULL, NULL, (LPBYTE)&cpustr, &cbData) == ERROR_SUCCESS) {
+			printf("Success\n");
+		}
+		RegCloseKey(hKey);
+	}
+#endif
 	return cpustr;
 }
 
@@ -314,7 +385,7 @@ void input_loop(S_SEARCHINFO *info)
 	char line[INPUTBUFFER];
 
 	printf("%s, written by Alex Argiropoulos (compiler's version used: "__VERSION__")\n", NAME);
-
+	//printf("%s\n", getCPUModel());
 #ifndef NDEBUG
 	printf("Terminal is %s\n",isatty(fileno(stdout)) ? "true": "false");
 	printf("NOTE: NDEBUG not defined at compilation stage.  Performance will not be optimum!\n");

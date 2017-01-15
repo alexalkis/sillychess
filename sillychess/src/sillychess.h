@@ -36,6 +36,18 @@
 #define COL(x) (x&7)
 #define ROW(x) (x>>4)
 
+#ifdef WIN32
+#ifdef FALSE
+#undef FALSE
+#endif
+#ifdef TRUE
+#undef TRUE
+#endif
+#ifdef INFINITE
+#undef INFINITE
+#endif
+#endif
+
 enum {
 	FALSE=0,
 	NOMOVE=0,
