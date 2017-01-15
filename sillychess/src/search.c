@@ -133,7 +133,7 @@ int think(S_SEARCHINFO *info)
 				info->htBeta,
 				info->hthit,
 				info->htmiss,
-				(int) ((u64)info->hthit*100 / (info->hthit+info->htmiss)));
+				(int) (((u64)info->hthit*100) / (info->hthit+info->htmiss)));
 	}
 	if (info->GAME_MODE!=GAMEMODE_SILLENT)
 		printf("bestmove %s\n",moveToUCI(pv.argmove[0]));

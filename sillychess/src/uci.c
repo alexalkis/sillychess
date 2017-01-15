@@ -106,7 +106,7 @@ char *getCPUModel(void)
 	DWORD cbData=sizeof(cpustr);
 	if(RegOpenKeyEx(HKEY_LOCAL_MACHINE,"HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0\\", 0, KEY_QUERY_VALUE, &hKey) == ERROR_SUCCESS) {
 		if(RegQueryValueEx(hKey, "ProcessorNameString", NULL, NULL, (LPBYTE)&cpustr, &cbData) == ERROR_SUCCESS) {
-			printf("Success\n");
+			;
 		}
 		RegCloseKey(hKey);
 	}
@@ -434,7 +434,7 @@ void input_loop(S_SEARCHINFO *info)
 			printf("Eval=%d\n",Evaluate());
 		} else if (!strncmp(line, "version", 4)) {
 			puts(FULLNAME);
-			printf(	"- 0x88 board\n"
+			printf(	"%s\n- 0x88 board\n"
 					"- Iterative deepening\n"
 					"- Null move reduction\n"
 					"- Futility pruning\n"
@@ -443,7 +443,8 @@ void input_loop(S_SEARCHINFO *info)
 					"- Killer heuristics\n"
 					"- History heuristics\n"
 					"- Transposition tables\n"
-					"- Late Move Reductions\n"
+					"- Late Move Reductions\n",
+					getCPUModel()
 					);
 		} else if (!strncmp(line, "quit", 4)) {
 			exit = TRUE;
