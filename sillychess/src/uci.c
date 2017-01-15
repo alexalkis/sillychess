@@ -5,6 +5,7 @@
  *      Author: alex
  */
 #include <unistd.h>
+#include <stdio.h>
 #include "move.h"
 #include "sillychess.h"
 
