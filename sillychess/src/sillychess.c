@@ -77,9 +77,15 @@ int main(int argc, char **argv)
 	if (argc>=2 && !strcmp(argv[1],"-bench"))
 		testEPD("../src/wac.epd",100);
 	else if (argc>=2 && !strcmp(argv[1],"-bench2")) {
+		int depth = 10;
+		if (argc==3) {
+			depth = atol(argv[2]);
+			if (depth<1 || depth>20)
+				depth = 10;
+		}
 		info->starttime=get_ms();
 		info->timeset = FALSE;
-		info->depth = 10;
+		info->depth = depth;
 		think(info);
 	} else
 		input_loop(info);
