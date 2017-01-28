@@ -79,7 +79,17 @@ int main(int argc, char **argv)
 	else if (argc>=2 && !strcmp(argv[1],"-bench2")) {
 		info->starttime=get_ms();
 		info->timeset = FALSE;
+#ifdef __AMIGA__
+		info->depth = 8;
+#else
 		info->depth = 10;
+#endif
+		think(info);
+	} else if (argc>=2 && !strcmp(argv[1],"-bench3")) {
+		fen2board("8/k7/3p4/p2P1p2/P2P1P2/8/8/K7 w - -");
+		info->starttime = get_ms();
+		info->stoptime = info->starttime + 30000;
+		info->timeset = TRUE;
 		think(info);
 	} else
 		input_loop(info);
