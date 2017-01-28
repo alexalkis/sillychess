@@ -217,6 +217,9 @@ int Quiescence(int alpha, int beta, S_SEARCHINFO *info)
 		return 0;
 	if ((info->qnodes & 0xFFF) == 0) {
 		CheckUp(info);
+		if (info->stopped == TRUE) {
+			return 0;
+		}
 	}
 	if (stand_pat >= beta)
 		return beta;
@@ -232,9 +235,6 @@ int Quiescence(int alpha, int beta, S_SEARCHINFO *info)
 			score = -Quiescence( -beta, -alpha, info);
 		}
 		move_unmake(&m[i]);
-		if (info->stopped == TRUE) {
-			return 0;
-		}
 		if (score >= beta) {
 			return beta;
 		}
@@ -493,8 +493,14 @@ skipPrunning:
 				}
 				pline->cmove = line.cmove + 1;
 
+
 				if (!(ISCAPTUREORPROMOTION(BestMove))) {
-					board.searchHistory[PIECE(BestMove)][TO(BestMove)] += depth;// * depth;
+					board.searchHistory[PIECE(BestMove)][TO(BestMove)] += depth * depth;
+//					static int highHistory=0;
+//					if (board.searchHistory[PIECE(BestMove)][TO(BestMove)]>highHistory) {
+//						highHistory = board.searchHistory[PIECE(BestMove)][TO(BestMove)];
+//						printf("HighHistory: %d\n", highHistory);
+//					}
 				}
 			}
 		}
