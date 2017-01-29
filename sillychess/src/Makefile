@@ -1,7 +1,7 @@
 WCC=x86_64-w64-mingw32-gcc
 LCC=gcc
 ACC=m68k-amigaos-gcc
-CFLAGS = -O3 -DNDEBUG -std=gnu99 -fomit-frame-pointer 
+CFLAGS = -Wall -O3 -DNDEBUG -std=gnu99 -fomit-frame-pointer 
 
 DEPS = sillychess.h
 

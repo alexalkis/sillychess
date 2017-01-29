@@ -1,7 +1,7 @@
 #<img src="https://raw.githubusercontent.com/alexalkis/sillychess/master/sillychess/src/windows_res/sc.ico" width="48"> sillychess - A simple chess engine.
 
 Totally messy C code to deal with equally messy chess ideas.
-Plays arround ~1800 ELO, don't expect much.
+Plays around ~1800 ELO, don't expect much.
 
 On the other hand it compiles for Linux, Windows **and** Amiga... ;-)
 
@@ -23,3 +23,12 @@ Here in the long process of ELO measuring for version 0.7.3c
 
 ### Amiga
 Due to libnix not having proper support for 64bit integers compiling with -noixemul won't do.  That means you'll need the ixemul.library.
+
+### Building
+Although my main development platform for the project seems to be Eclipse, I wrote an almost adequate makefile.
+
+  * make, will produce a linux executable ("make linux" will do the same thing)
+  * make windows, will produce a windows executable
+  * make amiga, will produce an amiga executable
+
+If you happen to cycle between them always do "make clean" before.
