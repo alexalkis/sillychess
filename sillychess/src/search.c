@@ -118,6 +118,7 @@ int think(S_SEARCHINFO *info)
 		else
 			pv = line;
 		if (info->stopped == TRUE) {
+			--depth;	/* testepd records the depth reached, if we run out of time return the proper depth */
 			break;
 		}
 
@@ -127,7 +128,7 @@ int think(S_SEARCHINFO *info)
 		}
 	}
 	if (info->GAME_MODE==GAMEMODE_CONSOLE) {
-		printf("Hash - Exact:%d Alpha: %d Beta: %d  -- Hits: %d Misses: %d (%d%%)\n",
+		printf("TT - E:%d A: %d B: %d  -- Hits: %d Misses: %d (%d%%)\n",
 				info->htExact,
 				info->htAlpha,
 				info->htBeta,

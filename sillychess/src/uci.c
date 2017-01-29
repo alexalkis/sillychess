@@ -432,9 +432,8 @@ void input_loop(S_SEARCHINFO *info)
 			ParseTestEPD(line);//,info);
 		} else if (!strncmp(line, "eval", 4)) {
 			printf("Eval=%d\n",Evaluate());
-		} else if (!strncmp(line, "version", 4)) {
-			puts(FULLNAME);
-			printf(	"%s\n- 0x88 board\n"
+		} else if (!strncmp(line, "version", 7)) {
+			printf(	"%s\n%s\n- 0x88 board\n"
 					"- Iterative deepening\n"
 					"- Null move reduction\n"
 					"- Futility pruning\n"
@@ -444,6 +443,7 @@ void input_loop(S_SEARCHINFO *info)
 					"- History heuristics\n"
 					"- Transposition tables\n"
 					"- Late Move Reductions\n",
+					FULLNAME,
 					getCPUModel()
 					);
 		} else if (!strncmp(line, "quit", 4)) {
