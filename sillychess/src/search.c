@@ -420,33 +420,37 @@ skipPrunning:
 //			move_unmake(&m[i]);
 //			continue;
 //		}
+
 		/* LMR here */
-		if (legalMoves >= FullDepthMoves && depth >= ReductionLimit
-				/*
-				&& m[i].move != ttMove
-				&& !PvNode
-				&& !ISCAPTUREORPROMOTION(m[i].move)
-				&& m[i].move != board.searchKillers[0][board.gameply]
-				&& m[i].move != board.searchKillers[1][board.gameply])
-				*/
-				&& m[i].score < SECOND_KILLER_SCORE
-				) {
-			// Search this move with reduced depth:
-				int reduction = (2+ ((legalMoves-FullDepthMoves)>>3) );
-				if (reduction > depth) reduction = depth-1;
-			val = -AlphaBeta(depth - reduction, -(alpha + 1), -alpha, &line, doNull,info);
-			++info->lmr;
+		if (!legalMoves) {
+			val = -AlphaBeta(depth - 1, -beta, -alpha, &line,doNull,info);
+		}
+		else {
+			if(legalMoves >= FullDepthMoves && depth >= ReductionLimit &&
+					/*m[i].move != ttMove &&
+					//!givesCheck &&
+					!PvNode &&
+					!ISCAPTUREORPROMOTION(m[i].move)&&
+					m[i].move!=board.searchKillers[0][board.gameply] &&
+					m[i].move!=board.searchKillers[1][board.gameply]*/
+					m[i].score < SECOND_KILLER_SCORE
+			)
+			{
+				// Search this move with reduced depth:
+//				int reduction = (2+ ((legalMoves-FullDepthMoves)>>3) );
+//				if (reduction > depth) reduction = depth;
+				val = -AlphaBeta(depth-2,-(alpha+1), -alpha, &line,doNull,info);
+				++info->lmr;
+			} else
+				val = alpha+1;	// Hack to ensure that full-depth search is done.
 			if (val > alpha) {
-				val = -AlphaBeta(depth - 1, -(alpha + 1), -alpha, &line, doNull,info);
+				val = -AlphaBeta(depth - 1, -(alpha + 1), -alpha,	&line, doNull, info);
 				++info->lmr2;
 				if (val > alpha && val < beta) {
-					val = -AlphaBeta(depth - 1, -beta, -alpha, &line, doNull,info);
+					val = -AlphaBeta(depth - 1, -beta, -alpha,&line, doNull, info);
 					++info->lmr3;
 				}
 			}
-		} else {
-			/* Not eligible for LMR, run full search */
-			val = -AlphaBeta(depth - 1, -beta, -alpha, &line, doNull, info);
 		}
 
 		++legalMoves;
