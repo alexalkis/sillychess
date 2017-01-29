@@ -22,7 +22,7 @@
 #ifndef __AMIGA__
 #include <stdlib.h>
 #include <sys/timeb.h>
-//#include <sys/select.h>
+
 unsigned int get_ms()
 {
 	struct timeb timebuffer;
@@ -32,32 +32,22 @@ unsigned int get_ms()
 }
 #else
 
-
-//#include <exec/types.h>
-//#include <exec/exec.h>
-//#include <devices/timer.h>
 #include <dos/dos.h>
 #include <proto/dos.h>
-//#include <sys/timeb.h>
+
+int read(int fd, void *buf, size_t count); /* can't include <unistd.h> */
+/* has a conflict with timer */
+
 unsigned int get_ms()
 {
   struct DateStamp now;
   DateStamp(&now);
   return now.ds_Minute*60000+now.ds_Tick*20; /*( 20 = 1000 / 50(tickspersec))*/
-//  struct timeb timebuffer;
-//  	ftime(&timebuffer);
-//
-//  	return (timebuffer.time * 1000) + timebuffer.millitm;
 }
 
-//#undef putchar
-//int putchar(int c)
-//{
-//	printf("%c",(char)c);
-//}
 #endif
 
-// http://home.arcor.de/dreamlike/chess/
+/* http://home.arcor.de/dreamlike/chess/ */
 int InputWaiting(void)
 {
 #ifdef __AMIGA__
@@ -95,10 +85,6 @@ int InputWaiting(void)
 	  return 0;
 #endif
   }
-//  int b=get_ms();
-//  b-=a;
-//  if (b)
-//	  printf("select needed %d milliseconds.\n",b);
 
   return (FD_ISSET(fileno(stdin), &readfds));
 #else
@@ -128,25 +114,25 @@ int InputWaiting(void)
 
 
 void ReadInput(S_SEARCHINFO *info) {
-  int             bytes;
-  char            input[256] = "", *endc;
+  int  bytes;
+  char input[256] = "", *endc;
 
-    if (InputWaiting()) {
-		info->stopped = TRUE;
-		info->displayCurrmove=FALSE;
-		//printf("Crap input found triggered!!\n");
-		do {
-		  bytes=read(fileno(stdin),input,256);
-		} while (bytes<0);
-		//printf("****************************** \"%s\"",input);
-		endc = strchr(input,'\n');
-		if (endc) *endc=0;
+  if (InputWaiting()) {
+    info->stopped = TRUE;
+    info->displayCurrmove=FALSE;
+    //printf("Crap input found triggered!!\n");
+    do {
+      bytes=read(fileno(stdin),input,256);
+    } while (bytes<0);
+    //printf("****************************** \"%s\"",input);
+    endc = strchr(input,'\n');
+    if (endc) *endc=0;
 
-		if (strlen(input) > 0) {
-			if (!strncmp(input, "quit", 4))    {
-			  info->quit = TRUE;
-			}
-		}
-		return;
+    if (strlen(input) > 0) {
+      if (!strncmp(input, "quit", 4))    {
+	info->quit = TRUE;
+      }
     }
+    return;
+  }
 }
