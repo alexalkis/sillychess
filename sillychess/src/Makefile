@@ -8,9 +8,9 @@ DEPS = sillychess.h
 OBJS=board.o hash.o rkiss.o sillychess.o  transpositiontable.o\
 	eval.o move.o search.o time.o uci.o
 
-linux: CFLAGS+=-march=native
+#linux: CFLAGS+=-march=native
 
-windows: CFLAGS+=-DWIN32 -march=native
+windows: CFLAGS+=-DWIN32
 windows: CC=$(WCC)
 windows: OBJS+=sc_res.o
 
