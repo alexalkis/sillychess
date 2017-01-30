@@ -12,16 +12,17 @@
 LINE pv;
 
 void initSearch(S_SEARCHINFO *info) {
+	int depth, i, j;
 	info->qnodes=info->nodes=info->failHigh=info->failHighFirst=info->nullCut=0;
 	info->htAlpha=info->htBeta=info->htExact=info->hthit=info->htmiss=0;
 	board.ply=0;
 	info->stopped = FALSE;
-	for (int depth = 0; depth < MAXDEPTH; ++depth) {
+	for (depth = 0; depth < MAXDEPTH; ++depth) {
 			board.searchKillers[0][depth] = board.searchKillers[1][depth] = NOMOVE;
 			pv.argmove[depth] = NOMOVE;
 		}
-	for(int i=0; i<16;++i)
-		for(int j=0; j<128;++j)
+	for(i=0; i<16;++i)
+		for(j=0; j<128;++j)
 			board.searchHistory[i][j]=0;
 }
 
