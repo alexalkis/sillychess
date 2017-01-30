@@ -428,9 +428,9 @@ skipPrunning:
 		}
 		else {
 			if(legalMoves >= FullDepthMoves && depth >= ReductionLimit &&
+					!PvNode &&
 					/*m[i].move != ttMove &&
 					//!givesCheck &&
-					!PvNode &&
 					!ISCAPTUREORPROMOTION(m[i].move)&&
 					m[i].move!=board.searchKillers[0][board.gameply] &&
 					m[i].move!=board.searchKillers[1][board.gameply]*/
