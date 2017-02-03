@@ -364,7 +364,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 		move_makeNull(&nm);
 		int Score = -AlphaBeta(depth - 4, -beta, -beta + 1, &line, FALSE,info);
 		move_unmakeNull(&nm);
-		if (Score >= beta && abs(Score) <=(ISMATE)) {
+		if (Score >= beta) {// && abs(Score) <=(ISMATE)) {
 			++info->nullCut;
 			return beta;
 		}

@@ -91,6 +91,13 @@ int main(int argc, char **argv)
 		info->stoptime = info->starttime + 30000;
 		info->timeset = TRUE;
 		think(info);
+		//
+	} else if (argc>=2 && !strcmp(argv[1],"-bench4")) {
+			fen2board("2Q5/8/3K4/8/2k5/8/P7/8 b - - 2 62");
+			info->starttime = get_ms();
+			info->stoptime = info->starttime + 30000;
+			info->timeset = TRUE;
+			think(info);
 	} else
 		input_loop(info);
 	TT_free();
