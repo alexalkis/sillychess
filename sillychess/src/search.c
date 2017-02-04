@@ -358,13 +358,17 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 			//!inCheck &&	//no need cause of the goto above
 			board.ply &&
 			(board.bigCount[board.sideToMove>>3] > 0) &&
-			depth >= 4) {
+			depth >= 2) {
 		smove nm;
-
+		int newDepth = depth - 4;
+		int nullScore;
 		move_makeNull(&nm);
-		int Score = -AlphaBeta(depth - 4, -beta, -beta + 1, &line, FALSE,info);
+		if (newDepth>0)
+			nullScore = -AlphaBeta(depth - 4, -beta, -beta + 1, &line, FALSE,info);
+		else
+			nullScore = -Quiescence(-beta, -beta + 1, info);
 		move_unmakeNull(&nm);
-		if (Score >= beta) {// && abs(Score) <=(ISMATE)) {
+		if (nullScore >= beta) {// && abs(Score) <=(ISMATE)) {
 			++info->nullCut;
 			return beta;
 		}
