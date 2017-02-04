@@ -15,6 +15,7 @@ windows: CC=$(WCC)
 windows: OBJS+=sc_res.o
 
 amiga: CC=$(ACC)
+amiga: CFLAGS+=-m68020
 
 .SUFFIXES:
 .SUFFIXES: .c.o .rc.o
