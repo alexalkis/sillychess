@@ -9,6 +9,9 @@
 #include "sillychess.h"
 #include "move.h"
 
+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
+
 LINE pv;
 
 void initSearch(S_SEARCHINFO *info) {
@@ -360,11 +363,11 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 			(board.bigCount[board.sideToMove>>3] > 0) &&
 			depth >= 2) {
 		smove nm;
-		int newDepth = depth - 4;
+		int R = 3 + depth / 4 + MIN((eval - beta) / 100, 3);
 		int nullScore;
 		move_makeNull(&nm);
-		if (newDepth>0)
-			nullScore = -AlphaBeta(depth - 4, -beta, -beta + 1, &line, FALSE,info);
+		if ((depth-R)>0)
+			nullScore = -AlphaBeta(depth-R, -beta, -beta + 1, &line, FALSE,info);
 		else
 			nullScore = -Quiescence(-beta, -beta + 1, info);
 		move_unmakeNull(&nm);
