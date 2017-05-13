@@ -36,7 +36,7 @@
 #define COL(x) (x&7)
 #define ROW(x) (x>>4)
 
-#ifdef WIN32
+//#ifdef WIN32
 #ifdef FALSE
 #undef FALSE
 #endif
@@ -46,7 +46,7 @@
 #ifdef INFINITE
 #undef INFINITE
 #endif
-#endif
+//#endif
 
 enum {
 	FALSE=0,
