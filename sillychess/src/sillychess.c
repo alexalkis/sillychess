@@ -249,3 +249,10 @@ void testEPD(char *filename, int miliseconds) {
 	printf("Time: %dms Nodes: %"INT64_FORMAT"d %d/%d Avg.Depth: %g (%s)\n%s\n",totalInfo->stoptime-totalInfo->starttime,totalInfo->nodes, solved, positions, ((double)totalDepth)/positions, getCPUModel(), buf);
 	fclose(f);
 }
+
+#ifdef GCC340
+#undef putchar
+int putchar(int c) {
+  return fputc(c, stdout);
+}
+#endif
