@@ -33,8 +33,8 @@
 	exit(1);}
 #endif
 
-#define COL(x) (x&7)
-#define ROW(x) (x>>4)
+#define COL(x) ((x)&7)
+#define ROW(x) ((x)>>4)
 
 //#ifdef WIN32
 #ifdef FALSE
