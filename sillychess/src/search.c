@@ -66,6 +66,7 @@ int think(S_SEARCHINFO *info)
 
 		int mate = 0;
 		if (abs(score) >= (CHECKMATE_SCORE - MAXDEPTH)) {
+			//printf("Ok, mate seen...\n");
 			if (score >= (CHECKMATE_SCORE - MAXDEPTH))
 				mate = (CHECKMATE_SCORE - score) / 2  + 1;
 			else
@@ -416,6 +417,7 @@ skipPrunning:
 			move_unmake(&m[i]);
 			continue;
 		}
+
 		//if (depth==1) printf("#%d %s (%d)\n",legalMoves+1,moveToUCI(m[i].move), m[i].move);
 //		int givesCheck=isAttacked(board.sideToMove^BLACK, kingLoc[board.sideToMove >> 3]);
 //

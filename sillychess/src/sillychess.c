@@ -99,10 +99,12 @@ int main(int argc, char **argv)
 			info->timeset = TRUE;
 			think(info);
 	} else if (argc>=2 && !strcmp(argv[1],"-bench5")) {
+
 			fen2board("kbK5/pp6/1P6/8/8/8/8/R7 w - -");
 			info->starttime = get_ms();
 			info->stoptime = info->starttime + 30000;
-			info->timeset = TRUE;
+			info->timeset = FALSE;
+			info->depth = 5;
 			think(info);
 	} else
 		input_loop(info);
