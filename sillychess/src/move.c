@@ -53,13 +53,13 @@ int moveExists(unsigned int move)
       ++legalMoves;
       if (m[i].move==move) {
         move_unmake(&m[i]);
-        return TRUE;
+        return SC_TRUE;
       }
 
     }
     move_unmake(&m[i]);
   }
-  return FALSE;
+  return SC_FALSE;
 }
 
 int generateLegalMoves(smove *m)
@@ -643,7 +643,7 @@ void generatePawnMoves(int color, int pos) {
 /*
  * dummyPerft, no make/unmake.  Just for generateMoves optimization
  */
-u64 dummyPerft(u8 depth) {
+u64 dummyPerft(int depth) {
   int i;
   u64 nodes = 0;
 
@@ -666,7 +666,7 @@ u64 dummyPerft(u8 depth) {
 }
 
 //Perft(6)=119060324 Nps: 12288195 (9689 ms)
-u64 Perft(u8 depth) {
+u64 Perft(int depth) {
   int i;
   u64 nodes = 0;
 
@@ -709,7 +709,7 @@ return 0;
 }
  */
 
-u64 Divide(u8 depth) {
+u64 Divide(int depth) {
   int i;
   u64 nodes = 0;
   u64 partial = 0;

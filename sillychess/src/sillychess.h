@@ -13,6 +13,8 @@
 #define INT64_FORMAT "I64"
 #else
 #define INT64_FORMAT "ll"
+//#include <inttypes.h>
+//#define INT64_FORMAT PRIu64
 #endif
 
 #include <stdio.h>
@@ -37,11 +39,11 @@
 #define ROW(x) (x>>4)
 
 #ifdef WIN32
-#ifdef FALSE
-#undef FALSE
+#ifdef SC_FALSE
+#undef SC_FALSE
 #endif
-#ifdef TRUE
-#undef TRUE
+#ifdef SC_TRUE
+#undef SC_TRUE
 #endif
 #ifdef INFINITE
 #undef INFINITE
@@ -49,9 +51,9 @@
 #endif
 
 enum {
-	FALSE=0,
+	SC_FALSE=0,
 	NOMOVE=0,
-	TRUE=1,
+	SC_TRUE=1,
 	MAXDEPTH=200,
 	MAX_PLY_IN_A_GAME=1000,
 	FIRST_KILLER_SCORE=900000,
@@ -108,8 +110,11 @@ enum esqare {
 #define CASTLE_BQ	(1<<0)
 
 typedef unsigned char u8;
-typedef unsigned long long u64;
-
+#ifndef u_int64_t
+typedef unsigned long long int u64;
+#else
+typedef u_int64_t u64;
+#endif
 
 #define    valUNKNOWN   (~0)
 #define    hashfEXACT   (1)
@@ -253,9 +258,9 @@ void fen2board(char *str);
 char *board2fen(void);
 char *sq2algebraic(u8 sq);
 int isAttacked(int byColor, int sq);
-u64 dummyPerft(u8 depth);
-u64 Perft(u8 depth);
-u64 Divide(u8 depth);
+u64 dummyPerft(int depth);
+u64 Perft(int depth);
+u64 Divide(int depth);
 int moveExists(unsigned int move);
 int generateLegalMoves(smove *m);
 void printMove(smove m);

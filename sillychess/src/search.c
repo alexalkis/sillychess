@@ -19,7 +19,7 @@ void initSearch(S_SEARCHINFO *info) {
 	info->qnodes=info->nodes=info->failHigh=info->failHighFirst=info->nullCut=0;
 	info->htAlpha=info->htBeta=info->htExact=info->hthit=info->htmiss=0;
 	board.ply=0;
-	info->stopped = FALSE;
+	info->stopped = SC_FALSE;
 	for (depth = 0; depth < MAXDEPTH; ++depth) {
 			board.searchKillers[0][depth] = board.searchKillers[1][depth] = NOMOVE;
 			pv.argmove[depth] = NOMOVE;
@@ -40,7 +40,7 @@ int think(S_SEARCHINFO *info)
 
 	initSearch(info);
 
-	if (info->timeset == FALSE)
+	if (info->timeset == SC_FALSE)
 		finalDepth = info->depth;
 	else
 		finalDepth = MAXDEPTH;
@@ -55,7 +55,7 @@ int think(S_SEARCHINFO *info)
 
 		unsigned int starttime = get_ms();
 		ASSERT(board.posKey==generatePosKey());
-		int score = AlphaBeta(depth, -INFINITE,INFINITE, &line, TRUE, info);
+		int score = AlphaBeta(depth, -INFINITE,INFINITE, &line, SC_TRUE, info);
 		ASSERT(board.posKey==generatePosKey());
 		unsigned int endtime = get_ms();
 
@@ -99,7 +99,7 @@ int think(S_SEARCHINFO *info)
 				ASSERT(board.posKey==generatePosKey());
 
 			} else {
-				if (info->stopped==FALSE) { //dont print when we've stopped (score is always 0 if we print)
+				if (info->stopped==SC_FALSE) { //dont print when we've stopped (score is always 0 if we print)
 					if (!mate)
 						printf(
 								"info depth %d seldepth %d score cp %d nodes %"INT64_FORMAT"d nps %"INT64_FORMAT"d time %d pv ",
@@ -122,7 +122,7 @@ int think(S_SEARCHINFO *info)
 			pv=tLine;
 		else
 			pv = line;
-		if (info->stopped == TRUE) {
+		if (info->stopped == SC_TRUE) {
 			--depth;	/* testepd records the depth reached, if we run out of time return the proper depth */
 			break;
 		}
@@ -166,12 +166,12 @@ void CheckUp(S_SEARCHINFO *info) {
 	//printf("Checked: %d\n",info->stoptime-get_ms());
 	unsigned int time=get_ms();
 	ASSERT(time>=info->starttime);
-	if(info->timeset == TRUE && time > info->stoptime) {
+	if(info->timeset == SC_TRUE && time > info->stoptime) {
 
-		info->stopped = TRUE;
-		info->displayCurrmove=FALSE;
+		info->stopped = SC_TRUE;
+		info->displayCurrmove=SC_FALSE;
 	} else	if (info->GAME_MODE!=GAMEMODE_SILLENT && (time-info->starttime)>3000)
-		info->displayCurrmove=TRUE;
+		info->displayCurrmove=SC_TRUE;
 	ReadInput(info);
 }
 
@@ -203,12 +203,12 @@ int isRepetition(void) {
 
 	int i;
 	if (board.fiftyCounter>=100)
-		return TRUE;
+		return SC_TRUE;
 	for(i=board.gameply-1-1; i>=board.gameply-board.fiftyCounter; i-=2)
 		if (board.posKey==board.historyPosKey[i]) {
-			return TRUE;
+			return SC_TRUE;
 		}
-	return FALSE;
+	return SC_FALSE;
 }
 
 int Quiescence(int alpha, int beta, S_SEARCHINFO *info)
@@ -223,7 +223,7 @@ int Quiescence(int alpha, int beta, S_SEARCHINFO *info)
 		return 0;
 	if ((info->qnodes & 0xFFF) == 0) {
 		CheckUp(info);
-		if (info->stopped == TRUE) {
+		if (info->stopped == SC_TRUE) {
 			return 0;
 		}
 	}
@@ -368,7 +368,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 		int nullScore;
 		move_makeNull(&nm);
 		if ((depth-R)>0)
-			nullScore = -AlphaBeta(depth-R, -beta, -beta + 1, &line, FALSE,info);
+			nullScore = -AlphaBeta(depth-R, -beta, -beta + 1, &line, SC_FALSE,info);
 		else
 			nullScore = -Quiescence(-beta, -beta + 1, info);
 		move_unmakeNull(&nm);
@@ -470,7 +470,7 @@ skipPrunning:
 		move_unmake(&m[i]);
 
 
-		if (info->stopped == TRUE) {
+		if (info->stopped == SC_TRUE) {
 			return 0;
 		}
 

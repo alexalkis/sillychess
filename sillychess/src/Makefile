@@ -1,7 +1,8 @@
 WCC=x86_64-w64-mingw32-gcc
 LCC=gcc
 ACC=m68k-amigaos-gcc
-CFLAGS = -Wall -O3 -DNDEBUG -std=gnu99 -fomit-frame-pointer 
+PCC=arm-linux-gnueabihf-gcc
+CFLAGS = -Wall -O2 -DNDEBUG -std=gnu99 -fomit-frame-pointer 
 
 DEPS = sillychess.h
 
@@ -17,6 +18,8 @@ windows: OBJS+=sc_res.o
 amiga: CC=$(ACC)
 amiga: CFLAGS+=-m68020
 
+pi: CC=$(PCC)
+
 .SUFFIXES:
 .SUFFIXES: .c.o .rc.o
 
@@ -28,12 +31,16 @@ linux: $(OBJS)
 	$(LCC) $(CFLAGS) -s -o sillychess $(OBJS)
 	@ls -l sillychess
 
+pi: $(OBJS)
+	$(CC) $(CFLAGS) -s -o sillychess $(OBJS)
+	@ls -l sillychess
+
 windows: $(OBJS) sc_res.o
 	$(WCC) $(WFLAGS) -s -o sillychess.exe $(OBJS)
 	@ls -l sillychess.exe
 
 amiga: $(OBJS)
-	$(ACC) $(CFLAGS) -s -o sillychess $(OBJS)
+	$(ACC) $(CFLAGS) -noixemul -s -o sillychess $(OBJS) -lm
 	@ls -l sillychess
 
 sc_res.o: windows_res/sc.rc

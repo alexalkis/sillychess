@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 		testEPD("../src/wac.epd",100);
 	else if (argc>=2 && !strcmp(argv[1],"-bench2")) {
 		info->starttime=get_ms();
-		info->timeset = FALSE;
+		info->timeset = SC_FALSE;
 #ifdef __AMIGA__
 		info->depth = 8;
 #else
@@ -89,21 +89,21 @@ int main(int argc, char **argv)
 		fen2board("8/k7/3p4/p2P1p2/P2P1P2/8/8/K7 w - -");
 		info->starttime = get_ms();
 		info->stoptime = info->starttime + 30000;
-		info->timeset = TRUE;
+		info->timeset = SC_TRUE;
 		think(info);
 		//
 	} else if (argc>=2 && !strcmp(argv[1],"-bench4")) {
 			fen2board("2Q5/8/3K4/8/2k5/8/P7/8 b - - 2 62");
 			info->starttime = get_ms();
 			info->stoptime = info->starttime + 30000;
-			info->timeset = TRUE;
+			info->timeset = SC_TRUE;
 			think(info);
 	} else if (argc>=2 && !strcmp(argv[1],"-bench5")) {
 
 			fen2board("kbK5/pp6/1P6/8/8/8/8/R7 w - -");
 			info->starttime = get_ms();
 			info->stoptime = info->starttime + 30000;
-			info->timeset = FALSE;
+			info->timeset = SC_FALSE;
 			info->depth = 5;
 			think(info);
 	} else
@@ -226,8 +226,8 @@ void testEPD(char *filename, int miliseconds) {
 		#endif
 		info->starttime=get_ms();
 		info->stoptime=get_ms()+miliseconds;
-		info->stopped=FALSE;
-		info->timeset=TRUE;
+		info->stopped=SC_FALSE;
+		info->timeset=SC_TRUE;
 		#ifndef __AMIGA__
 		TT_clear();
 		#endif

@@ -118,8 +118,8 @@ void ReadInput(S_SEARCHINFO *info) {
   char input[256] = "", *endc;
 
   if (InputWaiting()) {
-    info->stopped = TRUE;
-    info->displayCurrmove=FALSE;
+    info->stopped = SC_TRUE;
+    info->displayCurrmove=SC_FALSE;
     //printf("Crap input found triggered!!\n");
     do {
       bytes=read(fileno(stdin),input,256);
@@ -130,7 +130,7 @@ void ReadInput(S_SEARCHINFO *info) {
 
     if (strlen(input) > 0) {
       if (!strncmp(input, "quit", 4))    {
-	info->quit = TRUE;
+	info->quit = SC_TRUE;
       }
     }
     return;

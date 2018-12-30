@@ -145,7 +145,7 @@ void ParseScore(char* line, S_SEARCHINFO *info)
 	for (i = 0; i < mcount; i++) {
 		move_make(&m[i]);
 		if (!isAttacked(board.sideToMove,kingLoc[1 - (board.sideToMove >> 3)])) {
-			printMove(m[i]);printf(" %d\n",-AlphaBeta(pdepth,-INFINITE,INFINITE,&scline,TRUE,info));
+			printMove(m[i]);printf(" %d\n",-AlphaBeta(pdepth,-INFINITE,INFINITE,&scline,SC_TRUE,info));
 //			printf("Board posKey: %"INT64_FORMAT"X\n",board.posKey);
 //			for(j=board.gameply-board.fiftyCounter-1; j<board.gameply; ++j)
 //				printf("%d %"INT64_FORMAT"X\n",j,board.historyPosKey[j]);
@@ -203,7 +203,7 @@ void ParseGo(char* line, S_SEARCHINFO *info)
 	int depth = -1, movestogo = 30, movetime = -1;
 	int time = -1, inc = 0;
 	char *ptr = NULL;
-	info->timeset = FALSE;
+	info->timeset = SC_FALSE;
 
 	if ((ptr = strstr(line, "infinite"))) {
 		;
@@ -246,7 +246,7 @@ void ParseGo(char* line, S_SEARCHINFO *info)
 	info->depth = depth;
 
 	if (time != -1) {
-		info->timeset = TRUE;
+		info->timeset = SC_TRUE;
 		time /= movestogo;
 		time -= 10;
 		info->stoptime = info->starttime + time + inc;
@@ -255,7 +255,7 @@ void ParseGo(char* line, S_SEARCHINFO *info)
 	if (depth == -1) {
 		info->depth = MAXDEPTH;
 	} else
-		info->timeset = FALSE;
+		info->timeset = SC_FALSE;
 #ifndef NDEBUG
 	printf("time:%d start:%d stop:%d depth:%d timeset:%d\n", time,
 			info->starttime, info->stoptime, info->depth, info->timeset);
@@ -381,7 +381,7 @@ void ParsePosition(char* lineIn)
 
 void input_loop(S_SEARCHINFO *info)
 {
-	int exit = FALSE;
+	int exit = SC_FALSE;
 	char line[INPUTBUFFER];
 
 	printf("%s, written by Alex Argiropoulos (compiler's version used: "__VERSION__")\n", NAME);
@@ -447,7 +447,7 @@ void input_loop(S_SEARCHINFO *info)
 					getCPUModel()
 					);
 		} else if (!strncmp(line, "quit", 4)) {
-			exit = TRUE;
+			exit = SC_TRUE;
 			break;
 		}
 	}
