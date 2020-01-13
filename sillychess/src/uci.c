@@ -257,7 +257,7 @@ void ParseGo(char* line, S_SEARCHINFO *info)
 	} else
 		info->timeset = SC_FALSE;
 #ifndef NDEBUG
-	printf("time:%d start:%d stop:%d depth:%d timeset:%d\n", time,
+	printf("time:%d start:%u stop:%u depth:%d timeset:%d\n", time,
 			info->starttime, info->stoptime, info->depth, info->timeset);
 #endif
 	int move=think(info);
