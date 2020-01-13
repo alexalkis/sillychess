@@ -321,25 +321,25 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 
 	int eval=Evaluate();
 
-	/*
+
 	// when commented out on 100ms wac.epd jumped from 152/300 to 182/300
 	//razor pruning
 	if (   !PvNode
 			//&& !inCheck  //no need cause of the goto above
 	        &&  depth < 4
 	        &&  eval + razor_margin[depth] <= alpha
-	        &&  PvMove == NOMOVE
+	        &&  ttMove == NOMOVE
 	        //&& !pos.pawn_on_7th(pos.side_to_move())
 	        )
 	    {
 	        if (depth <= 1)
-	        	return Quiesce(alpha,beta,info);
+	        	return Quiescence(alpha,beta,info);
 	        int ralpha = alpha - razor_margin[depth];
-	        int v = Quiesce(ralpha,ralpha+1,info);
+	        int v = Quiescence(ralpha,ralpha+1,info);
 	        if (v <= ralpha)
 	            return v;
 	    }
-	*/
+
 
 	//  Futility pruning: child node (skipped when in check) (origin stockfish)
 	if (   !PvNode
@@ -445,7 +445,8 @@ skipPrunning:
 		{
 			// Search this move with reduced depth:
 			int reduction = (2+ ((legalMoves-FullDepthMoves)>>3) );
-			if (reduction > depth) reduction = depth;
+			if (reduction > depth)
+			  reduction = depth;
 			val = -AlphaBeta(depth-reduction,-(alpha+1), -alpha, &line,doNull,info);
 			++info->lmr;
 			if (val > alpha) {
