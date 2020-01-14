@@ -419,27 +419,27 @@ skipPrunning:
 		}
 
 		//if (depth==1) printf("#%d %s (%d)\n",legalMoves+1,moveToUCI(m[i].move), m[i].move);
-//		int givesCheck=isAttacked(board.sideToMove^BLACK, kingLoc[board.sideToMove >> 3]);
+		//int givesCheck=isAttacked(board.sideToMove^BLACK, kingLoc[board.sideToMove >> 3]);
 //
-//		/* Shallow prune */
-//		if (	!PvNode &&
-//				!inCheck &&
-//				!givesCheck &&
-//				(legalMoves >= (2 + depth))&&
-//				!ISCAPTUREORPROMOTION(m[i].move)
-//			) {
-//			move_unmake(&m[i]);
-//			continue;
-//		}
+		/* Shallow prune */
+		if (	!PvNode &&
+				!inCheck &&
+				//!givesCheck &&
+				(legalMoves >= (2 + depth))&&
+				!ISCAPTUREORPROMOTION(m[i].move)
+			) {
+			move_unmake(&m[i]);
+			continue;
+		}
 
 		/* LMR here */
 		if(legalMoves >= FullDepthMoves && depth >= ReductionLimit &&
-				//!PvNode &&
-				/*m[i].move != ttMove &&
-				//!givesCheck &&
+				!PvNode &&
+				m[i].move != ttMove &&
+				///!givesCheck &&
 				!ISCAPTUREORPROMOTION(m[i].move)&&
 				m[i].move!=board.searchKillers[0][board.gameply] &&
-				m[i].move!=board.searchKillers[1][board.gameply]*/
+				m[i].move!=board.searchKillers[1][board.gameply] &&
 				m[i].score < SECOND_KILLER_SCORE
 		)
 		{

@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define NAME	"sc v0.7.3f"
+#define NAME	"sc v0.7.3g"
 #define FULLNAME		NAME " " __DATE__ " " __TIME__
 
 #define START_FEN	"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
