@@ -136,3 +136,213 @@ void ReadInput(S_SEARCHINFO *info) {
     return;
   }
 }
+
+
+#ifdef ALKIS
+/*  AUTHOR
+ *        Anders 'ALi' Lindgren
+ *        Sweden
+ *        Tel: (Sweden) 08 876 678
+*/
+
+#include <exec/types.h>
+
+#include <exec/memory.h>
+
+#include <libraries/dos.h>
+#include <libraries/dosextens.h>
+
+#include <proto/exec.h>
+#include <proto/dos.h>
+
+extern int __builtin_strlen(char *);
+
+/*
+ *  DEFINITION
+ *        DOS_PRINT
+ *
+ *  DESCRIPTION
+ *        A simple string print routine, which uses the dos.library
+ *        functions. (Make sure you'we got a window to print to.)
+ */
+
+#define DOS_PRINT(x)        Write(Output(),x,__builtin_strlen(x))
+
+extern BOOL set_screen_mode (BOOL);
+extern LONG send_packet     (LONG, LONG *, struct MsgPort *);
+
+struct DOSBase * DOSBase;
+
+
+/*
+ *  FUNCTION
+ *        not_main
+ *
+ *  DESCRIPTION
+ *        This function simply demonstrates the abilities of RAW:.
+ *        It sets the console into RAW: mode and it waits for a
+ *        charachter to be typed by the user. It then print out
+ *        the character and resets the console into CON: mode.
+ *
+ *  NOTE
+ *        This function is named "not_main", since I doesn't use
+ *        the normal C startup code. This way I can see if something
+ *        went wrong during the linkage stage.
+ */
+
+int
+not_main(void)
+{
+    char ch;
+
+    if (DOSBase = (struct DOSBase *)OpenLibrary("dos.library", 0L)) {
+
+        if (set_screen_mode(TRUE)) {        /* Set the console into RAW: mode */
+
+            DOS_PRINT("ConHotKey, by Anders Lindgren\n");
+            DOS_PRINT("Press a key within 15 sek!\n");
+
+
+                /*
+                 * Get a "hot" key from the console.
+                 */
+
+            if (WaitForChar(Input(), 15*1000000) == -1) {
+                Read(Input(), & ch, 1);
+                DOS_PRINT("You pressed:");
+                Write(Output(), & ch, 1);
+                DOS_PRINT("\n");
+            }
+            else {
+                DOS_PRINT("No key pressed!\n");
+            }
+
+            set_screen_mode(FALSE);        /* Set it back to CON: */
+        }
+        CloseLibrary((struct Library *) DOSBase);
+    }
+    return(0);        /* Exit the program. */
+}
+
+
+/*
+ *  FUNCTION
+ *        set_screen_mode
+ *
+ *  DESCRIPTION
+ *        This function sets the screenmode of the con:/raw: device
+ *        associated with the current process.
+ *        If the "type" argument is TRUE, the console if switched
+ *        into raw mode. If it's FALSE it's switched into CON: mode.
+ *
+ *  RESULT
+ *        TRUE if a console exists, and FALSE if it fails.
+ *        (I don't check the returnvalue since this packet
+ *        is so badly documented. Nobode seems to know
+ *        what it returns, Lets hope the documentation for 2.0
+ *        are better.)
+ */
+
+BOOL
+set_screen_mode(BOOL type)
+{
+    register LONG               args[7];
+    register struct Process * proc;
+
+    proc = (struct Process *)FindTask(NULL);
+
+    if (proc->pr_ConsoleTask) {
+        args[0] = type;
+        send_packet(ACTION_SCREEN_MODE, args,
+                        (struct MsgPort *) proc->pr_ConsoleTask);
+
+        return(TRUE);
+    }
+    return(FALSE);
+}
+
+
+/*
+ *  FUNCTION
+ *        send_packet
+ *
+ *  DESCRIPTION
+ *        A general purpose packet sending routine.
+ *
+ *  SYNOPSIS
+ *        LONG send_packet(LONG action, LONG * args, struct MsgPort * handler)
+ *
+ *        action              - Which action to performed, normally
+ *                        a ACTION_* definition.
+ *        args              - A pointer to the seven arguments. These
+ *                        are copied into the actual packet structure.
+ *        handler              - The adress of the recieving handlers message port.
+ *
+ *  RETURNS
+ *        dp_Res1 of the returned packet.
+ *        A call to IoErr() returns the errorcode.
+ *        If this routine failed to allocate memory, a zer0 is returned,
+ *        and IoErr() returns ERROR_NO_FREE_STORE (i.e. out of memory).
+ *
+ *  NOTE
+ *        This function is written to be compatible with the Arp
+ *        SendPacket() function.
+ */
+
+LONG
+send_packet( LONG action, LONG * args, struct MsgPort * handler)
+{
+    register struct Process           * proc;
+    register struct StandardPacket * packet;
+    register LONG                     res1;
+
+    proc = (struct Process *)FindTask(NULL);
+
+    if (packet = (struct StandardPacket *)AllocMem( sizeof(struct StandardPacket),
+                                MEMF_CLEAR | MEMF_PUBLIC) ) {
+
+        packet->sp_Msg.mn_Node.ln_Name        = (char *)&(packet->sp_Pkt);
+        packet->sp_Pkt.dp_Link                = & packet->sp_Msg;
+        packet->sp_Pkt.dp_Port                = & proc->pr_MsgPort;
+        packet->sp_Pkt.dp_Type                = action;
+
+        if (args) {
+            CopyMem ((char *)args, (char *)& packet->sp_Pkt.dp_Arg1,
+                                                         7*sizeof(LONG));
+        }
+
+        /*
+         *        If the user has got a special Packet recieving
+         *        routine, call it.
+         */
+
+        PutMsg (handler, & packet->sp_Msg);
+        if (proc->pr_PktWait) {
+            ( * ((struct Message (*) (void)) proc->pr_PktWait) ) ();
+        }
+        else {
+            WaitPort (& proc->pr_MsgPort);
+            GetMsg (& proc->pr_MsgPort);
+        }
+
+        /*
+         *        Store the secondary result so that the program
+         *        can get it with IoErr()
+         */
+
+        ((struct CommandLineInterface *)BADDR(proc->pr_CLI))->
+                                cli_Result2 = packet->sp_Pkt.dp_Res2;
+
+        res1 = packet->sp_Pkt.dp_Res1;
+
+        FreeMem( (char *)packet, sizeof(struct StandardPacket) );
+    }
+    else {        /* No memory */
+        res1 = 0;
+        ((struct CommandLineInterface *)BADDR(proc->pr_CLI))->
+                                cli_Result2 = ERROR_NO_FREE_STORE;
+    }
+
+    return(res1);
+}
+#endif
