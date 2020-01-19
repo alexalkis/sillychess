@@ -357,7 +357,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE * pline, int doNull,S_SEARCHI
 	}
 
 	if (doNull &&
-			!PvNode &&
+			//!PvNode &&
 			eval >= beta &&
 			//!inCheck &&	//no need cause of the goto above
 			board.ply &&
@@ -434,7 +434,7 @@ skipPrunning:
 
 		/* LMR here */
 		if(legalMoves >= FullDepthMoves && depth >= ReductionLimit &&
-				//!PvNode &&
+				!PvNode &&
 				m[i].move != ttMove &&
 				///!givesCheck &&
 				!ISCAPTUREORPROMOTION(m[i].move)&&
