@@ -434,7 +434,7 @@ skipPrunning:
 
 		/* LMR here */
 		if(legalMoves >= FullDepthMoves && depth >= ReductionLimit &&
-				!PvNode &&
+				//!PvNode &&
 				m[i].move != ttMove &&
 				///!givesCheck &&
 				!ISCAPTUREORPROMOTION(m[i].move)&&
