@@ -51,4 +51,4 @@ add_executable(sillychess
         src/transpositiontable.h
         src/uci.c)
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
+#set(CMAKE_VERBOSE_MAKEFILE ON)
