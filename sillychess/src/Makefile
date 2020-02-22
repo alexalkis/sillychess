@@ -1,4 +1,4 @@
-GIT_BRANCH=`git branch | grep "^\*" | sed 's/^..//'`
+GIT_BRANCH:=$(shell git branch | grep "^\*" | sed 's/^..//')
 
 WCC=x86_64-w64-mingw32-gcc
 LCC=gcc
