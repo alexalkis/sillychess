@@ -1,8 +1,12 @@
+GIT_BRANCH=`git branch | grep "^\*" | sed 's/^..//'`
+
 WCC=x86_64-w64-mingw32-gcc
 LCC=gcc
 ACC=m68k-amigaos-gcc
 PCC=arm-linux-gnueabihf-gcc
-CFLAGS = -Wall -O2 -DNDEBUG -std=gnu99 -fomit-frame-pointer 
+CFLAGS = -Wall -O2 -DNDEBUG -std=gnu99 -fomit-frame-pointer -DGIT_BRANCH="\"$(GIT_BRANCH)\""
+
+
 
 DEPS = sillychess.h
 
