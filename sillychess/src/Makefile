@@ -18,6 +18,10 @@ windows: OBJS+=sc_res.o
 amiga: CC=$(ACC)
 amiga: CFLAGS+=-m68020
 
+amiga500: CC=$(ACC)
+amiga500: CFLAGS+=-m68000
+
+
 pi: CC=$(PCC)
 
 .SUFFIXES:
@@ -42,6 +46,12 @@ windows: $(OBJS) sc_res.o
 amiga: $(OBJS)
 	$(ACC) $(CFLAGS) -noixemul -s -o sillychess $(OBJS) -lm
 	@ls -l sillychess
+
+amiga500: $(OBJS)
+	$(ACC) $(CFLAGS) -mcrt=nix13 -s -o sillychess $(OBJS) -lm
+	cp sillychess "/home/alex/Documents/FS-UAE/Hard Drives/13hd/t/silly500" | true
+	@ls -l sillychess
+
 
 sc_res.o: windows_res/sc.rc
 	x86_64-w64-mingw32-windres -i windows_res/sc.rc -o sc_res.o
