@@ -295,7 +295,8 @@ void printBoard(void) {
 					" -" : sq2algebraic(board.enPassant));
 	printf("Fen: %s\n", board2fen());
 #ifndef NDEBUG
-	printf("Last move: %s (move number %d in the game)\n", moveToUCI(board.gameply-1), board.gameply-1);
+	if (board.gameply > 0)
+	    printf("Last move: %s (move number %d in the game)\n", moveToUCI(board.gameply-1), board.gameply-1);
 #endif
 }
 

@@ -28,14 +28,14 @@ if (CMAKE_C_COMPILER STREQUAL "/opt/amiga/gcc6/bin/m68k-amigaos-gcc")
 #        SET(CRANKER_COMMAND ${CRANKER} -f ${CMAKE_CURRENT_BINARY_DIR}/a68k -o ${CMAKE_CURRENT_BINARY_DIR}/a68kc)
 #    ENDIF(CRANKER)
 else()
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall -fsanitize=address -Wshadow")
+    #set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall -fsanitize=address -Wshadow")
     add_compile_options(
             "-Wall" "-Wpedantic" "-Wextra"
-            "$<$<CONFIG:DEBUG>:-fsanitize=address;-Wshadow;>"
+    #        "$<$<CONFIG:DEBUG>:-fsanitize=address;-Wshadow;>"
     )
     add_link_options(
             "-s"
-            "$<$<CONFIG:DEBUG>:-fsanitize=address>"
+    #        "$<$<CONFIG:DEBUG>:-fsanitize=address>"
     )
 endif(CMAKE_C_COMPILER STREQUAL "/opt/amiga/gcc6/bin/m68k-amigaos-gcc")
 
