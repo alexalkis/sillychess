@@ -20,15 +20,23 @@
 #endif
 
 #ifndef __AMIGA__
-#include <stdlib.h>
-#include <sys/timeb.h>
+//#include <stdlib.h>
+//#include <sys/timeb.h>
+#include <time.h>
 
 unsigned int get_ms()
 {
-	struct timeb timebuffer;
-	ftime(&timebuffer);
+    //struct timeb timebuffer;
+    struct timespec timenow;
 
-	return (timebuffer.time * 1000) + timebuffer.millitm;
+    clock_gettime( CLOCK_REALTIME, &timenow);
+    return timenow.tv_sec*1000 + (timenow.tv_nsec/1000000);
+//	ftime(&timebuffer);
+//
+//	printf("New: %d %d\n",timenow.tv_sec,timenow.tv_nsec/1000000);
+//	printf("Old: %d %d\n",timebuffer.time,timebuffer.millitm);
+//
+//	return (timebuffer.time * 1000) + timebuffer.millitm;
 }
 #else
 
