@@ -145,7 +145,7 @@ char * qprintMove(int move) {
     return buffer;
   }
   //printf("%c%c%s%c%c", filestr[from & 7], rankstr[from >> 4], cap ? "x" : "",	filestr[to & 7], rankstr[to >> 4]);
-  sprintf(buffer,"%c%c%c%c", filestr[from & 7], rankstr[from >> 4],filestr[to & 7], rankstr[to >> 4]);
+  sprintf(buffer,"%c%c%c%c", filestr[from & 7], rankstr[(from >> 4) & 7],filestr[to & 7], rankstr[(to >> 4) & 7]);
   switch (prom) {
     case KNIGHT:
       buffer[4]='n';
@@ -256,7 +256,7 @@ void printMove(smove m) {
 
 
   //printf("%c%c%s%c%c", filestr[from & 7], rankstr[from >> 4], cap ? "x" : "",	filestr[to & 7], rankstr[to >> 4]);
-  printf("%c%c%c%c", filestr[from & 7], rankstr[from >> 4],filestr[to & 7], rankstr[to >> 4]);
+  printf("%c%c%c%c", filestr[from & 7], rankstr[(from >> 4) & 7],filestr[to & 7], rankstr[(to >> 4) & 7]);
   switch (prom) {
     case KNIGHT:
       printf("n");
@@ -284,7 +284,7 @@ char *moveToUCI(int move) {
 
 
   //printf("%c%c%s%c%c", filestr[from & 7], rankstr[from >> 4], cap ? "x" : "",	filestr[to & 7], rankstr[to >> 4]);
-  sprintf(buffer,"%c%c%c%c", filestr[from & 7], rankstr[from >> 4],filestr[to & 7], rankstr[to >> 4]);
+  sprintf(buffer,"%c%c%c%c", filestr[from & 7], rankstr[(from >> 4) & 7],filestr[to & 7], rankstr[(to >> 4) & 7]);
   switch (prom) {
     case KNIGHT:
       buffer[4]='n';
@@ -312,8 +312,8 @@ void printMoveList(/* smove *moves, int len*/) {
     int to = (moveList[i].move >> 8) & 0xff;
     int prom = (moveList[i].move >> 24) & 0x7;
     int cap = (moveList[i].move >> 20) & 0xf;
-    printf("%d) %c%c%s%c%c", i + 1, filestr[from & 7], rankstr[from >> 4],
-           cap ? "x" : "", filestr[to & 7], rankstr[to >> 4]);
+    printf("%d) %c%c%s%c%c", i + 1, filestr[from & 7], rankstr[(from >> 4) & 7],
+           cap ? "x" : "", filestr[to & 7], rankstr[(to >> 4) & 7]);
     switch (prom) {
       case KNIGHT:
         printf("=n");
