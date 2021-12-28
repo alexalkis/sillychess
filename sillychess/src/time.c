@@ -24,6 +24,16 @@
 //#include <sys/timeb.h>
 #include <time.h>
 
+#ifdef __MINGW32__
+int clock_gettime(int foo, struct timespec *spec)      //C-file part
+{  __int64 wintime; GetSystemTimeAsFileTime((FILETIME*)&wintime);
+   wintime      -=116444736000000000ll;  //1jan1601 to 1jan1970
+   spec->tv_sec  =wintime / 10000000ll;           //seconds
+   spec->tv_nsec =wintime % 10000000ll *100;      //nano-seconds
+   return 0;
+}
+#endif
+
 unsigned int get_ms()
 {
     //struct timeb timebuffer;
