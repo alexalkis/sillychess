@@ -8,7 +8,8 @@ DEPS = sillychess.h
 OBJS=board.o hash.o rkiss.o sillychess.o  transpositiontable.o\
 	eval.o move.o search.o time.o uci.o
 
-#linux: CFLAGS+=-march=native
+linux: CFLAGS+=-march=native
+linux: LDFLAGS+=-lreadline
 
 windows: CFLAGS+=-DWIN32
 windows: CC=$(WCC)
@@ -25,7 +26,7 @@ amiga: CFLAGS+=-m68020
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 linux: $(OBJS)
-	$(LCC) $(CFLAGS) -s -o sillychess $(OBJS)
+	$(LCC) $(CFLAGS) -s -o sillychess $(OBJS) $(LDFLAGS)
 	@ls -l sillychess
 
 windows: $(OBJS) sc_res.o

@@ -29,4 +29,9 @@ if (CMAKE_C_COMPILER STREQUAL "/opt/amiga/gcc6/bin/m68k-amigaos-gcc")
             COMPILE_FLAGS "-m68020")
 endif()
 
+
 add_executable(sillychess ${SRC_FILES})
+
+if (UNIX)
+    target_link_libraries(sillychess readline)
+endif (UNIX)
