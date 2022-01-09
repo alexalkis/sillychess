@@ -460,7 +460,7 @@ void fen2board(char *str) {
 	}
 	board.posKey=generatePosKey();
 	/// TODO: fiftycounter and plycounter
-	board.fiftyCounter=board.ply=0;
+	board.fiftyCounter=board.ply=board.gameply=0;
 //	printf("*******************\n");
 //	Evaluate();
 //	printf("*******************\n");
