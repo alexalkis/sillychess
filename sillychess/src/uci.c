@@ -149,8 +149,7 @@ void ParseScore(char *line, S_SEARCHINFO *info) {
   }
 }
 
-void ParsePerft(char *line)//, S_SEARCHINFO *info)
-{
+void ParsePerft(char *line) {
   int pdepth = atoi(&line[6]);
 
   unsigned int starttime = get_ms();
@@ -162,8 +161,7 @@ void ParsePerft(char *line)//, S_SEARCHINFO *info)
          (1000 * nodes) / (endtime - starttime), (endtime - starttime));
 }
 
-void ParseDivide(char *line)//, S_SEARCHINFO *info)
-{
+void ParseDivide(char *line) {
   int pdepth = atoi(&line[7]);
 
   int starttime = get_ms();
@@ -175,8 +173,7 @@ void ParseDivide(char *line)//, S_SEARCHINFO *info)
          (1000 * nodes) / (endtime - starttime), (endtime - starttime));
 }
 
-void ParseTestEPD(char *line)//, S_SEARCHINFO *info) {
-{
+void ParseTestEPD(char *line) {
   // testepd xxxx filename
   char *ptr = strstr(line + 8, " ");
   if (!ptr) {
@@ -185,14 +182,13 @@ void ParseTestEPD(char *line)//, S_SEARCHINFO *info) {
     return;
   }
   *ptr++ = '\0';
-  ptr[strlen(ptr) - 1] = '\0'; //eat the \n
+  ptr[strlen(ptr) - 1] = '\0';  // eat the \n
   int time = atoi(line + 7);
   testEPD(ptr, time);
   return;
 }
 
 void ParseGo(char *line, S_SEARCHINFO *info) {
-
   int depth = -1, movestogo = 30, movetime = -1;
   int time = -1, inc = 0;
   char *ptr = NULL;
@@ -386,12 +382,14 @@ void input_loop(S_SEARCHINFO *info) {
   int exit = FALSE;
   char line[INPUTBUFFER];
 
-  printf("%s, written by Alex Argiropoulos (compiler's version used: "__VERSION__")\n", NAME);
-  //printf("%s\n", getCPUModel());
+  printf("%s, written by Alex Argiropoulos "
+         "(compiler's version used: "__VERSION__")\n", NAME);
+  // printf("%s\n", getCPUModel());
 #ifndef NDEBUG
   printf("Terminal is %s\n", isatty(fileno(stdout)) ? "true" : "false");
   printf("Terminal is %s (stdin)\n", isatty(fileno(stdin)) ? "true" : "false");
-  printf("NOTE: NDEBUG not defined at compilation stage.  Performance will not be optimum!\n");
+  printf("NOTE: NDEBUG not defined at compilation stage."
+         "  Performance will not be optimum!\n");
 #endif
   while (!exit) {
     memset(line, 0, sizeof(line));
@@ -399,6 +397,10 @@ void input_loop(S_SEARCHINFO *info) {
 #ifdef __linux__
     if (isatty(fileno(stdin))) {
       char *inp = getInput();
+      if (!inp) {
+        exit = TRUE;
+        continue;
+      }
       strncpy(line, inp, sizeof(line) - 1);
     } else {
       if (!fgets(line, INPUTBUFFER, stdin))
@@ -427,13 +429,12 @@ void input_loop(S_SEARCHINFO *info) {
       ParsePosition(line);
     } else if (!strncmp(line, "go", 2)) {
       ParseGo(line, info);
-      //think(2);
     } else if (!strncmp(line, "perft", 5)) {
-      ParsePerft(line);//, info);
+      ParsePerft(line);
     } else if (!strncmp(line, "score", 5)) {
       ParseScore(line, info);
     } else if (!strncmp(line, "divide", 6)) {
-      ParseDivide(line);//, info);
+      ParseDivide(line);
     } else if (!strncmp(line, "movelist", 8)) {
       showMoveList();
     } else if (!strncmp(line, "d", 1)) {
@@ -441,7 +442,7 @@ void input_loop(S_SEARCHINFO *info) {
     } else if (!strncmp(line, "ls", 2)) {
       listMoves();
     } else if (!strncmp(line, "testepd", 7)) {
-      ParseTestEPD(line);//,info);
+      ParseTestEPD(line);
     } else if (!strncmp(line, "eval", 4)) {
       printf("Eval=%d\n", Evaluate());
     } else if (!strncmp(line, "version", 7)) {
@@ -456,8 +457,7 @@ void input_loop(S_SEARCHINFO *info) {
              "- Transposition tables\n"
              "- Late Move Reductions\n",
              FULLNAME,
-             getCPUModel()
-      );
+             getCPUModel());
     } else if (!strncmp(line, "quit", 4)) {
       exit = TRUE;
       break;
