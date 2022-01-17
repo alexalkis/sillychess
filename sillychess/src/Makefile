@@ -18,6 +18,9 @@ windows: OBJS+=sc_res.o
 amiga: CC=$(ACC)
 amiga: CFLAGS+=-m68020
 
+a500: CC=$(ACC)
+a500: CFLAGS+=-lm -mcrt=nix13
+
 .SUFFIXES:
 .SUFFIXES: .c.o .rc.o
 
@@ -36,6 +39,11 @@ windows: $(OBJS) sc_res.o
 amiga: $(OBJS)
 	$(ACC) $(CFLAGS) -s -o sillychess $(OBJS)
 	@ls -l sillychess
+
+a500: $(OBJS)
+	$(ACC) $(CFLAGS) -s -o sillychess $(OBJS)
+	@ls -l sillychess
+
 
 sc_res.o: windows_res/sc.rc
 	x86_64-w64-mingw32-windres -i windows_res/sc.rc -o sc_res.o

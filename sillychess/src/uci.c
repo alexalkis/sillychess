@@ -10,9 +10,13 @@
 #endif
 #include <unistd.h>
 #include <stdio.h>
+#include <ctype.h>
 #include "move.h"
 #include "sillychess.h"
-
+#ifdef __amiga__
+#include <exec/execbase.h>
+extern struct ExecBase *SysBase;
+#endif
 #define INPUTBUFFER        (4096)
 #define NOMOVE            0
 #define FR2SQ(f, r) ( (f)  + (r) * 16 )
@@ -109,6 +113,15 @@ char *getCPUModel(void) {
       RegCloseKey(hKey);
   }
 #endif
+#ifdef __amiga__
+  UWORD attnflags = SysBase->AttnFlags;
+  strcpy(cpustr,"68000");
+  if (attnflags & 0x80) cpustr[3]='6';
+  if (attnflags & AFF_68040) cpustr[3]='4';
+  if (attnflags & AFF_68030) cpustr[3]='3';
+  if (attnflags & AFF_68020) cpustr[3]='2';
+  if (attnflags & AFF_68010) cpustr[3]='1';
+#endif
   return cpustr;
 }
 
@@ -182,7 +195,10 @@ void ParseTestEPD(char *line) {
     return;
   }
   *ptr++ = '\0';
-  ptr[strlen(ptr) - 1] = '\0';  // eat the \n
+  int e = strlen(ptr) - 1;
+  while(!isalpha(ptr[e])) {
+    ptr[e--] = '\0';  // eat any space or \n
+  }
   int time = atoi(line + 7);
   testEPD(ptr, time);
   return;
