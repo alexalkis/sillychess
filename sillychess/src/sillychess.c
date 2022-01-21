@@ -110,7 +110,7 @@ void testPerft(int n)
 	char fen[120];
 
 
-	FILE *f = fopen("/home/alex/git/local/amichess/src/perfsuite.epd", "r");
+	FILE *f = fopen("../src/perfsuite.epd", "r");
 
 	int correct = 0;
 	int error = 0;
