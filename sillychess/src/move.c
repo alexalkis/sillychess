@@ -628,13 +628,13 @@ void generatePawnMoves(int color, int pos) {
         else
             pushMove(pos, to, color | PAWN, board.bs[to]);
     }
-    if (board.bs[to - 1] != EMPTY && COLOR(to - 1) != color) {
+    if (!((to-1) & 0x88) && board.bs[to - 1] != EMPTY && COLOR(to - 1) != color) {
         if ((color == BLACK && rankt == 0) || (color == WHITE && rankt == 7))
             pushPromotion(pos, to - 1, color, board.bs[to - 1]);
         else
             pushMove(pos, to - 1, color | PAWN, board.bs[to - 1]);
     }
-    if (board.bs[to + 1] != EMPTY && COLOR(to + 1) != color) {
+    if (!((to+1) & 0x88) && board.bs[to + 1] != EMPTY && COLOR(to + 1) != color) {
         if ((color == BLACK && rankt == 0) || (color == WHITE && rankt == 7))
             pushPromotion(pos, to + 1, color, board.bs[to + 1]);
         else
@@ -1145,13 +1145,13 @@ void generatePawnCaptureMoves(int color, int pos) {
         if ((color == BLACK && rankt == 0) || (color == WHITE && rankt == 7))
             pushPromotion(pos, to, color, board.bs[to]);
     }
-    if (board.bs[to - 1] != EMPTY && COLOR(to - 1) != color) {
+    if (!((to-1) & 0x88) && board.bs[to - 1] != EMPTY && COLOR(to - 1) != color) {
         if ((color == BLACK && rankt == 0) || (color == WHITE && rankt == 7))
             pushPromotion(pos, to - 1, color, board.bs[to - 1]);
         else
             pushMove(pos, to - 1, color | PAWN, board.bs[to - 1]);
     }
-    if (board.bs[to + 1] != EMPTY && COLOR(to + 1) != color) {
+    if (!((to+1) & 0x88) && board.bs[to + 1] != EMPTY && COLOR(to + 1) != color) {
         if ((color == BLACK && rankt == 0) || (color == WHITE && rankt == 7))
             pushPromotion(pos, to + 1, color, board.bs[to + 1]);
         else
