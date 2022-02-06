@@ -54,106 +54,104 @@ struct aboard board;
 
 //cutechess-cli -fcp cmd=~/workspacecpp/sillychess/Release/sillychess proto=uci -scp cmd="java -jar /home/alex/t/chess4j-1.2/chess4j-1.2-uber.jar" proto=xboard -both tc=30/10 book=./varied.bin -games 10 -pgnout st.pgn
 
-void init(void)
-{
-	initHash();
-	InitMvvLva();
-	initBoard();
-	board.gameply=0;
-    board.ht=NULL;
-    board.htSize=0;
+void init(void) {
+    initHash();
+    InitMvvLva();
+    initBoard();
+    board.gameply = 0;
+    board.ht = NULL;
+    board.htSize = 0;
 #ifdef __AMIGA__
     TT_set_size(4);
 #else
     TT_set_size(128);
 #endif
 }
-int main(int argc, char **argv)
-{
-	S_SEARCHINFO info[1];
-	info->GAME_MODE = GAMEMODE_CONSOLE;
 
-	init();
-	if (argc>=2 && !strcmp(argv[1],"-bench"))
-		testEPD("../src/wac.epd",100);
-	else if (argc>=2 && !strcmp(argv[1],"-bench2")) {
-		info->starttime=get_ms();
-		info->timeset = FALSE;
+int main(int argc, char **argv) {
+    S_SEARCHINFO info[1];
+    info->GAME_MODE = GAMEMODE_CONSOLE;
+
+    init();
+    if (argc >= 2 && !strcmp(argv[1], "-bench"))
+        testEPD("../src/wac.epd", 100);
+    else if (argc >= 2 && !strcmp(argv[1], "-bench2")) {
+        info->starttime = get_ms();
+        info->timeset = FALSE;
 #ifdef __AMIGA__
-		info->depth = 8;
+        info->depth = 8;
 #else
-		info->depth = 10;
+        info->depth = 10;
 #endif
-		think(info);
-	} else if (argc>=2 && !strcmp(argv[1],"-bench3")) {
-		fen2board("8/k7/3p4/p2P1p2/P2P1P2/8/8/K7 w - -");
-		info->starttime = get_ms();
-		info->stoptime = info->starttime + 30000;
-		info->timeset = TRUE;
-		think(info);
-		//
-	} else if (argc>=2 && !strcmp(argv[1],"-bench4")) {
-			fen2board("2Q5/8/3K4/8/2k5/8/P7/8 b - - 2 62");
-			info->starttime = get_ms();
-			info->stoptime = info->starttime + 30000;
-			info->timeset = TRUE;
-			think(info);
-	} else
-		input_loop(info);
-	TT_free();
-	return EXIT_SUCCESS;
+        think(info);
+    } else if (argc >= 2 && !strcmp(argv[1], "-bench3")) {
+        fen2board("8/k7/3p4/p2P1p2/P2P1P2/8/8/K7 w - -");
+        info->starttime = get_ms();
+        info->stoptime = info->starttime + 30000;
+        info->timeset = TRUE;
+        think(info);
+        //
+    } else if (argc >= 2 && !strcmp(argv[1], "-bench4")) {
+        fen2board("2Q5/8/3K4/8/2k5/8/P7/8 b - - 2 62");
+        info->starttime = get_ms();
+        info->stoptime = info->starttime + 30000;
+        info->timeset = TRUE;
+        think(info);
+    } else
+        input_loop(info);
+    TT_free();
+    return EXIT_SUCCESS;
 }
 
-void testPerft(int n)
-{
-	char line[256];
-	char fen[120];
+void testPerft(int n) {
+    char line[256];
+    char fen[120];
 
 
-	FILE *f = fopen("../src/perfsuite.epd", "r");
+    FILE *f = fopen("../src/perfsuite.epd", "r");
 
-	int correct = 0;
-	int error = 0;
-	int lineno = 0;
-	while (fgets(line, 256, f)) {
-		//printf("%s",line);
-		char *start = NULL;
-		char *semi = strchr(line, ';');
-		*semi = '\0';
-		strcpy(fen, line);
-		int c = n;
-		while (c--) {
-			++semi;
-			//printf("%s\n",fen);
-			start = semi;
-			semi = strchr(semi, ';');
-			if (!semi) {
-				semi = start;
-				semi = strchr(semi, '\n');
-			}
-			*semi = '\0';
-		}
-		//printf("--->%s\n",start);
-		if (start[0] != 'D') {
-			++lineno;
-			continue;
-		}
-		int depth = start[1] - '0';
-		start += 3;
-		int value = atol(start);
+    int correct = 0;
+    int error = 0;
+    int lineno = 0;
+    while (fgets(line, 256, f)) {
+        //printf("%s",line);
+        char *start = NULL;
+        char *semi = strchr(line, ';');
+        *semi = '\0';
+        strcpy(fen, line);
+        int c = n;
+        while (c--) {
+            ++semi;
+            //printf("%s\n",fen);
+            start = semi;
+            semi = strchr(semi, ';');
+            if (!semi) {
+                semi = start;
+                semi = strchr(semi, '\n');
+            }
+            *semi = '\0';
+        }
+        //printf("--->%s\n",start);
+        if (start[0] != 'D') {
+            ++lineno;
+            continue;
+        }
+        int depth = start[1] - '0';
+        start += 3;
+        int value = atol(start);
 
-		fen2board(fen);
-		int result = Perft(depth);
-		printf("#%3d Depth: %d, value=%d - Perft: %d %s\n", ++lineno, depth,
-				value, result, (result == value) ? "" : fen);
-		if (result == value)
-			++correct;
-		else
-			++error;
+        fen2board(fen);
+        int result = Perft(depth);
+        printf("#%3d Depth: %d, value=%d - Perft: %d %s\n", ++lineno, depth,
+               value, result, (result == value) ? "" : fen);
+        if (result == value)
+            ++correct;
+        else
+            ++error;
 
-	}
-	printf("Correct: %d -- Error: %d\n", correct, error);
-	fclose(f);
+    }
+    printf("Correct: %d -- Error: %d\n", correct, error);
+    fclose(f);
 }
 //v0.3.1 271/879 at 1000ms on ECM Total time: 880651ms Total nodes: 1535082412
 
@@ -168,86 +166,89 @@ void testPerft(int n)
 //v0.3   209/300 at 400ms on WAC [195/300 on laptop]
 
 void testEPD(char *filename, int miliseconds) {
-	S_SEARCHINFO info[1],totalInfo[1];
-	char line[256];
-	char fen[120];
-	int linecount=0;
-	int positions=0;
-	int solved=0;
-	int totalDepth = 0;
+    S_SEARCHINFO info[1], totalInfo[1];
+    char line[256];
+    char fen[120];
+    int linecount = 0;
+    int positions = 0;
+    int solved = 0;
+    int totalDepth = 0;
 
-	info->GAME_MODE=GAMEMODE_SILLENT;
-	FILE *f = fopen(filename, "r");
-	if (!f) {
-		printf("Can't open \"%s\" for reading.\n",filename);
-		return;
-	}
+    info->GAME_MODE = GAMEMODE_SILLENT;
+    FILE *f = fopen(filename, "r");
+    if (!f) {
+        printf("Can't open \"%s\" for reading.\n", filename);
+        return;
+    }
 
-	totalInfo->failHigh=totalInfo->failHighFirst=totalInfo->htAlpha=totalInfo->htBeta=totalInfo->htExact=totalInfo->hthit=totalInfo->htmiss
-			=totalInfo->lmr=totalInfo->lmr2=totalInfo->lmr3=totalInfo->nodes=totalInfo->nullCut=0;
-	totalInfo->starttime=get_ms();
-	while (fgets(line, 256, f)) {
-		char *bm = strstr(line,"bm ");
-		char *id = strchr(line, ';');
-		line[strlen(line)-1]='\0';		// eat the \n at the end
-		if (!bm) {
-			printf("Can't find bm (best move start marker) at line %d\n",linecount);
-			break;
-		} else {
-			bm+=3;
-		}
-		*(bm-1)='\0';
-		strcpy(fen, line);
-		fen2board(fen);
-		//printBoard();
-		if (!id) {
-			id = "No id!!!\n";
-		} else {
-			*id++='\0';
-			while(*id==' ')
-				++id;
-		}
-		//printf("Best move(s): %s\n",bm);
-		//printf("%s\n",id);
-		/* 
-		   Since the amiga is kind of slow we clear the TT and then
-		   we'll start counting time.
-		*/
-		#ifdef __AMIGA__
-		TT_clear();
-		#endif
-		info->starttime=get_ms();
-		info->stoptime=get_ms()+miliseconds;
-		info->stopped=FALSE;
-		info->timeset=TRUE;
-		#ifndef __AMIGA__
-		TT_clear();
-		#endif
-		int bestMove=think(info);
+    totalInfo->failHigh = totalInfo->failHighFirst = totalInfo->htAlpha = totalInfo->htBeta = totalInfo->htExact = totalInfo->hthit = totalInfo->htmiss
+            = totalInfo->lmr = totalInfo->lmr2 = totalInfo->lmr3 = totalInfo->nodes = totalInfo->nullCut = 0;
+    totalInfo->starttime = get_ms();
+    while (fgets(line, 256, f)) {
+        char *bm = strstr(line, "bm ");
+        char *id = strchr(line, ';');
+        line[strlen(line) - 1] = '\0';        // eat the \n at the end
+        if (!bm) {
+            printf("Can't find bm (best move start marker) at line %d\n", linecount);
+            break;
+        } else {
+            bm += 3;
+        }
+        *(bm - 1) = '\0';
+        strcpy(fen, line);
+        fen2board(fen);
+        //printBoard();
+        if (!id) {
+            id = "No id!!!\n";
+        } else {
+            *id++ = '\0';
+            while (*id == ' ')
+                ++id;
+        }
+        //printf("Best move(s): %s\n",bm);
+        //printf("%s\n",id);
+        /*
+           Since the amiga is kind of slow we clear the TT and then
+           we'll start counting time.
+        */
+#ifdef __AMIGA__
+        TT_clear();
+#endif
+        info->starttime = get_ms();
+        info->stoptime = get_ms() + miliseconds;
+        info->stopped = FALSE;
+        info->timeset = TRUE;
+#ifndef __AMIGA__
+        TT_clear();
+#endif
+        int bestMove = think(info);
 
-		smove m;
-		m.move=bestMove;
-		smove lm[256];
-		int mcount=generateLegalMoves(lm);
-		move_make(&m);
-		char *engine=move_to_san(m,mcount,lm);
-		char *res=strstr(bm,engine);
-		move_unmake(&m);
-		if (res) {
-			++solved;
-		}
-		++positions;
-		totalDepth += info->depth;
-		printf("%d/%d (%s) Engine: %s (D:%d) EPD: %s -- %s\n",solved,positions,id,engine, info->depth,bm,res?"SOLVED":"NOT SOLVED");
-		totalInfo->nodes+=info->nodes;
+        smove m;
+        m.move = bestMove;
+        smove lm[256];
+        int mcount = generateLegalMoves(lm);
+        move_make(&m);
+        char *engine = move_to_san(m, mcount, lm);
+        char *res = strstr(bm, engine);
+        move_unmake(&m);
+        if (res) {
+            ++solved;
+        }
+        ++positions;
+        totalDepth += info->depth;
+        printf("%d/%d (%s) Engine: %s (D:%d) EPD: %s -- %s\n", solved, positions, id, engine, info->depth, bm,
+               res ? "SOLVED" : "NOT SOLVED");
+        totalInfo->nodes += info->nodes;
 
 
-	}
-	totalInfo->stoptime=get_ms();
-	char buf[80];
-	sprintf(buf, "cmd: testepd %d %s",miliseconds, filename);
-	printf("Time: %dms Nodes: %"INT64_FORMAT"d %d/%d Avg.Depth: %g (%s)\n%s\n",totalInfo->stoptime-totalInfo->starttime,totalInfo->nodes, solved, positions, ((double)totalDepth)/positions, getCPUModel(), buf);
-	fclose(f);
+    }
+    totalInfo->stoptime = get_ms();
+    char buf[80];
+    sprintf(buf, "cmd: testepd %d %s", miliseconds, filename);
+    printf("Time: %dms Nodes: %"INT64_FORMAT"d %d/%d Avg.Depth: %g (%s)\n%s\n",
+           totalInfo->stoptime - totalInfo->starttime, totalInfo->nodes, solved, positions,
+           ((double) totalDepth) / positions, getCPUModel(), buf);
+    fclose(f);
 }
 
 #ifdef GCC340

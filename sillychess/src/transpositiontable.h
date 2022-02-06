@@ -9,7 +9,4 @@
 #define TRANSPOSITIONTABLE_H_
 
 
-
-
-
 #endif /* TRANSPOSITIONTABLE_H_ */
