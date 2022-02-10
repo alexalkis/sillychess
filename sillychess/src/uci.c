@@ -467,7 +467,7 @@ void input_loop(S_SEARCHINFO *info) {
                 ParsePosition("position startpos\n");
             } else {
                 printf("id name %s\n", NAME);
-                printf("id author Alex Argiropoulos, Greece\n");
+                printf("id author Alex Argiropoulos GR\n");
                 printf("uciok\n");
                 info->GAME_MODE = GAMEMODE_UCI;
             }
