@@ -11,6 +11,10 @@ OBJS=board.o hash.o rkiss.o sillychess.o  transpositiontable.o\
 linux: CFLAGS+=-march=native
 linux: LDFLAGS+=-lreadline
 
+linuxclang: CC=clang-14
+linuxclang: CFLAGS=-fsanitize=address -Wall -ggdb -DNDEBUG -std=gnu99 -fomit-frame-pointer
+linuxclang: LDFLAGS+=-lreadline
+
 windows: CFLAGS+=-DWIN32
 windows: CC=$(WCC)
 windows: OBJS+=sc_res.o
@@ -32,6 +36,11 @@ linux: $(OBJS)
 	$(LCC) $(CFLAGS) -s -o sillychess $(OBJS) $(LDFLAGS)
 	@ls -l sillychess
 
+linuxclang: $(OBJS)
+	$(CC) $(CFLAGS) -s -o sillychessa $(OBJS) $(LDFLAGS)
+	@ls -l sillychessa
+
+
 windows: $(OBJS) sc_res.o
 	$(WCC) $(WFLAGS) -s -o sillychess.exe $(OBJS)
 	@ls -l sillychess.exe
@@ -50,5 +59,5 @@ sc_res.o: windows_res/sc.rc
 
 
 clean:
-	rm -f sillychess sillychess.exe *.o
+	rm -f sillychess sillychess.exe sillychessa *.o
 	@echo "all cleaned up!"
