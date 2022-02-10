@@ -104,6 +104,31 @@ char *getCPUModel(void) {
         free(arg);
         fclose(cpuinfo);
     }
+    if (!strlen(cpustr)) {
+        char buf[256];
+
+        FILE *pf = popen("lscpu","r");
+        if (pf) {
+            while (fgets(buf, sizeof(buf), pf)) {
+                buf[strlen(buf)-1]='\0'; // eat \n
+                if (strstr(buf, "Model name:")) {
+                    char *s = buf + sizeof("Model name:");
+                    while(!isalpha(*s))
+                        ++s;
+                    strcat(cpustr, ", ");
+                    strcat(cpustr, s);
+                }
+
+                if (strstr(buf, "Architecture:")) {
+                    char *s = buf + sizeof("Architecture:");
+                    while(!isalpha(*s))
+                        ++s;
+                    strcat(cpustr, s);
+                }
+            }
+            pclose(pf);
+        }
+    }
 #endif
 #ifdef WIN32
     HKEY hKey;
