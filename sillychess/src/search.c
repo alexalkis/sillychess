@@ -55,6 +55,7 @@ int think(S_SEARCHINFO *info) {
         unsigned int starttime = get_ms();
         ASSERT(board.posKey == generatePosKey());
         int score = AlphaBeta(depth, -INFINITE, INFINITE, &line, TRUE, info);
+        //ASSERT(line.cmove!=0);
         ASSERT(board.posKey == generatePosKey());
         unsigned int endtime = get_ms();
 
@@ -266,7 +267,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE *pline, int doNull, S_SEARCHI
 
     ++info->nodes;
     if (board.ply && isRepetition()) {
-        //pline->cmove=0;
+        pline->cmove=0;
         return 0;
     }
 
