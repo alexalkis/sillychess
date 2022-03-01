@@ -4,7 +4,6 @@
  *  Created on: Jun 1, 2014
  *      Author: alex
  */
-#define _GNU_SOURCE
 #ifdef WIN32
 #include "windows.h"
 #endif
@@ -107,13 +106,13 @@ char *getCPUModel(void) {
     if (!strlen(cpustr)) {
         char buf[256];
 
-        FILE *pf = popen("lscpu","r");
+        FILE *pf = popen("lscpu", "r");
         if (pf) {
             while (fgets(buf, sizeof(buf), pf)) {
-                buf[strlen(buf)-1]='\0'; // eat \n
+                buf[strlen(buf) - 1] = '\0'; // eat \n
                 if (strstr(buf, "Model name:")) {
                     char *s = buf + sizeof("Model name:");
-                    while(!isalpha(*s))
+                    while (!isalpha(*s))
                         ++s;
                     strcat(cpustr, ", ");
                     strcat(cpustr, s);
@@ -121,7 +120,7 @@ char *getCPUModel(void) {
 
                 if (strstr(buf, "Architecture:")) {
                     char *s = buf + sizeof("Architecture:");
-                    while(!isalpha(*s))
+                    while (!isalpha(*s))
                         ++s;
                     strcat(cpustr, s);
                 }
@@ -204,9 +203,9 @@ void ParsePerft(char *line) {
 void ParseDivide(char *line) {
     int pdepth = atoi(&line[7]);
 
-    int starttime = get_ms();
+    unsigned int starttime = get_ms();
     u64 nodes = Divide(pdepth);
-    int endtime = get_ms();
+    unsigned int endtime = get_ms();
     if (endtime == starttime)
         ++endtime;
     printf("Perft(%d)=%"INT64_FORMAT"d Nps: %"INT64_FORMAT"d (%d ms)\n", pdepth, nodes,
@@ -222,13 +221,12 @@ void ParseTestEPD(char *line) {
         return;
     }
     *ptr++ = '\0';
-    int e = strlen(ptr) - 1;
+    unsigned int e = strlen(ptr) - 1;
     while (!isalpha(ptr[e])) {
         ptr[e--] = '\0';  // eat any space or \n
     }
     int time = atoi(line + 7);
     testEPD(ptr, time);
-    return;
 }
 
 void ParseGo(char *line, S_SEARCHINFO *info) {
@@ -291,8 +289,8 @@ void ParseGo(char *line, S_SEARCHINFO *info) {
     printf("time:%d start:%d stop:%d depth:%d timeset:%d\n", time,
            info->starttime, info->stoptime, info->depth, info->timeset);
 #endif
-    int move = think(info);
-    int timeTaken = get_ms();
+    unsigned int move = think(info);
+    unsigned int timeTaken = get_ms();
     printf("Time taken: %d\n", timeTaken - info->starttime);
     fflush(stdout);
 
@@ -307,7 +305,7 @@ void ParseGo(char *line, S_SEARCHINFO *info) {
     }
 }
 
-int ParseMove(char *ptrChar) {
+unsigned int ParseMove(const char *ptrChar) {
     if (ptrChar[1] > '8' || ptrChar[1] < '1')
         return NOMOVE;
     if (ptrChar[3] > '8' || ptrChar[3] < '1')
@@ -323,22 +321,19 @@ int ParseMove(char *ptrChar) {
     smove list[256];
     int mcount = generateMoves(list);
 
-    int MoveNum = 0;
-    int Move = 0;
-    int PromPce = EMPTY;
+    int MoveNum;
+    unsigned int Move;
+    int PromPce;
 
     for (MoveNum = 0; MoveNum < mcount; ++MoveNum) {
         Move = list[MoveNum].move;
         if (FROM(Move) == from && TO(Move) == to) {
             PromPce = COLORLESSPROMOTED(Move);
             if (PromPce != EMPTY) {
-                if (PromPce == ROOK && ptrChar[4] == 'r') {
-                    return Move;
-                } else if (PromPce == BISHOP && ptrChar[4] == 'b') {
-                    return Move;
-                } else if (PromPce == QUEEN && ptrChar[4] == 'q') {
-                    return Move;
-                } else if (PromPce == KNIGHT && ptrChar[4] == 'n') {
+                if ((PromPce == ROOK && ptrChar[4] == 'r')
+                    || (PromPce == BISHOP && ptrChar[4] == 'b')
+                    || (PromPce == QUEEN && ptrChar[4] == 'q')
+                    || (PromPce == KNIGHT && ptrChar[4] == 'n')) {
                     return Move;
                 }
                 continue;
@@ -370,7 +365,7 @@ void listMoves(void) {
 void ParsePosition(char *lineIn) {
 
     lineIn += 9;
-    char *ptrChar = lineIn;
+    char *ptrChar;
 
     if (strncmp(lineIn, "startpos", 8) == 0) {
         board.gameply = 0;
@@ -386,7 +381,7 @@ void ParsePosition(char *lineIn) {
     }
 
     ptrChar = strstr(lineIn, "moves");
-    int move;
+    unsigned int move;
 
     if (ptrChar != NULL) {
         ptrChar += 6;

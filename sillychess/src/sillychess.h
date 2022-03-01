@@ -303,7 +303,7 @@ int numOfLegalMoves(void);
 
 void CheckUp(S_SEARCHINFO *info);
 
-char *moveToUCI(int move);
+char *moveToUCI(unsigned int move);
 
 int InputWaiting(void);
 

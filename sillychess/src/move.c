@@ -259,9 +259,9 @@ char *move_to_san(smove m, int mcount, smove *moves) {
 void printMove(smove m) {
     static char *filestr = "abcdefgh";
     static char *rankstr = "12345678";
-    int from = m.move & 0xff;
-    int to = (m.move >> 8) & 0xff;
-    int prom = (m.move >> 24) & 0x7;
+    unsigned int from = m.move & 0xff;
+    unsigned int to = (m.move >> 8) & 0xff;
+    unsigned int prom = (m.move >> 24) & 0x7;
 
 
     //printf("%c%c%s%c%c", filestr[from & 7], rankstr[from >> 4], cap ? "x" : "",	filestr[to & 7], rankstr[to >> 4]);
@@ -282,14 +282,14 @@ void printMove(smove m) {
     }
 }
 
-char *moveToUCI(int move) {
+char *moveToUCI(unsigned int move) {
     static char *filestr = "abcdefgh";
     static char *rankstr = "12345678";
     static char buffer[10];
 
-    int from = move & 0xff;
-    int to = (move >> 8) & 0xff;
-    int prom = (move >> 24) & 0x7;
+    unsigned int from = move & 0xff;
+    unsigned int to = (move >> 8) & 0xff;
+    unsigned int prom = (move >> 24) & 0x7;
 
 
     //printf("%c%c%s%c%c", filestr[from & 7], rankstr[from >> 4], cap ? "x" : "",	filestr[to & 7], rankstr[to >> 4]);
