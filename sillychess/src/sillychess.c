@@ -64,7 +64,7 @@ void init(void) {
 #ifdef __AMIGA__
     TT_set_size(4);
 #else
-    TT_set_size(128);
+    TT_set_size(256);
 #endif
 }
 
