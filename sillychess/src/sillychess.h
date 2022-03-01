@@ -120,7 +120,7 @@ typedef struct tagHASHE {
     u64 key;
     unsigned char depth;
     unsigned char flags;    // bits 0,1,2,3 store the type (exact,alpha,beta etc)
-    short value;
+    int value;
     unsigned int bestMove;
 } Hash_Entry;
 
