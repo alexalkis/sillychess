@@ -211,16 +211,23 @@ void testEPD(char *filename, int miliseconds) {
            Since the amiga is kind of slow we clear the TT and then
            we'll start counting time.
         */
+#ifdef CLEARTT
+        /*
+           Since the amiga is kind of slow we clear the TT and then
+           we'll start counting time.
+        */
 #ifdef __AMIGA__
         TT_clear();
+#endif
+#ifndef __AMIGA__
+        TT_clear();
+#endif
 #endif
         info->starttime = get_ms();
         info->stoptime = get_ms() + miliseconds;
         info->stopped = FALSE;
         info->timeset = TRUE;
-#ifndef __AMIGA__
-        TT_clear();
-#endif
+
         int bestMove = think(info);
 
         smove m;
