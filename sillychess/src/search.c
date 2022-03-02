@@ -281,7 +281,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE *pline, int doNull, S_SEARCHI
             pline->argmove[0] = ttMove;
             pline->cmove = 1;
             if (!(ISCAPTUREORPROMOTION(ttMove))) {
-                board.searchHistory[PIECE(ttMove)][TO(ttMove)] += depth;// * depth;
+                board.searchHistory[PIECE(ttMove)][TO(ttMove)] += depth * depth;
             }
         } else if (tte->flags == hashfBETA) {
             if (!(ISCAPTUREORPROMOTION(ttMove))) {
@@ -414,7 +414,7 @@ int AlphaBeta(int depth, int alpha, int beta, LINE *pline, int doNull, S_SEARCHI
             continue;
         }
         //if (depth==1) printf("#%d %s (%d)\n",legalMoves+1,moveToUCI(m[i].move), m[i].move);
-//		int givesCheck=isAttacked(board.sideToMove^BLACK, kingLoc[board.sideToMove >> 3]);
+		int givesCheck=isAttacked(board.sideToMove^BLACK, kingLoc[board.sideToMove >> 3]);
 //
 //		/* Shallow prune */
 //		if (	!PvNode &&
@@ -433,17 +433,18 @@ int AlphaBeta(int depth, int alpha, int beta, LINE *pline, int doNull, S_SEARCHI
         } else {
             if (legalMoves >= FullDepthMoves && depth >= ReductionLimit &&
                 !PvNode &&
+                !givesCheck &&
                 /*m[i].move != ttMove &&
-                //!givesCheck &&
+
                 !ISCAPTUREORPROMOTION(m[i].move)&&
                 m[i].move!=board.searchKillers[0][board.gameply] &&
                 m[i].move!=board.searchKillers[1][board.gameply]*/
                 m[i].score < SECOND_KILLER_SCORE
                     ) {
                 // Search this move with reduced depth:
-//				int reduction = (2+ ((legalMoves-FullDepthMoves)>>3) );
-//				if (reduction > depth) reduction = depth;
-                val = -AlphaBeta(depth - 2, -(alpha + 1), -alpha, &line, doNull, info);
+				int reduction = (2 + ((legalMoves-FullDepthMoves)>>3));
+				if (reduction > depth) reduction = depth;
+                val = -AlphaBeta(depth - reduction, -(alpha + 1), -alpha, &line, doNull, info);
                 ++info->lmr;
             } else
                 val = alpha + 1;    // Hack to ensure that full-depth search is done.
@@ -456,19 +457,13 @@ int AlphaBeta(int depth, int alpha, int beta, LINE *pline, int doNull, S_SEARCHI
                 }
             }
         }
-
         ++legalMoves;
-
-
         move_unmake(&m[i]);
-
-
         if (info->stopped == TRUE) {
             if (BestScore!=-INFINITE)
                 return BestScore;
             return eval;
         }
-
         if (!board.ply && info->displayCurrmove) {
             printf("info depth %d currmove %s currmovenumber %d\n", depth, moveToUCI(m[i].move), legalMoves);
             fflush(stdout);
