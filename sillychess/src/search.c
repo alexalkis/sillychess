@@ -267,7 +267,6 @@ int AlphaBeta(int depth, int alpha, int beta, LINE *pline, int doNull, S_SEARCHI
 
     ++info->nodes;
     if (board.ply && isRepetition()) {
-        pline->cmove=0;
         return 0;
     }
 
@@ -297,7 +296,6 @@ int AlphaBeta(int depth, int alpha, int beta, LINE *pline, int doNull, S_SEARCHI
         ++info->htmiss;
 
     if (depth == 0) {
-        pline->cmove = 0;
         if (PvNode && board.ply > info->maxSearchPly)
             info->maxSearchPly = board.ply;
         val = Quiescence(alpha, beta, info);
@@ -466,7 +464,9 @@ int AlphaBeta(int depth, int alpha, int beta, LINE *pline, int doNull, S_SEARCHI
 
 
         if (info->stopped == TRUE) {
-            return 0;
+            if (BestScore!=-INFINITE)
+                return BestScore;
+            return eval;
         }
 
         if (!board.ply && info->displayCurrmove) {
