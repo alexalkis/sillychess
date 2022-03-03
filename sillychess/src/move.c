@@ -97,6 +97,7 @@ void printLine(LINE *line, S_SEARCHINFO *info) {
     for (i = 0; i < line->cmove; ++i) {
         m[i].move = line->argmove[i];
         if (!moveExists(m[i].move)) {
+#ifndef NDEBUG
             printf("Move (");
             printMove(m[i]);
             printf(") not legal, but in PV-line. It's the %d out of %d moves.\n", i + 1, line->cmove);
@@ -108,7 +109,7 @@ void printLine(LINE *line, S_SEARCHINFO *info) {
                 else
                     printf(" - Legal\n");
             }
-
+#endif
             break;
         }
         smove lm[256];
