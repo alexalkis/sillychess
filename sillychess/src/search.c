@@ -279,7 +279,9 @@ int AlphaBeta(int depth, int alpha, int beta, LINE *pline, int doNull, S_SEARCHI
         ++info->hthit;
         if (tte->flags == hashfEXACT) {
             if (pline->cmove) {
-                memcpy(pline->argmove + 1, pline->argmove, pline->cmove * sizeof(int));
+                //memcpy(pline->argmove + 1, pline->argmove, pline->cmove * sizeof(int));
+                for(int i=pline->cmove; i>0; --i)
+                    pline->argmove[i] = pline->argmove[i-1];
             }
             pline->argmove[0] = ttMove;
             pline->cmove += 1;
