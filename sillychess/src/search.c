@@ -278,8 +278,11 @@ int AlphaBeta(int depth, int alpha, int beta, LINE *pline, int doNull, S_SEARCHI
         ASSERT(ttMove != NOMOVE);
         ++info->hthit;
         if (tte->flags == hashfEXACT) {
+            if (pline->cmove) {
+                memcpy(pline->argmove + 1, pline->argmove, pline->cmove * sizeof(int));
+            }
             pline->argmove[0] = ttMove;
-            pline->cmove = 1;
+            pline->cmove += 1;
             if (!(ISCAPTUREORPROMOTION(ttMove))) {
                 board.searchHistory[PIECE(ttMove)][TO(ttMove)] += depth * depth;
             }
