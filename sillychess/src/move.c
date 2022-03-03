@@ -98,16 +98,18 @@ void printLine(LINE *line, S_SEARCHINFO *info) {
         m[i].move = line->argmove[i];
         if (!moveExists(m[i].move)) {
 #ifndef NDEBUG
-            printf("Move (");
+            printf("\n");
+            printBoard();
+            printf("\nMove decimal: %d (", m[i].move);
             printMove(m[i]);
             printf(") not legal, but in PV-line. It's the %d out of %d moves.\n", i + 1, line->cmove);
             int j;
-            for (j = i + 1; j < line->cmove; ++j) {
+            for (j = 0; j < line->cmove; ++j) {
                 printMove(m[j]);
-                if (!moveExists(m[i].move))
+                if (j==i)
                     printf(" - Illegal\n");
                 else
-                    printf(" - Legal\n");
+                    printf("\n");
             }
 #endif
             break;
