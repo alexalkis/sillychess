@@ -49,57 +49,62 @@
 //#endif
 
 enum {
-    FALSE = 0,
-    NOMOVE = 0,
-    TRUE = 1,
-    MAXDEPTH = 200,
-    MAX_PLY_IN_A_GAME = 1000,
-    FIRST_KILLER_SCORE = 900000,
-    SECOND_KILLER_SCORE = 800000,
-    CAPTURE_SCORE = 1000000,
-    PVMOVE_SCORE = 2000000
+  FALSE = 0,
+  NOMOVE = 0,
+  TRUE = 1,
+  MAXDEPTH = 200,
+  MAX_PLY_IN_A_GAME = 1000,
+  FIRST_KILLER_SCORE = 900000,
+  SECOND_KILLER_SCORE = 800000,
+  CAPTURE_SCORE = 1000000,
+  PVMOVE_SCORE = 2000000,
+  INFINITE = 22000000,
+  CHECKMATE_SCORE = 21000000,
+  ISMATE = CHECKMATE_SCORE - MAXDEPTH,
+  STALEMATE_SCORE = 0,
+  DDEPTH = 8
 };
 enum {
-    WHITE = 0, BLACK = 0x8
+  WHITE = 0, BLACK = 0x8
 };
 enum {
-    EMPTY = 0x00,
-    ENPASSANTNULL = 127,
-    PAWN = 0x01,
-    KING = 0x02,
-    KNIGHT = 0x03,
-    BISHOP = 0x05,
-    ROOK = 0x06,
-    QUEEN = 0x07
+  EMPTY = 0x00,
+  ENPASSANTNULL = 127,
+  PAWN = 0x01,
+  KING = 0x02,
+  KNIGHT = 0x03,
+  BISHOP = 0x05,
+  ROOK = 0x06,
+  QUEEN = 0x07
 };
 // White pieces have their 4th bit = 0
 enum {
-    WHITE_PAWN = 0x01,
-    WHITE_KING = 0x02,
-    WHITE_KNIGHT = 0x03,
-    WHITE_BISHOP = 0x05,
-    WHITE_ROOK = 0x06,
-    WHITE_QUEEN = 0x07
+  WHITE_PAWN = 0x01,
+  WHITE_KING = 0x02,
+  WHITE_KNIGHT = 0x03,
+  WHITE_BISHOP = 0x05,
+  WHITE_ROOK = 0x06,
+  WHITE_QUEEN = 0x07
 };
 // Black pieces have their 4th bit = 1
 enum {
-    BLACK_PAWN = 0x09,
-    BLACK_KING = 0x0A,
-    BLACK_KNIGHT = 0x0B,
-    BLACK_BISHOP = 0x0D,
-    BLACK_ROOK = 0x0E,
-    BLACK_QUEEN = 0x0F
+  BLACK_PAWN = 0x09,
+  BLACK_KING = 0x0A,
+  BLACK_KNIGHT = 0x0B,
+  BLACK_BISHOP = 0x0D,
+  BLACK_ROOK = 0x0E,
+  BLACK_QUEEN = 0x0F
 };
 
 enum esqare {
-    A1 = 0, B1, C1, D1, E1, F1, G1, H1,
-    A2 = 16, B2, C2, D2, E2, F2, G2, H2,
-    A3 = 32, B3, C3, D3, E3, F3, G3, H3,
-    A4 = 48, B4, C4, D4, E4, F4, G4, H4,
-    A5 = 64, B5, C5, D5, E5, F5, G5, H5,
-    A6 = 80, B6, C6, D6, E6, F6, G6, H6,
-    A7 = 96, B7, C7, D7, E7, F7, G7, H7,
-    A8 = 112, B8, C8, D8, E8, F8, G8, H8
+  A1 = 0, B1, C1, D1, E1, F1, G1, H1,
+  A2 = 16, B2, C2, D2, E2, F2, G2, H2,
+  A3 = 32, B3, C3, D3, E3, F3, G3, H3,
+  A4 = 48, B4, C4, D4, E4, F4, G4, H4,
+  A5 = 64, B5, C5, D5, E5, F5, G5, H5,
+  A6 = 80, B6, C6, D6, E6, F6, G6, H6,
+  A7 = 96, B7, C7, D7, E7, F7, G7, H7,
+  A8 = 112, B8, C8, D8, E8, F8, G8, H8
 };
 
 #define CASTLE_WK    (1<<3)
@@ -110,104 +115,101 @@ enum esqare {
 typedef unsigned char u8;
 typedef unsigned long long u64;
 
-
 #define    valUNKNOWN   (~0)
 #define    hashfEXACT   (1)
 #define    hashfALPHA   (2)
 #define    hashfBETA    (3)
 
 typedef struct tagHASHE {
-    u64 key;
-    unsigned char depth;
-    unsigned char flags;    // bits 0,1,2,3 store the type (exact,alpha,beta etc)
-    int value;
-    unsigned int bestMove;
+  u64 key;
+  unsigned char depth;
+  unsigned char flags;    // bits 0,1,2,3 store the type (exact,alpha,beta etc)
+  int value;
+  unsigned int bestMove;
 } Hash_Entry;
 
 struct aboard {
-    u8 bs[128];
-    u8 sideToMove;
-    u8 castleRights;
-    u8 enPassant;
-    u8 fiftyCounter;
-    short int ply;
-    u64 posKey;
+  u8 bs[128];
+  u8 sideToMove;
+  u8 castleRights;
+  u8 enPassant;
+  u8 fiftyCounter;
+  short int ply;
+  u64 posKey;
 
-    short int gameply;
-    u64 historyPosKey[MAX_PLY_IN_A_GAME];
-    int historymatValue[2][MAX_PLY_IN_A_GAME];
-    unsigned int searchKillers[2][MAX_PLY_IN_A_GAME];
-    int searchHistory[16][128];
-    Hash_Entry *ht;
-    u64 htSize;
+  short int gameply;
+  u64 historyPosKey[MAX_PLY_IN_A_GAME];
+  int historymatValue[2][MAX_PLY_IN_A_GAME];
+  unsigned int searchKillers[2][MAX_PLY_IN_A_GAME];
+  int searchHistory[16][128];
+  Hash_Entry *ht;
+  u64 htSize;
 
-    int opawnCount[2];
-    int obigCount[2];
-    int matValues[2];
-    int psqValues[2];
-    int pawnCount[2];
-    int bigCount[2];
+  int opawnCount[2];
+  int obigCount[2];
+  int matValues[2];
+  int psqValues[2];
+  int pawnCount[2];
+  int bigCount[2];
 #ifndef NDEBUG
-    int historymoves[MAX_PLY_IN_A_GAME];
+  int historymoves[MAX_PLY_IN_A_GAME];
 #endif
 };
 
-
 struct _smove {
-    unsigned int move;
-    u8 enPassantsq;
-    u8 fiftycounter;
-    u8 castleRights;
-    int score;
+  unsigned int move;
+  u8 enPassantsq;
+  u8 fiftycounter;
+  u8 castleRights;
+  int score;
 };
 typedef struct _smove smove;
 
 //#define moveMAX	128
 typedef struct LINE {
-    int cmove;              // Number of moves in the line.
-    unsigned int argmove[MAXDEPTH];  // The line.
+  int cmove;              // Number of moves in the line.
+  unsigned int argmove[MAXDEPTH];  // The line.
 } LINE;
 
 enum {
-    GAMEMODE_CONSOLE,
-    GAMEMODE_UCI,
-    GAMEMODE_SILLENT
+  GAMEMODE_CONSOLE,
+  GAMEMODE_UCI,
+  GAMEMODE_SILLENT
 };
 
 typedef struct {
-    int maxSearchPly;
-    unsigned int starttime;
-    unsigned int stoptime;
-    int depth;
-    int timeset;
-    int movestogo;
+  int maxSearchPly;
+  unsigned int starttime;
+  unsigned int stoptime;
+  int depth;
+  int timeset;
+  int movestogo;
 
-    u64 nodes;
-    u64 qnodes;
+  u64 nodes;
+  u64 qnodes;
 
-    int quit;
-    int stopped;
+  int quit;
+  int stopped;
 
-    int failHigh;
-    int failHighFirst;
-    int nullCut;
-    int lmr;
-    int lmr2;
-    int lmr3;
+  int failHigh;
+  int failHighFirst;
+  int nullCut;
+  int lmr;
+  int lmr2;
+  int lmr3;
 
-    int hthit;
-    int htmiss;
-    int htExact;
-    int htAlpha;
-    int htBeta;
+  int hthit;
+  int htmiss;
+  int htExact;
+  int htAlpha;
+  int htBeta;
 
-    int displayCurrmove;
+  int displayCurrmove;
 
-    int GAME_MODE;
-    int POST_THINKING;
+  int GAME_MODE;
+  int POST_THINKING;
 
 } S_SEARCHINFO;
-
 
 extern struct aboard board;
 
@@ -230,14 +232,6 @@ extern u64 castleKeys[16];
 extern u64 side;
 
 extern LINE pv;
-
-enum {
-    INFINITE = 32000,
-    CHECKMATE_SCORE = 31000,
-    ISMATE = CHECKMATE_SCORE - MAXDEPTH,
-    STALEMATE_SCORE = 0,
-    DDEPTH = 8
-};
 
 void InitMvvLva(void);
 
