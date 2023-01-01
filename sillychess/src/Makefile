@@ -11,7 +11,7 @@ OBJS=board.o hash.o rkiss.o sillychess.o  transpositiontable.o\
 linux: CFLAGS+=-march=native
 linux: LDFLAGS+=-lreadline
 
-linuxclang: CC=clang-14
+linuxclang: CC=clang-15
 linuxclang: CFLAGS=-fsanitize=address -Wall -ggdb -DNDEBUG -std=gnu99 -fomit-frame-pointer
 linuxclang: LDFLAGS+=-lreadline
 
