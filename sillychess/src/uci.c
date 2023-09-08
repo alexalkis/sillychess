@@ -291,7 +291,8 @@ void ParseGo(char *line, S_SEARCHINFO *info) {
 #endif
     unsigned int move = think(info);
     unsigned int timeTaken = get_ms();
-    printf("Time taken: %d\n", timeTaken - info->starttime);
+    if (info->GAME_MODE != GAMEMODE_UCI)
+        printf("Time taken: %d\n", timeTaken - info->starttime);
     fflush(stdout);
 
     if (!move) {
