@@ -132,7 +132,7 @@ void testPerft(int n) {
             *semi = '\0';
         }
         //printf("--->%s\n",start);
-        if (start[0] != 'D') {
+        if (start && start[0] != 'D') {
             ++lineno;
             continue;
         }
@@ -156,7 +156,7 @@ void testPerft(int n) {
 //v0.3.1 271/879 at 1000ms on ECM Total time: 880651ms Total nodes: 1535082412
 
 
-
+// v0.7.3g Time: 27352ms Nodes: 173440093 226/300 Avg.Depth: 8.48667 (AMD Ryzen 9 5900X 12-Core Processor)
 // testepd 400 /home/alex/git/amichess/sillychess/src/wac.epd
 //v0.7.2c Time: 110466ms Nodes: 258516379 226/300 Avg.Depth: 9.02667
 //v0.3.6b 220/300 at 400ms Total nodes: 262266409

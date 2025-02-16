@@ -419,40 +419,39 @@ int AlphaBeta(int depth, int alpha, int beta, LINE *pline, int doNull, S_SEARCHI
             continue;
         }
         //if (depth==1) printf("#%d %s (%d)\n",legalMoves+1,moveToUCI(m[i].move), m[i].move);
-		int givesCheck=isAttacked(board.sideToMove^BLACK, kingLoc[board.sideToMove >> 3]);
+        int givesCheck = isAttacked(board.sideToMove ^ BLACK, kingLoc[board.sideToMove >> 3]);
 //
-//		/* Shallow prune */
-//		if (	!PvNode &&
-//				!inCheck &&
-//				!givesCheck &&
-//				(legalMoves >= (2 + depth))&&
-//				!ISCAPTUREORPROMOTION(m[i].move)
-//			) {
-//			move_unmake(&m[i]);
-//			continue;
-//		}
+        /* Shallow prune */
+        if (!PvNode &&
+            !inCheck &&
+            !givesCheck &&
+            (legalMoves >= (2 + depth)) &&
+            !ISCAPTUREORPROMOTION(m[i].move)
+                ) {
+            move_unmake(&m[i]);
+            continue;
+        }
 
         /* LMR here */
-        if (!legalMoves) {
-            val = -AlphaBeta(depth - 1, -beta, -alpha, &line, doNull, info);
-        } else {
-            if (legalMoves >= FullDepthMoves && depth >= ReductionLimit &&
-                !PvNode &&
-                !givesCheck &&
-                /*m[i].move != ttMove &&
 
-                !ISCAPTUREORPROMOTION(m[i].move)&&
-                m[i].move!=board.searchKillers[0][board.gameply] &&
-                m[i].move!=board.searchKillers[1][board.gameply]*/
-                m[i].score < SECOND_KILLER_SCORE
-                    ) {
-                // Search this move with reduced depth:
-				int reduction = (2 + ((legalMoves-FullDepthMoves)>>3));
-				if (reduction > depth) reduction = depth;
-                val = -AlphaBeta(depth - reduction, -(alpha + 1), -alpha, &line, doNull, info);
-                ++info->lmr;
-            } else
-                val = alpha + 1;    // Hack to ensure that full-depth search is done.
+
+
+        if (legalMoves >= FullDepthMoves
+            && depth >= ReductionLimit
+            //!PvNode &&
+            && !givesCheck
+            && !ISCAPTUREORPROMOTION(m[i].move)
+            /*m[i].move != ttMove &&
+            !ISCAPTUREORPROMOTION(m[i].move)&&
+            m[i].move!=board.searchKillers[0][board.gameply] &&
+            m[i].move!=board.searchKillers[1][board.gameply]*/
+            && m[i].score < SECOND_KILLER_SCORE
+                ) {
+            // Search this move with reduced depth:
+            int reduction = (2 + ((legalMoves - FullDepthMoves) >> 3));
+            if (reduction > depth) reduction = depth;
+            val = -AlphaBeta(depth - reduction, -(alpha + 1), -alpha, &line, doNull, info);
+            ++info->lmr;
             if (val > alpha) {
                 val = -AlphaBeta(depth - 1, -(alpha + 1), -alpha, &line, doNull, info);
                 ++info->lmr2;
@@ -461,11 +460,14 @@ int AlphaBeta(int depth, int alpha, int beta, LINE *pline, int doNull, S_SEARCHI
                     ++info->lmr3;
                 }
             }
-        }
+        } else
+            val = -AlphaBeta(depth - 1, -beta, -alpha, &line, doNull, info);
+
+
         ++legalMoves;
         move_unmake(&m[i]);
         if (info->stopped == TRUE) {
-            if (BestScore!=-INFINITE)
+            if (BestScore != -INFINITE)
                 return BestScore;
             return eval;
         }
