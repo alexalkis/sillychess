@@ -276,7 +276,7 @@ void ParseGo(char *line, S_SEARCHINFO *info) {
 
     if (time != -1) {
         info->timeset = TRUE;
-        time += movestogo*inc;
+        time += (movestogo-1)*inc;
         time /= movestogo;
         if (time>10)
             time -= 10;
