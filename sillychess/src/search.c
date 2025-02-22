@@ -251,8 +251,8 @@ int Quiescence(int alpha, int beta, S_SEARCHINFO *info) {
 
 
 const int razor_margin[4] = {100 * 483 / 256, 100 * 570 / 256, 100 * 603 / 256, 100 * 554 / 256};
-const int FullDepthMoves = 4;
-const int ReductionLimit = 3;
+const int FullDepthMoves = 1;
+const int ReductionLimit = 2;
 
 //Total blunder: 8/8/8/2P5/k4K2/pR1B4/P4P2/8 w - - 47 122 FIXED with razor_margin calibration
 int AlphaBeta(int depth, int alpha, int beta, LINE *pline, int doNull, S_SEARCHINFO *info) {
@@ -433,18 +433,14 @@ int AlphaBeta(int depth, int alpha, int beta, LINE *pline, int doNull, S_SEARCHI
         }
 
         /* LMR here */
-
-
-
-        if (legalMoves >= FullDepthMoves
+        if (legalMoves > FullDepthMoves
             && depth >= ReductionLimit
-            //!PvNode &&
+            //&& !PvNode
             && !givesCheck
             && !ISCAPTUREORPROMOTION(m[i].move)
-            /*m[i].move != ttMove &&
-            !ISCAPTUREORPROMOTION(m[i].move)&&
-            m[i].move!=board.searchKillers[0][board.gameply] &&
-            m[i].move!=board.searchKillers[1][board.gameply]*/
+            && m[i].move != ttMove
+            && m[i].move!=board.searchKillers[0][board.gameply]
+            && m[i].move!=board.searchKillers[1][board.gameply]
             && m[i].score < SECOND_KILLER_SCORE
                 ) {
             // Search this move with reduced depth:
