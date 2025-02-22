@@ -317,13 +317,14 @@ int AlphaBeta(int depth, int alpha, int beta, LINE *pline, int doNull, S_SEARCHI
 
     //is the square of _our_ king attacked by the other side?  i.e. are _we_ in check?
     int inCheck = isAttacked(board.sideToMove ^ BLACK, kingLoc[board.sideToMove >> 3]);
+    int eval = Evaluate();
     // if our king is attacked by the other side, let's increment the depth
     if (inCheck) {
         ++depth;
         goto skipPrunning;
     }
 
-    int eval = Evaluate();
+
 
     /*
     // when commented out on 100ms wac.epd jumped from 152/300 to 182/300
