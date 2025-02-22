@@ -213,8 +213,8 @@ int isRepetition(void) {
 
 int Quiescence(int alpha, int beta, S_SEARCHINFO *info) {
     int i;
-    int stand_pat = Evaluate();
-    int score = stand_pat;
+    int best_value = Evaluate();
+    int score = best_value;
 
     ++info->nodes;
     ++info->qnodes;
@@ -226,10 +226,11 @@ int Quiescence(int alpha, int beta, S_SEARCHINFO *info) {
             return 0;
         }
     }
-    if (stand_pat >= beta)
-        return beta;
-    if (alpha < stand_pat)
-        alpha = stand_pat;
+    if (best_value >= beta)
+        return best_value;
+        //return beta;
+    if (alpha < best_value)
+        alpha = best_value;
     smove m[256];
     int mcount = generateCaptureMoves(m);
     for (i = 0; i < mcount; ++i) {
@@ -241,12 +242,13 @@ int Quiescence(int alpha, int beta, S_SEARCHINFO *info) {
         }
         move_unmake(&m[i]);
         if (score >= beta) {
-            return beta;
+            return score;
         }
+        if (score > best_value) best_value = score;
         if (score > alpha)
             alpha = score;
     }
-    return alpha; /* Note that alpha is Eval() if no capture-moves exist */
+    return best_value; /* Note that alpha is Eval() if no capture-moves exist */
 }
 
 
